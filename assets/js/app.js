@@ -17,10 +17,14 @@
   const defaults = () => ({
     compass: {}, weights: {}, consensus: {}, polls: {}, likes: {}, supported: {},
     academy: {}, badges: {}, xp: 0, going: {}, posts: [], args: [], myInitiatives: [],
-    privacy: { views: "me", activity: "friends", matches: "me" }
+    privacy: { views: "me", activity: "friends", matches: "me" },
+    profile: null, readNotifs: {}, comments: {}, commentLikes: {}, answered: {}
   });
   let S = defaults();
-  try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw)); } catch (e) { /* приватный режим */ }
+  try {
+    if (/[?&]reset=1/.test(location.search)) localStorage.removeItem(KEY);
+    const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw));
+  } catch (e) { /* приватный режим */ }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } };
 
   function toast(msg) {
@@ -37,6 +41,9 @@
     toast(`${b.icon} Новый значок: «${b.name}» · +25 XP`);
   }
   const level = () => Math.floor(S.xp / 100) + 1;
+  const myName = () => (S.profile && S.profile.name) || "Гость";
+  const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
+  const myAva = () => initials(myName());
 
   /* ---------- Таймеры «живых» данных ---------- */
   let timers = [];
@@ -53,7 +60,10 @@
   $("#menuBtn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
 
   function topbar(title, sub, extra = "") {
+    const unread = D.notifications.filter((n) => !S.readNotifs[n.id]).length;
     return `<div class="topbar"><div><h1>${title}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}</div><div class="spacer"></div>${extra}
+      <button class="icon-btn" data-search aria-label="Поиск" title="Поиск (Ctrl+K)">🔍</button>
+      <button class="icon-btn bell" data-bell aria-label="Уведомления">🔔${unread ? `<span class="dot">${unread}</span>` : ""}</button>
       <button class="icon-btn" data-theme-toggle aria-label="Сменить тему">◐</button></div>`;
   }
   function applyTheme(t) { if (t) document.documentElement.dataset.theme = t; }
@@ -100,7 +110,7 @@
       <div class="stack">
         <div class="card composer">
           <div class="row" style="align-items:flex-start">
-            <div class="avatar">Я</div>
+            <div class="avatar">${esc(myAva())}</div>
             <div style="flex:1">
               <textarea id="postText" placeholder="Что важно для вашего района? Предложите идею или задайте вопрос кандидатам…" maxlength="500"></textarea>
               <div class="row" style="margin-top:8px">
@@ -158,12 +168,24 @@
       </div>
       <div class="post-actions">
         <button data-like="${p.id}" class="${liked ? "on" : ""}">${liked ? "❤️" : "🤍"} ${fmt(p.likes + (liked ? 1 : 0))}</button>
-        <button data-go="#/groups">💬 ${fmt(p.comments)}</button>
+        <button data-cm="${p.id}" class="${openThreads[p.id] ? "on-soft" : ""}">💬 ${fmt(p.comments + (S.comments[p.id] || []).length)}</button>
         <button data-share="${p.id}">↗ Поделиться</button>
         <span class="spacer"></span>
         ${!p.flagged ? `<button data-note="${p.id}" title="Добавить контекст с источником">📝 Добавить контекст</button>` : ""}
       </div>
+      ${openThreads[p.id] ? threadHTML(p) : ""}
     </article>`;
+  }
+  const openThreads = {};
+  function threadHTML(p) {
+    const list = [...(D.comments[p.id] || []), ...(S.comments[p.id] || [])];
+    return `<div class="thread fade-in">
+      ${list.map((c, i) => { const k = p.id + ":" + i, liked = S.commentLikes[k]; const cc = c.candidate ? cand(c.candidate) : null;
+        return `<div class="comment"><div class="avatar sm" style="${cc ? `background:${D.parties[cc.party].color}` : ""}">${esc(c.avatar)}</div>
+        <div class="bubble"><div class="row" style="gap:6px"><b>${esc(c.author)}</b>${cc ? `<span class="chip">Кандидат</span>` : ""}<span class="small muted">${esc(c.time)}</span></div>
+        <div>${esc(c.text)}</div><button class="link-btn ${liked ? "on" : ""}" data-cl="${k}">${liked ? "❤️" : "🤍"} ${c.likes + (liked ? 1 : 0)}</button></div></div>`; }).join("") || `<p class="small muted">Комментариев пока нет — будьте первым.</p>`}
+      <div class="comment"><div class="avatar sm">${esc(myAva())}</div><div style="flex:1;display:flex;gap:8px"><input class="cm-input" data-ci="${p.id}" placeholder="Написать комментарий…" maxlength="300"><button class="btn small" data-cs="${p.id}">➤</button></div></div>
+    </div>`;
   }
   const RUDE = ["идиот", "дурак", "туп", "бред", "заткнись", "дебил", "позор", "клоун"];
   const isRude = (s) => RUDE.some((w) => s.toLowerCase().includes(w));
@@ -176,7 +198,7 @@
       const text = ta.value.trim();
       if (text.length < 5) return toast("Напишите чуть подробнее");
       if (isRude(text)) return toast("🤖 ИИ-модератор: давайте обсуждать идеи, а не людей");
-      S.posts.unshift({ id: "u" + Date.now(), type: "citizen", author: "Вы", avatar: "Я", time: "только что", text, topic: $("#postTopic").value || null, verified: null, bridge: null, likes: 0, comments: 0 });
+      S.posts.unshift({ id: "u" + Date.now(), type: "citizen", author: myName(), avatar: myAva(), time: "только что", text, topic: $("#postTopic").value || null, verified: null, bridge: null, likes: 0, comments: 0 });
       save(); addXP(5); toast("Опубликовано · +5 XP"); render();
     });
     $$("[data-sort]").forEach((b) => b.addEventListener("click", () => { feedSort = b.dataset.sort; render(); }));
@@ -186,6 +208,17 @@
       try { await navigator.clipboard.writeText(url); toast("Ссылка скопирована"); } catch (e) { toast(url); }
     }));
     $$("[data-note]").forEach((b) => b.addEventListener("click", () => toast("Контекст публикуется, когда его одобрят люди с разными взглядами")));
+    $$("[data-cm]").forEach((b) => b.addEventListener("click", () => { const id = b.dataset.cm; openThreads[id] = !openThreads[id]; render(); const i = $(`[data-ci="${id}"]`); if (i) i.focus(); }));
+    $$("[data-cl]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.cl; S.commentLikes[k] = !S.commentLikes[k]; save(); render(); }));
+    const send = (id) => {
+      const inp = $(`[data-ci="${id}"]`), text = inp.value.trim();
+      if (text.length < 2) return;
+      if (isRude(text)) return toast("🤖 ИИ-модератор: похоже на оскорбление — переформулируйте");
+      (S.comments[id] = S.comments[id] || []).push({ author: myName(), avatar: myAva(), text, likes: 0, time: "сейчас" });
+      save(); addXP(2); render(); const n = $(`[data-ci="${id}"]`); if (n) n.focus();
+    };
+    $$("[data-cs]").forEach((b) => b.addEventListener("click", () => send(b.dataset.cs)));
+    $$("[data-ci]").forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") send(i.dataset.ci); }));
   }
 
   /* ---------- Компас взглядов ---------- */
@@ -306,7 +339,7 @@
       </div>
     </div>
     <div class="stack">
-      <div class="card"><h3>🤝 Точки согласия</h3><p class="small muted">Поддержаны больше чем 70% в <b>каждой</b> группе — отличный старт для депутатов.</p>
+      <div class="card" id="commonCard"><h3>🤝 Точки согласия</h3><p class="small muted">Поддержаны больше чем 70% в <b>каждой</b> группе — отличный старт для депутатов.</p>
         ${common.map((s) => `<div class="row" style="flex-wrap:nowrap;padding:8px 0;border-bottom:1px solid var(--border)"><div class="small" style="flex:1"><b>${esc(s.text)}</b></div>${bars(s)}</div>`).join("")}</div>
       <div class="card"><h3>⚡ Где мнения расходятся</h3>
         ${divisive.map((x) => `<div class="row" style="flex-wrap:nowrap;padding:8px 0;border-bottom:1px solid var(--border)"><div class="small" style="flex:1">${esc(x.s.text)}</div>${bars(x.s)}</div>`).join("")}</div>
@@ -553,7 +586,7 @@
     };
     und.addEventListener("input", check); argt.addEventListener("input", check); check();
     btn.addEventListener("click", () => {
-      S.args.push({ group: id, side: $("#side").value, author: "Вы", text: argt.value.trim(), understood: und.value.trim(), score: 1 });
+      S.args.push({ group: id, side: $("#side").value, author: myName(), text: argt.value.trim(), understood: und.value.trim(), score: 1 });
       save(); addXP(10); award("bridge"); render();
     });
   }
@@ -587,7 +620,7 @@
       const title = $("#inTitle").value.trim(), text = $("#inText").value.trim();
       if (title.length < 5 || text.length < 15) return toast("Заполните название и описание");
       if (isRude(title + text)) return toast("🤖 ИИ-модератор: уберите оскорбления");
-      S.myInitiatives.unshift({ id: "my" + Date.now(), title, text, topic: $("#inTopic").value, author: "Вы", support: 0, goal: 1000, responses: 0 });
+      S.myInitiatives.unshift({ id: "my" + Date.now(), title, text, topic: $("#inTopic").value, author: myName(), support: 0, goal: 1000, responses: 0 });
       save(); addXP(15); toast("Инициатива опубликована · +15 XP"); render();
     });
   }
@@ -648,7 +681,8 @@
     const stats = [["Постов", S.posts.length], ["Аргументов", S.args.length], ["Поддержано инициатив", Object.values(S.supported).filter(Boolean).length], ["Уроков", Object.keys(S.academy).length]];
     return topbar("Гражданский паспорт", "Ваш профиль, прогресс и настройки приватности") + `
     <div class="layout"><div class="stack">
-      <div class="card"><div class="row"><div class="avatar lg">Я</div><div style="flex:1"><h2 style="margin:0">Житель Северного округа</h2><div class="muted small">☑️ Подтверждённый житель · ${esc(D.city)}</div></div>
+      <div class="card"><div class="row"><div class="avatar lg">${esc(myAva())}</div><div style="flex:1"><h2 style="margin:0">${esc(myName())}</h2><div class="muted small">☑️ Подтверждённый житель · ${esc(D.city)} · ${esc((S.profile && S.profile.district) || D.district)}</div>
+        ${S.profile && S.profile.interests ? `<div class="row" style="gap:6px;margin-top:8px">${S.profile.interests.map((t) => `<span class="chip">${topic(t).icon} ${topic(t).name}</span>`).join("")}</div>` : ""}</div>
         <div style="text-align:right"><div class="chip primary">Уровень ${level()}</div><div class="small muted" style="margin-top:4px">${S.xp} XP</div></div></div>
         <div class="bar" style="margin-top:14px"><span style="width:${S.xp % 100}%"></span></div><div class="small muted" style="margin-top:4px">${100 - (S.xp % 100)} XP до уровня ${level() + 1}</div>
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:16px">${stats.map(([l, v]) => `<div><b style="font-size:24px">${v}</b><div class="small muted">${l}</div></div>`).join("")}</div></div>
@@ -656,7 +690,7 @@
       <div class="card"><h3>🧭 Мои взгляды</h3>${m ? m.map((x) => `<div class="row" style="padding:6px 0"><span>${esc(x.c.name)}</span><span class="spacer"></span><b>${x.pct}%</b></div>`).join("") + `<p class="small muted" style="margin-top:8px">Видно: ${S.privacy.matches === "me" ? "только вам" : S.privacy.matches === "friends" ? "друзьям" : "всем"}</p>`
         : `<p class="muted small">Вы ещё не прошли Компас.</p><a class="btn small" href="#/compass">Пройти</a>`}</div>
     </div><div class="stack">
-      <div class="card"><h3>🔐 Приватность</h3>
+      <div class="card" id="privacyCard"><h3>🔐 Приватность</h3>
         <div class="switch"><span>Политические предпочтения</span>${sel("views")}</div>
         <div class="switch"><span>Результаты Компаса</span>${sel("matches")}</div>
         <div class="switch"><span>Активность и значки</span>${sel("activity")}</div>
@@ -671,20 +705,322 @@
       a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: "application/json" })); a.download = "voteconnect-my-data.json"; a.click();
     });
     $("#wipeBtn").addEventListener("click", () => {
-      if (!confirm("Удалить все данные демо на этом устройстве?")) return;
-      S = defaults(); save(); cq = 0; toast("Данные удалены"); render();
+      if (!confirm("Удалить все данные демо на этом устройстве? Вы вернётесь к регистрации.")) return;
+      S = defaults(); save(); cq = 0; ob = { step: 0, interests: [] }; location.hash = "#/feed"; render();
     });
   }
+
+  /* ---------- Кабинет кандидата ---------- */
+  const DRAFTS = {
+    cq1: "Спасибо за вопрос! Проект выделенной полосы на Садовой готов. Если меня изберут, внесу его на первое же заседание совета — цель запустить полосу до весны 2027 года. Промежуточные шаги буду публиковать здесь.",
+    cq2: "Да, это мой приоритет. Предлагаю начать с 1% городского бюджета и расширять долю, если жители активно участвуют. Опыт нашего района показал, что это работает.",
+    cq3: "Я за пешеходную улицу по выходным, но только вместе с пропусками для жителей улицы Мира и объездным маршрутом автобуса. Предлагаю пилот на 2 месяца с публичной оценкой.",
+    cq4: "Обязательно. Раз в месяц — отчёт здесь, в VoteConnect, и раз в квартал — открытая встреча с жителями. Все мои голосования будут видны в трекере."
+  };
+  function lineChart(labels, values) {
+    const W = 640, H = 220, pl = 44, pr = 16, pt = 16, pb = 30, max = Math.ceil(Math.max(...values) / 500) * 500;
+    const x = (i) => pl + i * (W - pl - pr) / (values.length - 1), y = (v) => pt + (1 - v / max) * (H - pt - pb);
+    const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+    const ticks = [0, max / 2, max];
+    return `<div class="chart" data-chart='${JSON.stringify({ labels, values })}'>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Подписчики по неделям: с ${fmt(values[0])} до ${fmt(values[values.length - 1])}">
+        ${ticks.map((t) => `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--border)"/><text x="${pl - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t)}</text>`).join("")}
+        ${labels.map((l, i) => (i % 2 === 1 || i === labels.length - 1) ? `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${l}</text>` : "").join("")}
+        <path d="M${pts.join("L")}L${x(values.length - 1)},${y(0)}L${x(0)},${y(0)}Z" fill="var(--primary)" opacity=".10"/>
+        <polyline points="${pts.join(" ")}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${x(values.length - 1)}" cy="${y(values[values.length - 1])}" r="4.5" fill="var(--primary)" stroke="var(--surface)" stroke-width="2"/>
+        <text x="${x(values.length - 1) - 8}" y="${y(values[values.length - 1]) - 10}" text-anchor="end" font-size="12" font-weight="800" fill="var(--text)">${fmt(values[values.length - 1])}</text>
+        <line class="xh" x1="0" x2="0" y1="${pt}" y2="${H - pb}" stroke="var(--muted)" stroke-dasharray="3 3" opacity="0"/>
+        <circle class="xh-dot" r="5" fill="var(--primary)" stroke="var(--surface)" stroke-width="2" opacity="0"/>
+        <rect class="hit" x="${pl}" y="${pt}" width="${W - pl - pr}" height="${H - pt - pb}" fill="transparent"/>
+      </svg><div class="tip" hidden></div></div>`;
+  }
+  function bindCharts() {
+    $$(".chart").forEach((wrap) => {
+      const { labels, values } = JSON.parse(wrap.dataset.chart), svg = $("svg", wrap), tip = $(".tip", wrap);
+      const W = 640, H = 220, pl = 44, pr = 16, pt = 16, pb = 30, max = Math.ceil(Math.max(...values) / 500) * 500;
+      const move = (e) => {
+        const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W;
+        const i = Math.max(0, Math.min(values.length - 1, Math.round((px - pl) / ((W - pl - pr) / (values.length - 1)))));
+        const cx = pl + i * (W - pl - pr) / (values.length - 1), cy = pt + (1 - values[i] / max) * (H - pt - pb);
+        $(".xh", svg).setAttribute("x1", cx); $(".xh", svg).setAttribute("x2", cx); $(".xh", svg).setAttribute("opacity", ".6");
+        $(".xh-dot", svg).setAttribute("cx", cx); $(".xh-dot", svg).setAttribute("cy", cy); $(".xh-dot", svg).setAttribute("opacity", "1");
+        tip.hidden = false; tip.innerHTML = `<span class="muted">Неделя ${labels[i]}</span><br><b>${fmt(values[i])}</b> подписчиков${i ? ` <span class="muted">(+${fmt(values[i] - values[i - 1])})</span>` : ""}`;
+        const left = cx / W * r.width; tip.style.left = Math.min(r.width - 170, Math.max(0, left - 85)) + "px"; tip.style.top = (cy / H * r.height - 64) + "px";
+      };
+      const leave = () => { tip.hidden = true; $(".xh", svg).setAttribute("opacity", "0"); $(".xh-dot", svg).setAttribute("opacity", "0"); };
+      $(".hit", svg).addEventListener("pointermove", move); $(".hit", svg).addEventListener("pointerleave", leave);
+    });
+  }
+  views.cabinet = () => {
+    const K = D.cabinet, c = cand(K.candidate);
+    const open = K.questions.filter((q) => !S.answered[q.id]), done = K.questions.filter((q) => S.answered[q.id]);
+    const rate = Math.round((K.answerRate * 50 + done.length * 100) / (50 + done.length));
+    const kpi = (label, val, delta, hint) => `<div class="card kpi"><div class="small muted">${label}</div><div class="kpi-val">${val}</div><div class="small ${delta && delta[0] === "+" ? "up" : "muted"}">${delta || hint || ""}</div></div>`;
+    const maxC = Math.max(...K.concerns.map((x) => x[1]));
+    return topbar("Кабинет кандидата", `${esc(c.name)} · ${esc(D.parties[c.party].name)} · ${esc(D.district)}`, `<button class="btn ghost small" data-print>📄 Отчёт</button>`) + `
+    <div class="grid kpis" id="kpis">
+      ${kpi("Подписчики", fmt(K.followers), `+${K.followersDelta}% за неделю`)}
+      ${kpi("Охват постов за 7 дней", fmt(K.reach), `+${K.reachDelta}% за неделю`)}
+      ${kpi("Ответы на вопросы", rate + "%", null, `место #${K.rank} среди кандидатов округа`)}
+      ${kpi("Ждут ответа", open.length + K.pendingInitiatives.filter((i) => i.daysLeft !== null && !S.answered[i.id]).length, null, "вопросы и инициативы")}
+    </div>
+    <div class="layout" style="margin-top:16px"><div class="stack">
+      <div class="card"><div class="row"><h3 style="margin:0">Рост аудитории</h3><span class="spacer"></span><span class="small muted">подписчики, по неделям</span></div>${lineChart(K.weeks, K.followersByWeek)}</div>
+      <div class="card" id="qqueue"><div class="row"><h3 style="margin:0">❓ Вопросы жителей</h3><span class="spacer"></span><span class="chip">по поддержке</span></div>
+        <p class="small muted">Жители голосуют за вопросы — сверху самые важные для округа. Ответы публикуются в вашем профиле.</p>
+        ${open.map((q) => `<div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">▲<b>${q.support}</b></div>
+          <div style="flex:1"><b>${esc(q.text)}</b><div class="small muted">${esc(q.author)} · ${topic(q.topic).icon} ${topic(q.topic).name}</div>
+          <textarea class="q-ans" data-qa-text="${q.id}" placeholder="Ваш публичный ответ…"></textarea>
+          <div class="row" style="margin-top:8px"><button class="btn ghost small" data-draft="${q.id}">✨ Черновик от ИИ</button><span class="spacer"></span><button class="btn small" data-answer="${q.id}">Ответить публично</button></div></div></div></div>`).join("") || `<p class="muted">🎉 Все вопросы отвечены.</p>`}
+        ${done.length ? `<details style="margin-top:12px"><summary class="small" style="cursor:pointer;font-weight:700">Отвечено: ${done.length}</summary>${done.map((q) => `<div class="arg" style="margin-top:8px"><b>${esc(q.text)}</b><div class="small" style="margin-top:6px">${esc(S.answered[q.id])}</div></div>`).join("")}</details>` : ""}
+      </div>
+    </div><div class="stack">
+      <div class="card"><h3>Что волнует округ</h3><p class="small muted">Доля упоминаний в постах, опросах и на Карте согласия, %</p>
+        ${K.concerns.map(([n, v]) => `<div class="hbar" title="${esc(n)}: ${v}%"><div class="row" style="justify-content:space-between"><span class="small">${esc(n)}</span><b class="small">${v}%</b></div><div class="bar"><span style="width:${v / maxC * 100}%"></span></div></div>`).join("")}</div>
+      <div class="card"><h3>🎯 Инициативы для ответа</h3>
+        ${K.pendingInitiatives.map((i) => `<div class="q-item"><b>${esc(i.title)}</b><div class="small muted">${fmt(i.support)} подписей</div>
+          ${S.answered[i.id] ? `<span class="chip ok">✓ Ответ опубликован</span>` : i.daysLeft !== null ? `<div class="row" style="margin-top:6px"><span class="chip warn">⏳ осталось ${i.daysLeft} дн.</span><span class="spacer"></span><button class="btn small" data-init-ans="${i.id}">Ответить</button></div>` : `<span class="chip">Порог ещё не достигнут</span>`}</div>`).join("")}</div>
+      <div class="explain small"><b>Равные условия.</b> Все инструменты кабинета бесплатны для каждого зарегистрированного кандидата. Платного продвижения политического контента на платформе нет.</div>
+    </div></div>`;
+  };
+  function bindCabinet() {
+    bindCharts();
+    $$("[data-draft]").forEach((b) => b.addEventListener("click", () => {
+      const ta = $(`[data-qa-text="${b.dataset.draft}"]`), text = DRAFTS[b.dataset.draft]; ta.value = ""; let i = 0;
+      b.disabled = true;
+      const t = setInterval(() => { ta.value = text.slice(0, i += 3); if (i >= text.length) { clearInterval(t); b.disabled = false; } }, 16);
+      timers.push(t);
+    }));
+    $$("[data-answer]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.dataset.answer, text = $(`[data-qa-text="${id}"]`).value.trim();
+      if (text.length < 20) return toast("Ответ слишком короткий — жители ценят конкретику");
+      S.answered[id] = text; save(); toast("✓ Ответ опубликован и отправлен автору вопроса"); render();
+    }));
+    $$("[data-init-ans]").forEach((b) => b.addEventListener("click", () => { S.answered[b.dataset.initAns] = "ok"; save(); toast("✓ Ответ на инициативу опубликован"); render(); }));
+    $$("[data-print]").forEach((b) => b.addEventListener("click", () => window.print()));
+  }
+
+  /* ---------- Онбординг ---------- */
+  let ob = { step: 0, interests: [] };
+  function renderOnboarding() {
+    clearTimers();
+    document.body.classList.add("ob-mode");
+    const box = $("#onboard"); box.hidden = false;
+    const s = ob.step, total = 4;
+    let body = "";
+    if (s === 0) {
+      body = `<div class="ob-logo">${LOGO}</div><h1 class="ob-title">Ваш голос —<br>ваш город</h1>
+        <p class="muted">Узнайте, чьи взгляды совпадают с вашими, влияйте на решения района и обсуждайте без токсичности.</p>
+        <ul class="ob-list"><li><span>🧭</span>Компас взглядов — совпадение с кандидатами за 3 минуты</li><li><span>🤝</span>Карта согласия: что объединяет жителей</li><li><span>🔒</span>Ваши взгляды видны только вам</li></ul>
+        <button class="btn block" data-ob="next">Создать профиль</button>
+        <button class="btn ghost block" data-ob="demo">Войти в демо без регистрации</button>`;
+    } else if (s === 1) {
+      body = `<h2>Подтвердите номер</h2><p class="muted small">Один человек — один голос. Номер нужен только для защиты от ботов: в рабочей версии хранится лишь его хэш.</p>
+        <label class="field">Телефон<input id="obPhone" inputmode="tel" autocomplete="off" placeholder="+7 900 000-00-00" value="${esc(ob.phone || "")}"></label>
+        ${ob.codeSent ? `<div class="row" style="margin-top:16px"><b class="small">Код из SMS</b><span class="chip accent">демо: подойдёт любой</span></div>
+          <div class="code">${[0, 1, 2, 3].map((i) => `<input maxlength="1" inputmode="numeric" data-code="${i}" aria-label="Цифра ${i + 1}">`).join("")}</div>` : ""}
+        <button class="btn block" data-ob="${ob.codeSent ? "verify" : "sendcode"}">${ob.codeSent ? "Подтвердить" : "Получить код"}</button>`;
+    } else if (s === 2) {
+      body = `<h2>Расскажите о себе</h2><p class="muted small">Округ нужен, чтобы показать ваших кандидатов, участок и события рядом.</p>
+        <div class="stack" style="gap:12px"><label class="field">Как к вам обращаться<input id="obName" maxlength="40" placeholder="Имя и фамилия" value="${esc(ob.name || "")}"></label>
+        <label class="field">Избирательный округ<select id="obDistrict">${D.districts.map((d) => `<option ${ob.district === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select></label>
+        <label class="field">Улица <span class="small muted" style="font-weight:500">(необязательно)</span><input id="obStreet" maxlength="60" placeholder="например, Садовая" value="${esc(ob.street || "")}"></label></div>
+        <button class="btn block" data-ob="profile">Дальше</button>`;
+    } else if (s === 3) {
+      body = `<h2>Что вам важно?</h2><p class="muted small">Выберите хотя бы 2 темы — лента и группы подстроятся под вас.</p>
+        <div class="picks">${D.topics.map((t) => `<button class="pick ${ob.interests.includes(t.id) ? "on" : ""}" data-pick="${t.id}"><span>${t.icon}</span>${t.name}</button>`).join("")}</div>
+        <button class="btn block" data-ob="interests" ${ob.interests.length < 2 ? "disabled" : ""}>Дальше · выбрано ${ob.interests.length}</button>`;
+    } else if (s === 4) {
+      body = `<h2>Приватность и правила</h2>
+        <div class="ob-rule"><span>🔒</span><div><b>Взгляды видны только вам</b><div class="small muted">Результаты Компаса считаются на устройстве. Открыть их другим можно в настройках.</div></div></div>
+        <div class="ob-rule"><span>🚫</span><div><b>Никакой политической рекламы</b><div class="small muted">Мы не продаём данные и не показываем таргетированную агитацию.</div></div></div>
+        <div class="ob-rule"><span>🌉</span><div><b>Обсуждаем идеи, а не людей</b><div class="small muted">ИИ-модератор мягко подскажет, если сообщение похоже на оскорбление.</div></div></div>
+        <label class="row small" style="margin:14px 0;gap:10px;font-weight:700;flex-wrap:nowrap"><input type="checkbox" id="obAgree" ${ob.agree ? "checked" : ""}> Принимаю правила сообщества</label>
+        <button class="btn block" data-ob="finish" ${ob.agree ? "" : "disabled"}>Готово</button>`;
+    } else {
+      body = `<div style="text-align:center"><div class="ob-party">🎉</div><h2>Добро пожаловать, ${esc(ob.name.split(" ")[0])}!</h2>
+        <p class="muted">Вы подтверждённый житель округа. Начните с Компаса — через 3 минуты узнаете, чьи позиции ближе к вашим.</p></div>
+        <a class="btn block" href="#/compass" data-ob="enter">🧭 Пройти Компас взглядов</a><a class="btn ghost block" href="#/feed" data-ob="enter">Перейти в ленту</a>`;
+    }
+    box.innerHTML = `<div class="ob-card card fade-in">
+      ${s > 0 && s <= total ? `<div class="row" style="margin-bottom:18px"><button class="icon-btn" data-ob="back" aria-label="Назад">←</button><div class="progress-dots" style="flex:1">${[1, 2, 3, 4].map((i) => `<i class="${i < s ? "done" : i === s ? "cur" : ""}"></i>`).join("")}</div><span class="small muted">${s}/${total}</span></div>` : ""}
+      ${body}</div>`;
+    bindOnboarding();
+  }
+  function finishOnboarding(profile) {
+    S.profile = profile; S.xp += 20; save();
+    $("#onboard").hidden = true; document.body.classList.remove("ob-mode");
+  }
+  function bindOnboarding() {
+    const go = (n) => { ob.step = n; renderOnboarding(); };
+    $$("[data-ob]").forEach((b) => b.addEventListener("click", (e) => {
+      const a = b.dataset.ob;
+      if (a === "next") go(1);
+      else if (a === "back") go(ob.step - 1);
+      else if (a === "demo") { finishOnboarding({ name: "Демо Житель", district: D.district, street: "", interests: ["transport", "eco"] }); render(); }
+      else if (a === "sendcode") {
+        ob.phone = $("#obPhone").value;
+        if (ob.phone.replace(/\D/g, "").length < 10) return toast("Введите номер полностью");
+        ob.codeSent = true; renderOnboarding(); toast("Код отправлен (демо)"); $("[data-code='0']").focus();
+      } else if (a === "verify") {
+        if ($$("[data-code]").some((i) => !i.value)) return toast("Введите 4 цифры кода");
+        ob.phone = ""; toast("✓ Номер подтверждён"); go(2);
+      } else if (a === "profile") {
+        ob.name = $("#obName").value.trim(); ob.district = $("#obDistrict").value; ob.street = $("#obStreet").value.trim();
+        if (ob.name.length < 2) return toast("Как к вам обращаться?");
+        go(3);
+      } else if (a === "interests") go(4);
+      else if (a === "finish") go(5);
+      else if (a === "enter") { e.preventDefault(); finishOnboarding({ name: ob.name, district: ob.district, street: ob.street, interests: ob.interests }); location.hash = b.getAttribute("href"); render(); toast("Профиль создан · +20 XP"); }
+    }));
+    $$("[data-pick]").forEach((b) => b.addEventListener("click", () => {
+      const t = b.dataset.pick; ob.interests = ob.interests.includes(t) ? ob.interests.filter((x) => x !== t) : [...ob.interests, t]; renderOnboarding();
+    }));
+    const agree = $("#obAgree"); if (agree) agree.addEventListener("change", () => { ob.agree = agree.checked; renderOnboarding(); });
+    $$("[data-code]").forEach((inp, i, all) => {
+      inp.addEventListener("input", () => { inp.value = inp.value.replace(/\D/g, ""); if (inp.value && all[i + 1]) all[i + 1].focus(); if (all.every((x) => x.value)) $("[data-ob='verify']").click(); });
+      inp.addEventListener("keydown", (e) => { if (e.key === "Backspace" && !inp.value && all[i - 1]) all[i - 1].focus(); });
+    });
+    const ph = $("#obPhone"); if (ph) ph.addEventListener("keydown", (e) => { if (e.key === "Enter") $("[data-ob='sendcode']").click(); });
+  }
+
+  /* ---------- Уведомления, поиск, QR ---------- */
+  function closeLayers() { $$(".layer").forEach((l) => l.remove()); }
+  function openNotifs(anchor) {
+    const had = $(".notif-panel"); closeLayers(); if (had) return;
+    const r = anchor.getBoundingClientRect(), p = document.createElement("div");
+    p.className = "layer notif-panel card fade-in";
+    p.style.top = r.bottom + 8 + "px"; p.style.right = Math.max(8, innerWidth - r.right) + "px";
+    p.innerHTML = `<div class="row"><b>Уведомления</b><span class="spacer"></span><button class="link-btn" data-readall>Прочитать все</button></div>
+      ${D.notifications.map((n) => `<a class="notif ${S.readNotifs[n.id] ? "" : "unread"}" href="${n.link}" data-nid="${n.id}"><span class="n-ico">${n.icon}</span><span style="flex:1">${esc(n.text)}<br><span class="small muted">${n.time} назад</span></span></a>`).join("")}`;
+    document.body.appendChild(p);
+    $$("[data-nid]", p).forEach((a) => a.addEventListener("click", () => { S.readNotifs[a.dataset.nid] = true; save(); closeLayers(); }));
+    $("[data-readall]", p).addEventListener("click", () => { D.notifications.forEach((n) => (S.readNotifs[n.id] = true)); save(); closeLayers(); render(); });
+  }
+  function searchIndex() {
+    return [
+      ...D.candidates.map((c) => ({ g: "Кандидаты", t: c.name, s: c.role, l: "#/candidate/" + c.id, i: c.avatar })),
+      ...D.groups.map((g) => ({ g: "Группы", t: g.name, s: g.desc, l: "#/group/" + g.id, i: topic(g.topic).icon })),
+      ...D.initiatives.map((x) => ({ g: "Инициативы", t: x.title, s: x.text, l: "#/initiatives", i: "📣" })),
+      ...D.events.map((e) => ({ g: "События", t: e.title, s: `${e.date.split("-").reverse().slice(0, 2).join(".")} · ${e.place}`, l: "#/calendar", i: "📅" })),
+      ...D.academy.map((m) => ({ g: "Академия", t: m.title, s: m.cards[0], l: "#/lesson/" + m.id, i: m.icon })),
+      ...D.promises.map((p) => ({ g: "Обещания", t: p.text, s: cand(p.who).name, l: "#/promises", i: "✅" }))
+    ];
+  }
+  function openSearch() {
+    closeLayers();
+    const m = document.createElement("div"); m.className = "layer modal-bg";
+    m.innerHTML = `<div class="modal card fade-in" role="dialog" aria-label="Поиск"><div class="search-box"><span>🔍</span><input id="q" placeholder="Кандидаты, группы, события, инициативы…" autocomplete="off"><kbd>Esc</kbd></div><div id="results" class="results"></div></div>`;
+    document.body.appendChild(m);
+    const idx = searchIndex(), q = $("#q", m), out = $("#results", m);
+    const draw = () => {
+      const v = q.value.trim().toLowerCase();
+      const hits = v ? idx.filter((x) => (x.t + " " + x.s).toLowerCase().includes(v)).slice(0, 12) : idx.filter((x) => x.g === "Кандидаты" || x.g === "Группы").slice(0, 8);
+      let last = "";
+      out.innerHTML = hits.map((x) => { const head = x.g !== last ? `<div class="res-g">${x.g}</div>` : ""; last = x.g; return head + `<a class="res" href="${x.l}"><span class="res-i">${esc(x.i)}</span><span><b>${esc(x.t)}</b><br><span class="small muted">${esc(x.s.slice(0, 90))}</span></span></a>`; }).join("") || `<p class="muted" style="padding:12px">Ничего не нашлось</p>`;
+      $$(".res", out).forEach((a) => a.addEventListener("click", closeLayers));
+    };
+    q.addEventListener("input", draw); draw(); q.focus();
+    q.addEventListener("keydown", (e) => { if (e.key === "Enter") { const a = $(".res", out); if (a) { location.hash = a.getAttribute("href"); closeLayers(); } } });
+    m.addEventListener("click", (e) => { if (e.target === m) closeLayers(); });
+  }
+  const PUBLIC_URL = "https://timojr3.github.io/voteconnect/app.html";
+  function openQR() {
+    closeLayers();
+    const url = /^(localhost|127\.)/.test(location.hostname) || location.protocol === "file:" ? PUBLIC_URL : location.href.split("#")[0].split("?")[0];
+    const m = document.createElement("div"); m.className = "layer modal-bg";
+    m.innerHTML = `<div class="modal card fade-in" style="max-width:360px;text-align:center"><h3>📱 Откройте на телефоне</h3><p class="small muted">Наведите камеру — прототип откроется как приложение. Его можно установить на главный экран.</p>
+      <div id="qr" class="qr">загрузка…</div><div class="small muted" style="word-break:break-all">${esc(url)}</div><button class="btn ghost small" style="margin-top:14px" data-close>Закрыть</button></div>`;
+    document.body.appendChild(m);
+    m.addEventListener("click", (e) => { if (e.target === m || e.target.hasAttribute("data-close")) closeLayers(); });
+    const draw = () => { const qr = window.qrcode(0, "M"); qr.addData(url); qr.make(); $("#qr", m).innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); };
+    if (window.qrcode) return draw();
+    const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js";
+    s.onload = draw; s.onerror = () => ($("#qr", m).textContent = "Нет сети — откройте ссылку ниже"); document.head.appendChild(s);
+  }
+
+  /* ---------- Демо-тур для презентации ---------- */
+  const TOUR = [
+    { r: "#/feed", sel: ".tabs", t: "Лента, которая объединяет", x: "Обычные соцсети продвигают самое скандальное. Здесь по умолчанию включено «Объединяющее»: наверху посты, которые одобряют люди с разными взглядами." },
+    { r: "#/feed", sel: ".post .bridge-meter", t: "Рейтинг моста", x: "У каждого поста видно, какая доля людей из разных групп мнений его поддерживает. Это главный сигнал ранжирования вместо лайков." },
+    { r: "#/feed", sel: ".post.flagged", t: "Защита от фейков", x: "Ложный пост о «переносе выборов» получает контекст с официальным источником и исключается из рекомендаций." },
+    { r: "#/compass", sel: ".statement, .match", t: "Компас взглядов", x: "12 утверждений о жизни города — и процент совпадения с каждым кандидатом. Расчёт идёт на устройстве, взгляды никуда не отправляются." },
+    { r: "#/consensus", sel: ".cmap", t: "Карта согласия", x: "Жители голосуют по коротким утверждениям, алгоритм сам находит группы мнений. Новые участники появляются на карте в реальном времени." },
+    { r: "#/consensus", sel: "#commonCard", t: "Что объединяет всех", x: "Утверждения, которые поддерживают больше 70% в каждой группе, — готовая повестка для городского совета, основанная на согласии, а не на споре." },
+    { r: "#/group/g-transport", sel: "#und", t: "Правило моста", x: "Чтобы возразить в дебатах, нужно сначала пересказать позицию оппонента. Без этого кнопка публикации не активна." },
+    { r: "#/initiatives", sel: ".initiative.reached", t: "«Голосуй за меня»", x: "Жители предлагают инициативы. Набрав порог подписей, инициатива требует публичного ответа всех кандидатов за 14 дней." },
+    { r: "#/cabinet", sel: "#kpis", t: "Вторая сторона: кандидаты", x: "У кандидатов и депутатов — свой кабинет: аудитория, вопросы жителей, темы округа. Это делает платформу нужной обеим сторонам." },
+    { r: "#/cabinet", sel: "#qqueue", t: "Вопросы и ИИ-помощник", x: "Вопросы ранжируются по поддержке жителей. ИИ помогает подготовить черновик ответа — публикует его всегда сам кандидат." },
+    { r: "#/profile", sel: "#privacyCard", t: "Приватность по умолчанию", x: "Политические взгляды — чувствительные данные. По умолчанию они видны только владельцу, данные можно скачать или удалить в один клик." }
+  ];
+  let tourStep = -1;
+  function startTour() {
+    if (!S.profile) finishOnboarding({ name: "Демо Житель", district: D.district, street: "", interests: ["transport", "eco"] });
+    tourStep = 0; showTour();
+  }
+  function endTour() { tourStep = -1; $$(".tour").forEach((e) => e.remove()); }
+  function showTour() {
+    const st = TOUR[tourStep];
+    if (location.hash !== st.r) { location.hash = st.r; } else render();
+    setTimeout(() => {
+      const el = $(st.sel.split(", ").map((s) => "#main " + s).join(", "));
+      $$(".tour").forEach((e) => e.remove());
+      const spot = document.createElement("div"); spot.className = "tour tour-spot";
+      const tip = document.createElement("div"); tip.className = "tour tour-tip card";
+      tip.innerHTML = `<div class="row"><span class="chip primary">${tourStep + 1} / ${TOUR.length}</span><span class="spacer"></span><button class="link-btn" data-tour="end">Завершить ✕</button></div>
+        <h3 style="margin:10px 0 6px">${st.t}</h3><p class="small" style="margin:0 0 14px">${st.x}</p>
+        <div class="row">${tourStep > 0 ? `<button class="btn ghost small" data-tour="prev">← Назад</button>` : ""}<span class="spacer"></span>
+        <button class="btn small" data-tour="next">${tourStep === TOUR.length - 1 ? "Готово 🎉" : "Далее →"}</button></div>`;
+      document.body.append(spot, tip);
+      const place = () => {
+        if (!el) { spot.style.display = "none"; tip.classList.add("center"); return; }
+        const r = el.getBoundingClientRect(), pad = 8;
+        Object.assign(spot.style, { top: r.top - pad + "px", left: r.left - pad + "px", width: r.width + pad * 2 + "px", height: Math.min(r.height, innerHeight * 0.6) + pad * 2 + "px" });
+        if (innerWidth <= 860) return;
+        const tw = 360, below = r.top + Math.min(r.height, innerHeight * 0.6) + 20;
+        tip.style.left = Math.max(16, Math.min(innerWidth - tw - 16, r.left)) + "px";
+        tip.style.top = (below + 190 < innerHeight ? below : Math.max(16, r.top - 210)) + "px";
+      };
+      if (el && innerWidth <= 860) { el.scrollIntoView({ block: "start", behavior: "instant" }); scrollBy(0, -76); }
+      else if (el) el.scrollIntoView({ block: "center", behavior: "instant" });
+      place();
+      $$("[data-tour]", tip).forEach((b) => b.addEventListener("click", () => {
+        const a = b.dataset.tour;
+        if (a === "end") return endTour();
+        if (a === "next" && tourStep === TOUR.length - 1) { endTour(); toast("Спасибо за внимание! 🎉"); return; }
+        tourStep += a === "next" ? 1 : -1; showTour();
+      }));
+    }, 120);
+  }
+  window.addEventListener("resize", () => { if (tourStep >= 0) showTour(); });
+
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-search]")) return openSearch();
+    const bell = e.target.closest("[data-bell]"); if (bell) return openNotifs(bell);
+    if (e.target.closest("[data-qr]")) return openQR();
+    if (e.target.closest("[data-tour-start]")) { $("#sidebar").classList.remove("open"); return startTour(); }
+    if (!e.target.closest(".notif-panel")) $$(".notif-panel").forEach((p) => p.remove());
+  });
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openSearch(); }
+    if (e.key === "Escape") { closeLayers(); if (tourStep >= 0) endTour(); }
+    if (tourStep >= 0 && e.key === "ArrowRight") $("[data-tour='next']")?.click();
+    if (tourStep >= 0 && e.key === "ArrowLeft") $("[data-tour='prev']")?.click();
+  });
 
   /* ---------- Маршрутизация ---------- */
   const binders = {
     feed: bindFeed, compass: bindCompass, consensus: bindConsensus, polls: bindPolls, candidates: bindCandidates, candidate: bindCandidate,
-    calendar: bindCalendar, group: bindGroup, initiatives: bindInitiatives, lesson: bindLesson, profile: bindProfile
+    calendar: bindCalendar, group: bindGroup, cabinet: bindCabinet, initiatives: bindInitiatives, lesson: bindLesson, profile: bindProfile
   };
   const navOf = { candidate: "candidates", group: "groups", lesson: "academy" };
   let lastRoute = "";
   function render() {
     clearTimers();
+    if (!S.profile) return renderOnboarding();
+    $("#onboard").hidden = true; document.body.classList.remove("ob-mode");
+    closeLayers();
     const parts = (location.hash.replace(/^#\/?/, "") || "feed").split("/");
     let [route, arg] = parts;
     if (!views[route]) route = "feed";
@@ -692,11 +1028,14 @@
     const main = $("#main");
     main.innerHTML = views[route](arg);
     if (binders[route]) binders[route](arg);
-    $$("#nav a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#/" + (navOf[route] || route)));
+    $$("#nav a, #tabbar a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#/" + (navOf[route] || route)));
     $$("[data-go]").forEach((b) => b.addEventListener("click", () => (location.hash = b.dataset.go)));
     if (lastRoute !== route + (arg || "")) { window.scrollTo(0, 0); $("#sidebar").classList.remove("open"); }
     lastRoute = route + (arg || "");
   }
   window.addEventListener("hashchange", render);
   render();
+  if (/[?&]tour=1/.test(location.search)) setTimeout(startTour, 400);
+  if (location.search) history.replaceState(null, "", location.pathname + location.hash);
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
