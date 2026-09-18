@@ -4,7 +4,7 @@
 
 VoteConnect помогает жителям разобраться в выборах, найти своих кандидатов и договориться друг с другом. В отличие от обычных соцсетей, лента продвигает не самое громкое и скандальное, а то, что поддерживают люди с **разными** взглядами.
 
-> 🔗 **Демо:** https://timojr3.github.io/voteconnect/ (после включения GitHub Pages)
+> 🔗 **Демо:** https://timojr3.github.io/voteconnect/
 > 📄 **Заявка на грант:** [docs/GRANT_PITCH.md](docs/GRANT_PITCH.md)
 > 💡 **Банк идей:** [docs/IDEAS.md](docs/IDEAS.md)
 
