@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#4338ca">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
   <header class="site-header">
@@ -20,7 +23,7 @@
       <nav>
         <a href="#problem">Проблема</a><a href="#features">Возможности</a><a href="#different">Чем отличаемся</a><a href="#roadmap">План</a>
       </nav>
-      <a class="btn small" href="app.html">Открыть прототип →</a>
+      <a class="btn small" href="app.html">Открыть приложение →</a>
     </div>
   </header>
 
@@ -31,9 +34,10 @@
         <h1>Соцсеть, которая <em>объединяет</em>, а&nbsp;не&nbsp;разделяет</h1>
         <p class="lead">VoteConnect помогает жителям разобраться в выборах, найти своих кандидатов и договориться друг с другом. Алгоритм ленты продвигает не самое громкое, а то, что поддерживают люди с разными взглядами.</p>
         <div class="row">
-          <a class="btn" href="app.html#/compass">🧭 Пройти Компас взглядов</a>
-          <a class="btn ghost" href="app.html#/consensus">🤝 Посмотреть Карту согласия</a>
+          <a class="btn accent" href="app.html?tour=1#/feed">▶ Демо-тур за 2 минуты</a>
+          <a class="btn ghost" href="app.html">Открыть приложение</a>
         </div>
+        <p class="small muted" style="margin-top:14px">Работает в браузере и устанавливается на телефон как приложение · без регистрации в демо-режиме</p>
       </div>
       <div class="card hero-card">
         <div class="row"><div class="avatar">ПР</div><div><b>Павел Р.</b><div class="small muted">5 ч назад · 🚌 Транспорт</div></div><span class="spacer"></span><span class="chip ok">✔ Данные открыты</span></div>
@@ -47,7 +51,7 @@
         <div class="stat"><b>12</b><span>утверждений в Компасе — 3 минуты до осознанного выбора</span></div>
         <div class="stat"><b>0 байт</b><span>политических взглядов уходит на сервер без согласия</span></div>
         <div class="stat"><b>14 дней</b><span>на публичный ответ кандидата на инициативу, набравшую порог</span></div>
-        <div class="stat"><b>9 модулей</b><span>в одном приложении вместо 5 разрозненных сервисов</span></div>
+        <div class="stat"><b>12 модулей</b><span>для жителей и кандидатов в одном приложении</span></div>
       </div>
     </div>
   </section>
@@ -79,6 +83,9 @@
         <a class="card feature" href="app.html#/polls" style="color:inherit"><div class="ico">📊</div><h3>Опросы в реальном времени</h3><p>Один человек — один голос, результаты видны после голосования, защита от бот-ферм.</p></a>
         <a class="card feature" href="app.html#/calendar" style="color:inherit"><div class="ico">📅</div><h3>Календарь и участки</h3><p>Митинги, дебаты, встречи, напоминания, экспорт в календарь и поиск своего избирательного участка.</p></a>
         <a class="card feature" href="app.html#/academy" style="color:inherit"><div class="ico">🎓</div><h3>Академия избирателя</h3><p>Уроки по 3 минуты: как устроены выборы, как проверить новость, как работает бюджет. Квизы, XP и значки.</p></a>
+        <a class="card feature" href="app.html#/cabinet" style="color:inherit"><div class="ico">📈</div><h3>Кабинет кандидата</h3><p>Аудитория, вопросы жителей по поддержке, темы округа и ИИ-помощник для ответов. Платформа нужна обеим сторонам.</p><span class="chip accent tag">Для кандидатов</span></a>
+        <a class="card feature" href="app.html" style="color:inherit"><div class="ico">📱</div><h3>Приложение на телефоне</h3><p>Устанавливается на главный экран, работает без сети, регистрация по номеру: один человек — один голос.</p></a>
+        <a class="card feature" href="app.html#/feed" style="color:inherit"><div class="ico">🤖</div><h3>ИИ-модератор</h3><p>Мягко предлагает переформулировать оскорбление до публикации. Обсуждаем идеи, а не людей.</p></a>
       </div>
     </div>
   </section>
@@ -136,8 +143,8 @@
     <div class="wrap">
       <div class="cta">
         <h2>Попробуйте прототип прямо сейчас</h2>
-        <p style="opacity:.9;max-width:560px;margin:0 auto 24px">Все функции кликабельны. Данные демонстрационные: город, кандидаты и партии вымышлены.</p>
-        <a class="btn" href="app.html">Открыть VoteConnect →</a>
+        <p style="opacity:.9;max-width:560px;margin:0 auto 24px">Все функции работают. Данные демонстрационные: город, кандидаты и партии вымышлены.</p>
+        <div class="row" style="justify-content:center"><a class="btn" href="app.html?tour=1#/feed">▶ Запустить демо-тур</a><a class="btn" href="app.html" style="background:transparent;color:#fff !important;border-color:rgba(255,255,255,.5)">Открыть приложение</a></div>
       </div>
     </div>
   </section>
