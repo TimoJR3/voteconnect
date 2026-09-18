@@ -409,7 +409,7 @@ body.ob-mode .app, body.ob-mode .mobile-bar, body.ob-mode .tabbar { display: non
 @keyframes pop { from { transform: scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* Кабинет кандидата */
-.kpis { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
 .kpi { padding: 16px 18px; }
 .kpi-val { font-size: 30px; font-weight: 800; letter-spacing: -.02em; margin: 2px 0; }
 .kpi .up { color: var(--ok); font-weight: 700; }
