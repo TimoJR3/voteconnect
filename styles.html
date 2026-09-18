@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoteConnect — четыре стиля на нашем продукте</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Nunito:wght@600;700;800;900&family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 "Onest", system-ui, sans-serif; background: #ecebe8; color: #151515; }
+  img { display: block; max-width: 100%; }
+  .head { max-width: 1280px; margin: 0 auto; padding: 28px 20px 0; }
+  .head h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -.02em; }
+  .head p { margin: 0 0 18px; color: #555; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tabs button { font: 600 14px "Onest"; border: 1px solid #cfcdc7; background: #fff; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  .tabs button.on { background: #151515; color: #fff; border-color: #151515; }
+  .panel { display: none; max-width: 1280px; margin: 18px auto 60px; padding: 0 20px; }
+  .panel.on { display: block; }
+  .note { color: #444; margin: 0 0 14px; max-width: 860px; }
+  .board { display: grid; grid-template-columns: minmax(0, 1fr) 330px 330px; gap: 18px; align-items: start; }
+  @media (max-width: 1500px) { .board { display: flex; flex-wrap: wrap; } .board .site { flex: 1 1 100%; } .board .phone { flex: 0 0 330px; } }
+  @media (max-width: 720px) { .board .phone { flex: 1 1 100%; max-width: 330px; } .n .find { width: 88%; } .d .hero { grid-template-columns: 1fr; } .g .grid { grid-template-columns: 1fr; } .v .cols { grid-template-columns: 1fr; } .v .menu, .v .rt { display: none; } }
+  .site { border-radius: 10px; overflow: hidden; box-shadow: 0 20px 50px -20px rgba(0,0,0,.25); background: #fff; }
+  .phone { border-radius: 38px; border: 9px solid #0e0e0e; overflow: hidden; height: 690px; position: relative; box-shadow: 0 20px 50px -20px rgba(0,0,0,.35); }
+  .phone .sb { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 13px -apple-system, "Segoe UI", sans-serif; }
+  .phone .body { height: calc(100% - 30px); overflow: hidden; position: relative; }
+  .ph { width: 100%; object-fit: cover; }
+
+  /* ================= 1. NEXTDOOR — «Соседи» ================= */
+  .n { --g: #1d6b45; --g2: #e3efe6; --ink: #1c2320; --mut: #66706b; --line: #e6e8e4; font-family: "Onest", sans-serif; color: var(--ink); }
+  .n .hero { position: relative; height: 470px; }
+  .n .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .n .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0) 35%, rgba(0,0,0,.05)); }
+  .n .top { position: absolute; z-index: 2; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 18px 26px; color: #fff; font-weight: 600; }
+  .n .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 19px; letter-spacing: -.02em; }
+  .n .logo svg { width: 26px; height: 26px; }
+  .n .top .in { background: #fff; color: var(--ink); padding: 8px 16px; border-radius: 999px; font-size: 14px; }
+  .n .find { position: absolute; z-index: 2; left: 50%; top: 52%; transform: translate(-50%, -50%); width: 420px; background: #fff; border-radius: 18px; padding: 26px 24px 22px; text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,.2); }
+  .n .find h2 { font-size: 26px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -.02em; }
+  .n .find p { color: var(--mut); margin: 0 0 16px; font-size: 14.5px; }
+  .n .field { border: 1.5px solid #d6dad6; border-radius: 12px; padding: 12px 14px; text-align: left; color: #9aa19d; margin-bottom: 10px; }
+  .n .go { background: var(--g); color: #fff; border-radius: 999px; padding: 12px; font-weight: 700; }
+  .n .strip { display: flex; gap: 26px; padding: 16px 26px; font-size: 14px; color: var(--mut); border-top: 1px solid var(--line); }
+  .n .strip b { color: var(--ink); }
+  .n.phone { background: #f4f5f2; }
+  .n .apphead { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 10px; background: #fff; }
+  .n .apphead b { font-size: 20px; letter-spacing: -.02em; }
+  .n .loc { font-size: 12.5px; color: var(--g); font-weight: 600; }
+  .n .chips { display: flex; gap: 6px; padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--line); overflow: hidden; }
+  .n .chips span { white-space: nowrap; padding: 6px 12px; border-radius: 999px; background: #f0f2ef; font-size: 13px; font-weight: 600; }
+  .n .chips .on { background: var(--g); color: #fff; }
+  .n .post { background: #fff; margin: 8px 0; padding: 12px 16px; }
+  .n .who { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .n .who img { width: 38px; height: 38px; border-radius: 50%; background: #e8e2d6; }
+  .n .who small { display: block; color: var(--mut); font-size: 12.5px; }
+  .n .post p { margin: 10px 0; font-size: 15px; line-height: 1.4; }
+  .n .post .ph { height: 150px; border-radius: 12px; }
+  .n .agree { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--mut); }
+  .n .agree i { width: 8px; height: 8px; border-radius: 50%; background: var(--g); }
+  .n .agree b { color: var(--g); }
+  .n .acts { display: flex; gap: 18px; margin-top: 10px; font-size: 13.5px; color: var(--mut); font-weight: 600; }
+  .n .tab { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #fff; border-top: 1px solid var(--line); padding: 8px 0 16px; font-size: 10.5px; color: var(--mut); font-weight: 600; }
+  .n .tab .on { color: var(--g); }
+  .n .qwrap { padding: 16px; }
+  .n .qcard { background: #fff; border-radius: 18px; overflow: hidden; }
+  .n .qcard .ph { height: 170px; }
+  .n .qcard .in2 { padding: 16px; }
+  .n .step { font-size: 12.5px; color: var(--g); font-weight: 700; }
+  .n .qcard h3 { font-size: 20px; line-height: 1.25; margin: 6px 0 16px; letter-spacing: -.01em; }
+  .n .ans { display: block; border: 1.5px solid #d6dad6; border-radius: 12px; padding: 12px 14px; font-weight: 600; margin-bottom: 8px; }
+  .n .ans.on { border-color: var(--g); background: var(--g2); color: var(--g); }
+  .n .prog { height: 4px; background: #e3e6e2; border-radius: 4px; margin: 0 16px 14px; } .n .prog i { display: block; width: 25%; height: 100%; background: var(--g); border-radius: 4px; }
+
+  /* ================= 2. GROUND NEWS — «Все стороны» ================= */
+  .g { --ink: #121212; --mut: #6b6b6b; --line: #e4e4e4; --a: #c07a12; --b: #138a72; --c: #8b4fa8; font-family: "IBM Plex Sans", sans-serif; color: var(--ink); }
+  .g .top { display: flex; align-items: center; gap: 22px; padding: 14px 26px; background: #121212; color: #fff; font-size: 13.5px; }
+  .g .logo { font: 700 20px "Roboto Condensed"; letter-spacing: -.01em; margin-right: auto; }
+  .g .logo span { color: #9aa0a6; font-weight: 500; }
+  .g .grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 22px; padding: 22px 26px 26px; }
+  .g .lead img { height: 250px; width: 100%; object-fit: cover; }
+  .g .kick { font: 600 12px "Roboto Condensed"; text-transform: uppercase; letter-spacing: .06em; color: var(--mut); margin: 12px 0 4px; }
+  .g h2 { font: 700 30px/1.08 "Roboto Condensed"; letter-spacing: -.01em; margin: 0 0 12px; }
+  .spec { display: flex; height: 22px; border-radius: 3px; overflow: hidden; font: 600 11px "Roboto Condensed"; color: #fff; }
+  .spec span { display: flex; align-items: center; padding-left: 7px; }
+  .spec .a { background: #c07a12; } .spec .b { background: #138a72; } .spec .c { background: #8b4fa8; }
+  .g .src { font-size: 12.5px; color: var(--mut); margin-top: 6px; }
+  .g .side h4 { font: 700 13px "Roboto Condensed"; text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin: 0 0 6px; }
+  .g .item { display: grid; grid-template-columns: 1fr 88px; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .g .item b { font: 600 15.5px/1.2 "Roboto Condensed"; }
+  .g .item img { width: 88px; height: 66px; object-fit: cover; }
+  .g .item .spec { height: 6px; margin-top: 8px; }
+  .g .blind { background: #121212; color: #fff; padding: 14px; margin-top: 12px; }
+  .g .blind small { color: #f5b041; font: 700 11px "Roboto Condensed"; text-transform: uppercase; letter-spacing: .08em; }
+  .g .blind b { display: block; font: 600 15px/1.25 "Roboto Condensed"; margin-top: 4px; }
+  .g.phone { background: #fff; }
+  .g .apphead { display: flex; justify-content: space-between; align-items: center; padding: 6px 16px 10px; border-bottom: 1px solid var(--line); }
+  .g .apphead b { font: 700 19px "Roboto Condensed"; }
+  .g .seg { display: flex; gap: 16px; padding: 10px 16px 0; font: 600 13.5px "Roboto Condensed"; color: var(--mut); border-bottom: 1px solid var(--line); }
+  .g .seg span { padding-bottom: 8px; } .g .seg .on { color: var(--ink); border-bottom: 2px solid var(--ink); }
+  .g .card { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .g .card img { height: 150px; width: 100%; object-fit: cover; margin-bottom: 10px; }
+  .g .card b { font: 700 18px/1.15 "Roboto Condensed"; display: block; margin-bottom: 8px; }
+  .g .legend { display: flex; gap: 12px; font-size: 11.5px; color: var(--mut); margin-top: 6px; }
+  .g .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .g .q { padding: 18px 16px; }
+  .g .q .kick { margin-top: 0; }
+  .g .q h3 { font: 700 22px/1.12 "Roboto Condensed"; margin: 4px 0 16px; }
+  .g .scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 8px; }
+  .g .scale span { height: 44px; border: 1.5px solid var(--ink); display: grid; place-items: center; font-weight: 600; }
+  .g .scale .on { background: var(--ink); color: #fff; }
+  .g .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--mut); }
+  .g .how { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 13px; }
+  .g .how .row2 { display: flex; justify-content: space-between; padding: 6px 0; }
+  .g .how .spec { height: 6px; width: 120px; }
+  .g .tab { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #fff; border-top: 1px solid var(--line); padding: 9px 0 16px; font: 600 11px "Roboto Condensed"; color: var(--mut); }
+  .g .tab .on { color: var(--ink); }
+
+  /* ================= 3. DUOLINGO — «Галка» ================= */
+  .d { --y: #ffc933; --ink: #2b2f36; --mut: #7a808a; --line: #e8e8ea; --r: #ff5a3c; --gr: #3fb950; font-family: "Nunito", sans-serif; color: var(--ink); }
+  .d.site { background: #fffdf6; }
+  .d .top { display: flex; justify-content: space-between; align-items: center; padding: 18px 30px; }
+  .d .logo { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 22px; letter-spacing: -.02em; }
+  .d .logo svg { width: 34px; height: 34px; }
+  .d .top .in { border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 14px; padding: 7px 16px; font-weight: 800; font-size: 14px; color: var(--ink); }
+  .d .hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 20px; padding: 20px 50px 44px; }
+  .d .mascot { display: grid; place-items: center; position: relative; }
+  .d .mascot .blob { width: 300px; height: 300px; border-radius: 50%; background: var(--y); position: absolute; }
+  .d .mascot svg { position: relative; width: 260px; }
+  .d .bubble { position: absolute; top: 10px; right: 10px; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 8px 12px; font-weight: 800; font-size: 14px; }
+  .d h2 { font-size: 40px; line-height: 1.08; font-weight: 900; margin: 0 0 14px; letter-spacing: -.02em; }
+  .d .lead { font-size: 17px; color: var(--mut); font-weight: 700; margin: 0 0 22px; }
+  .d .btn { display: block; text-align: center; background: var(--r); color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; padding: 14px; border-radius: 16px; box-shadow: 0 5px 0 #d8401f; margin-bottom: 12px; max-width: 360px; }
+  .d .btn.w { background: #fff; color: #1c8ad6; border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); }
+  .d.phone { background: #fff; }
+  .d .apphead { display: flex; justify-content: space-between; align-items: center; padding: 6px 16px 10px; font-weight: 900; }
+  .d .stat { display: flex; gap: 12px; font-size: 14px; }
+  .d .stat span:nth-child(1) { color: #ff9600; } .d .stat span:nth-child(2) { color: var(--r); }
+  .d .path { padding: 10px 16px; }
+  .d .unit { background: var(--r); color: #fff; border-radius: 16px; padding: 14px 16px; box-shadow: 0 4px 0 #d8401f; }
+  .d .unit small { font-weight: 800; opacity: .85; text-transform: uppercase; font-size: 12px; }
+  .d .unit b { display: block; font-size: 19px; }
+  .d .nodes { position: relative; height: 330px; }
+  .d .node { position: absolute; width: 70px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 900; color: #fff; }
+  .d .node.done { background: var(--y); box-shadow: 0 6px 0 #e0a800; color: #6b4b00; }
+  .d .node.cur { background: var(--r); box-shadow: 0 6px 0 #d8401f; }
+  .d .node.lock { background: #e5e5e5; box-shadow: 0 6px 0 #cfcfcf; color: #aaa; }
+  .d .start { position: absolute; background: #fff; border: 2px solid var(--line); color: var(--r); font-weight: 900; padding: 6px 12px; border-radius: 12px; font-size: 13px; }
+  .d .galka-mini { position: absolute; right: 10px; top: 140px; width: 110px; }
+  .d .tab { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; border-top: 2px solid var(--line); padding: 10px 0 18px; font-weight: 900; font-size: 11px; color: var(--mut); }
+  .d .tab .on { color: var(--r); }
+  .d .qhead { display: flex; align-items: center; gap: 12px; padding: 8px 16px; }
+  .d .bar { flex: 1; height: 16px; border-radius: 10px; background: #e5e5e5; } .d .bar i { display: block; width: 30%; height: 100%; border-radius: 10px; background: var(--gr); }
+  .d .qbody { padding: 12px 18px; }
+  .d .qbody small { font-weight: 800; color: #9b59b6; text-transform: uppercase; font-size: 12px; }
+  .d .say { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0 18px; }
+  .d .say svg { width: 74px; flex: none; }
+  .d .say div { border: 2px solid var(--line); border-radius: 16px; padding: 12px; font-weight: 800; font-size: 16.5px; line-height: 1.3; }
+  .d .opt { border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 14px; padding: 12px 14px; font-weight: 800; margin-bottom: 8px; }
+  .d .opt.on { border-color: #84d8ff; background: #ddf4ff; color: #1899d6; }
+  .d .check { position: absolute; left: 16px; right: 16px; bottom: 22px; background: var(--gr); color: #fff; text-align: center; font-weight: 900; text-transform: uppercase; padding: 14px; border-radius: 16px; box-shadow: 0 5px 0 #2a9a3c; }
+
+  /* ================= 4. VK / TELEGRAM — «Привычная соцсеть» ================= */
+  .v { --blue: #2b6fe8; --bg: #edeef0; --ink: #000; --mut: #818c99; --line: #e7e8ec; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); }
+  .v.site { background: var(--bg); }
+  .v .top { display: flex; align-items: center; gap: 16px; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 24px; }
+  .v .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 17px; }
+  .v .logo i { width: 28px; height: 28px; border-radius: 8px; background: var(--blue); display: grid; place-items: center; color: #fff; font-style: normal; font-size: 15px; }
+  .v .search { flex: 0 0 240px; background: #edeef0; border-radius: 8px; padding: 7px 12px; color: var(--mut); font-size: 13.5px; }
+  .v .me { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .v .me img { width: 30px; height: 30px; border-radius: 50%; }
+  .v .cols { display: grid; grid-template-columns: 170px 1fr 250px; gap: 16px; padding: 16px 24px 24px; }
+  .v .menu { font-size: 14px; } .v .menu div { padding: 7px 10px; border-radius: 8px; } .v .menu .on { background: #e1e3e6; font-weight: 600; }
+  .v .box { background: #fff; border-radius: 12px; border: 1px solid var(--line); }
+  .v .stories { display: flex; gap: 12px; padding: 12px; margin-bottom: 12px; }
+  .v .story { text-align: center; font-size: 11.5px; width: 62px; }
+  .v .story img { width: 56px; height: 56px; border-radius: 50%; border: 2.5px solid var(--blue); padding: 2px; margin: 0 auto 4px; background: #fff; }
+  .v .post { padding: 14px 16px; }
+  .v .who { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+  .v .who img { width: 40px; height: 40px; border-radius: 50%; }
+  .v .who small { display: block; color: var(--mut); font-weight: 400; font-size: 13px; }
+  .v .post p { margin: 10px 0; font-size: 14.5px; }
+  .v .post .ph { height: 210px; border-radius: 8px; }
+  .v .meter { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mut); margin-top: 10px; }
+  .v .meter .spec { flex: 1; height: 6px; }
+  .v .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .v .acts span { background: #f2f3f5; border-radius: 999px; padding: 6px 12px; font-size: 13px; color: #626d7a; font-weight: 500; }
+  .v .acts .views { margin-left: auto; background: none; }
+  .v .rt h4 { margin: 0; padding: 12px 14px 6px; font-size: 14.5px; }
+  .v .rt .c { display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 13.5px; }
+  .v .rt .c img { width: 36px; height: 36px; border-radius: 50%; }
+  .v .rt .c b { margin-left: auto; color: var(--blue); }
+  .v.phone { background: var(--bg); }
+  .v .apphead { background: #fff; padding: 6px 14px 10px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 20px; }
+  .v .apphead span { font-size: 14px; color: var(--blue); font-weight: 600; }
+  .v.phone .stories { background: #fff; margin: 0 0 8px; overflow: hidden; }
+  .v.phone .post { background: #fff; margin-bottom: 8px; }
+  .v.phone .post .ph { height: 170px; }
+  .v .chat { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .v .msg { max-width: 82%; padding: 9px 12px; border-radius: 16px; font-size: 14.5px; line-height: 1.35; background: #fff; }
+  .v .msg.me { align-self: flex-end; background: #cce4ff; }
+  .v .poll { background: #fff; border-radius: 16px; padding: 12px; max-width: 88%; }
+  .v .poll b { display: block; font-size: 15px; margin-bottom: 8px; }
+  .v .opt { position: relative; padding: 8px 10px; border-radius: 10px; background: #f2f3f5; margin-bottom: 6px; font-size: 14px; overflow: hidden; display: flex; justify-content: space-between; }
+  .v .opt i { position: absolute; inset: 0 auto 0 0; background: #d7e6ff; }
+  .v .opt span { position: relative; }
+  .v .tab { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #fff; border-top: 1px solid var(--line); padding: 8px 0 16px; font-size: 10.5px; color: var(--mut); }
+  .v .tab .on { color: var(--blue); font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="head">
+  <h1>Четыре стиля на нашем продукте</h1>
+  <p>Одни и те же экраны VoteConnect: главная сайта, лента и Компас. Переключайте вкладки.</p>
+  <nav class="tabs">
+    <button class="on" data-p="n">1. Как Nextdoor — «Соседи»</button>
+    <button data-p="g">2. Как Ground News — «Все стороны»</button>
+    <button data-p="d">3. Как Duolingo — талисман Галка</button>
+    <button data-p="v">4. Как VK / Telegram</button>
+  </nav>
+</header>
+
+<!-- ================= 1. NEXTDOOR ================= -->
+<section class="panel on" id="n">
+  <p class="note">Живые фотографии города, спокойный зелёный, всё крутится вокруг «моего района». Первое действие — ввести адрес и увидеть своих кандидатов и соседей.</p>
+  <div class="board">
+    <div class="site n">
+      <div class="hero">
+        <img src="https://images.unsplash.com/photo-1706217968045-2210de668c03?w=1400&q=70" alt="Набережная осенью">
+        <div class="top"><span class="logo"><svg viewBox="0 0 32 32"><path d="M16 3 3 13v16h26V13z" fill="#fff"/><path d="M10 19l4.5 4.5L23 14" stroke="#1d6b45" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>VoteConnect</span><span class="in">Войти</span></div>
+        <div class="find">
+          <h2>Что решают в вашем районе</h2>
+          <p>Кандидаты, их обещания и то, о чём договорились соседи.</p>
+          <div class="field">Ваш адрес, например ул. Садовая, 14</div>
+          <div class="go">Показать мой район</div>
+        </div>
+      </div>
+      <div class="strip"><span><b>5</b> кандидатов в округе № 7</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b>8 ноября</b></span></div>
+    </div>
+
+    <div class="phone n"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead"><div><b>Северный</b><div class="loc">ул. Садовая · 1 847 соседей</div></div><span class="logo"><svg viewBox="0 0 32 32" width="26"><path d="M16 3 3 13v16h26V13z" fill="#1d6b45"/><path d="M10 19l4.5 4.5L23 14" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="chips"><span class="on">Рядом</span><span>Выборы</span><span>Инициативы</span><span>События</span></div>
+      <div class="post">
+        <div class="who"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Pavel&backgroundColor=e8e2d6" alt=""><div><b>Павел Р.</b><small>Садовая · 300 м от вас</small></div></div>
+        <p>Автобус 14 опаздывает на 15–20 минут каждое утро. Собрал данные GPS за месяц — таблица в комментариях.</p>
+        <img class="ph" src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=700&q=70" alt="Автобус">
+        <div class="agree"><i></i>Поддерживают <b>92%</b> соседей с разными взглядами</div>
+        <div class="acts"><span>Спасибо · 2 105</span><span>Ответить · 341</span></div>
+      </div>
+      <div class="post">
+        <div class="who"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Marina&backgroundColor=dfe8df" alt=""><div><b>Марина Соколова</b><small>Кандидат · Зелёная инициатива</small></div></div>
+        <p>Парк вместо промзоны у реки Светлой. Смета — 48 млн ₽.</p>
+      </div>
+      <div class="tab"><span class="on">Лента</span><span>Компас</span><span>Карта</span><span>Инициативы</span><span>Профиль</span></div>
+    </div></div>
+
+    <div class="phone n"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead"><b>Компас</b><span class="loc">3 из 12</span></div>
+      <div class="prog"><i></i></div>
+      <div class="qwrap"><div class="qcard">
+        <img class="ph" src="https://images.unsplash.com/photo-1780866701554-254dcf3fac8e?w=700&q=70" alt="Улица">
+        <div class="in2"><div class="step">Транспорт</div>
+          <h3>Выделенные полосы для автобусов — даже за счёт полос для машин?</h3>
+          <span class="ans on">Скорее да</span><span class="ans">Не знаю</span><span class="ans">Скорее нет</span></div>
+      </div></div>
+      <div class="tab"><span>Лента</span><span class="on">Компас</span><span>Карта</span><span>Инициативы</span><span>Профиль</span></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 2. GROUND NEWS ================= -->
+<section class="panel" id="g">
+  <p class="note">Серьёзное медиа: у каждой новости полоска — какие группы жителей её поддерживают. Уникальная функция «Слепое пятно»: что обсуждают другие группы, но не видит ваша.</p>
+  <div class="board">
+    <div class="site g">
+      <div class="top"><span class="logo">VoteConnect <span>/ Новоград</span></span><span>Лента</span><span>Кандидаты</span><span>Карта согласия</span><span>Компас</span></div>
+      <div class="grid">
+        <div class="lead">
+          <img src="https://images.unsplash.com/photo-1789062665477-b58eb89a22b6?w=1000&q=70" alt="Набережная">
+          <div class="kick">Экология · 214 обсуждений</div>
+          <h2>Парк вместо промзоны у реки Светлой: смета 48 млн ₽</h2>
+          <div class="spec"><span class="a" style="width:24%">А 24%</span><span class="b" style="width:46%">Б 46%</span><span class="c" style="width:30%">В 30%</span></div>
+          <div class="src">Поддержка по группам мнений · 1 212 голосов</div>
+        </div>
+        <div class="side">
+          <h4>Главное в округе</h4>
+          <div class="item"><div><b>Автобус 14 опаздывает на 15–20 минут: данные GPS за месяц</b><div class="spec"><span class="a" style="width:33%"></span><span class="b" style="width:34%"></span><span class="c" style="width:33%"></span></div></div><img src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=200&q=60" alt=""></div>
+          <div class="item"><div><b>Светофор у школы № 12: 1 840 подписей из 2 000</b><div class="spec"><span class="a" style="width:30%"></span><span class="b" style="width:30%"></span><span class="c" style="width:40%"></span></div></div><img src="https://images.unsplash.com/photo-1608487583634-0f31766e4cb1?w=200&q=60" alt=""></div>
+          <div class="blind"><small>Слепое пятно группы А</small><b>Жители дворов на Мира просят пропуска на пешеходной улице</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone g"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead"><b>VoteConnect</b><span>Новоград</span></div>
+      <div class="seg"><span class="on">Для всех</span><span>Моя группа</span><span>Слепое пятно</span></div>
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=700&q=70" alt="Автобус">
+        <b>Автобус 14 опаздывает на 15–20 минут каждое утро</b>
+        <div class="spec"><span class="a" style="width:33%">А</span><span class="b" style="width:34%">Б</span><span class="c" style="width:33%">В</span></div>
+        <div class="legend"><span><i style="background:#c07a12"></i>автомобилисты</span><span><i style="background:#138a72"></i>пешеходы</span><span><i style="background:#8b4fa8"></i>семьи</span></div>
+      </div>
+      <div class="card"><b>Капремонт: 38 домов за 2025 год — рекорд десятилетия?</b>
+        <div class="spec"><span class="a" style="width:62%">А 62%</span><span class="b" style="width:12%"></span><span class="c" style="width:26%"></span></div></div>
+      <div class="tab"><span class="on">Лента</span><span>Компас</span><span>Согласие</span><span>Кандидаты</span><span>Я</span></div>
+    </div></div>
+
+    <div class="phone g"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead"><b>Компас</b><span>3 / 12</span></div>
+      <div class="q"><div class="kick">Транспорт</div>
+        <h3>Выделенные полосы для автобусов — даже за счёт полос для машин</h3>
+        <div class="scale"><span>−2</span><span>−1</span><span>0</span><span class="on">+1</span><span>+2</span></div>
+        <div class="ends"><span>Против</span><span>За</span></div>
+        <div class="how"><b>Как ответили кандидаты</b>
+          <div class="row2"><span>Лебедева</span><span>За</span></div>
+          <div class="row2"><span>Соколова</span><span>За</span></div>
+          <div class="row2"><span>Воронцов</span><span>Скорее против</span></div>
+          <div class="row2"><span>Орлов</span><span>Скорее против</span></div>
+          <div class="row2"><span>Кузнецов</span><span>Скорее за</span></div></div></div>
+      <div class="tab"><span>Лента</span><span class="on">Компас</span><span>Согласие</span><span>Кандидаты</span><span>Я</span></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 3. DUOLINGO ================= -->
+<section class="panel" id="d">
+  <p class="note">Яркий и дружелюбный. Талисман — галка: «поставить галочку» и городская птица с серебряным глазом. Академия превращается в путь из уроков, Компас — в диалог с Галкой. Сильнее всего цепляет молодёжь 18–25.</p>
+  <div class="board">
+    <div class="site d">
+      <div class="top"><span class="logo"><svg viewBox="0 0 120 120"><use href="#galka"/></svg>VoteConnect</span><span class="in">Уже есть аккаунт</span></div>
+      <div class="hero">
+        <div class="mascot"><div class="blob"></div><svg viewBox="0 0 120 120"><use href="#galka"/></svg><div class="bubble">Кар! За кого голосуем?</div></div>
+        <div>
+          <h2>Разберись в выборах за 3 минуты в день</h2>
+          <p class="lead">Уроки, Компас взглядов и споры без токсичности. Галка напомнит, когда дебаты.</p>
+          <span class="btn">Начать</span>
+          <span class="btn w">У меня уже есть аккаунт</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone d"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead"><span>Академия</span><span class="stat"><span>▲ 7 дней</span><span>● 240</span></span></div>
+      <div class="path">
+        <div class="unit"><small>Раздел 1 · Выборы</small><b>Как устроено голосование</b></div>
+        <div class="nodes">
+          <div class="node done" style="left:130px;top:20px">✓</div>
+          <div class="node done" style="left:70px;top:100px">✓</div>
+          <div class="start" style="left:98px;top:168px">Начать</div>
+          <div class="node cur" style="left:110px;top:200px">★</div>
+          <div class="node lock" style="left:170px;top:280px">4</div>
+          <svg class="galka-mini" viewBox="0 0 120 120"><use href="#galka"/></svg>
+        </div>
+      </div>
+      <div class="tab"><span class="on">Учиться</span><span>Компас</span><span>Лента</span><span>Лига</span><span>Профиль</span></div>
+    </div></div>
+
+    <div class="phone d"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="qhead"><span style="font-weight:900;color:#aaa">✕</span><div class="bar"><i></i></div></div>
+      <div class="qbody"><small>Компас · Транспорт</small>
+        <div class="say"><svg viewBox="0 0 120 120"><use href="#galka"/></svg><div>Выделенные полосы для автобусов — даже за счёт машин. Ты за?</div></div>
+        <div class="opt">Против</div><div class="opt on">Скорее за</div><div class="opt">Совсем за</div><div class="opt">Не знаю</div>
+      </div>
+      <div class="check">Проверить</div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ================= 4. VK / TELEGRAM ================= -->
+<section class="panel" id="v">
+  <p class="note">Знакомый всем интерфейс соцсети: истории кандидатов наверху, лента с фото, голосования прямо в чате района. Жюри сразу видит «работающий продукт».</p>
+  <div class="board">
+    <div class="site v">
+      <div class="top"><span class="logo"><i>✓</i>VoteConnect</span><span class="search">Поиск</span><span class="me"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Me&backgroundColor=d7e6ff" alt="">Алексей</span></div>
+      <div class="cols">
+        <div class="menu"><div class="on">Лента</div><div>Мой район</div><div>Кандидаты</div><div>Компас</div><div>Карта согласия</div><div>Инициативы</div><div>События</div></div>
+        <div>
+          <div class="box stories">
+            <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Anna&backgroundColor=fde2c9" alt="">Лебедева</div>
+            <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Igor&backgroundColor=dbe4f3" alt="">Воронцов</div>
+            <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Marina&backgroundColor=dfe8df" alt="">Соколова</div>
+            <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Dmitry&backgroundColor=f3e3c7" alt="">Орлов</div>
+            <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Sergey&backgroundColor=f1d6d3" alt="">Кузнецов</div>
+          </div>
+          <div class="box post">
+            <div class="who"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Pavel&backgroundColor=e8e2d6" alt=""><div>Павел Р.<small>сегодня в 7:42 · Транспорт</small></div></div>
+            <p>Автобус 14 опаздывает на 15–20 минут каждое утро. Собрал данные GPS за месяц — кто из кандидатов готов заняться маршрутом?</p>
+            <img class="ph" src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=900&q=70" alt="Автобус">
+            <div class="meter">Согласны все группы <div class="spec"><span class="a" style="width:33%"></span><span class="b" style="width:34%"></span><span class="c" style="width:33%"></span></div> 92%</div>
+            <div class="acts"><span>♥ 2 105</span><span>Комментарии 341</span><span>Поделиться</span><span class="views">18 тыс.</span></div>
+          </div>
+        </div>
+        <div class="box rt"><h4>Совпадение по Компасу</h4>
+          <div class="c"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Anna&backgroundColor=fde2c9" alt="">Лебедева<b>86%</b></div>
+          <div class="c"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Marina&backgroundColor=dfe8df" alt="">Соколова<b>77%</b></div>
+          <div class="c"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Sergey&backgroundColor=f1d6d3" alt="">Кузнецов<b>71%</b></div></div>
+      </div>
+    </div>
+
+    <div class="phone v"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead">Лента<span>Северный</span></div>
+      <div class="stories">
+        <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Anna&backgroundColor=fde2c9" alt="">Лебедева</div>
+        <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Igor&backgroundColor=dbe4f3" alt="">Воронцов</div>
+        <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Marina&backgroundColor=dfe8df" alt="">Соколова</div>
+        <div class="story"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Dmitry&backgroundColor=f3e3c7" alt="">Орлов</div>
+      </div>
+      <div class="post">
+        <div class="who"><img src="https://api.dicebear.com/9.x/notionists/svg?seed=Pavel&backgroundColor=e8e2d6" alt=""><div>Павел Р.<small>сегодня в 7:42</small></div></div>
+        <p>Автобус 14 опаздывает на 15–20 минут каждое утро. Данные GPS — в комментариях.</p>
+        <img class="ph" src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=700&q=70" alt="Автобус">
+        <div class="acts"><span>♥ 2 105</span><span>341</span><span class="views">18 тыс.</span></div>
+      </div>
+      <div class="tab"><span class="on">Лента</span><span>Компас</span><span>Чаты</span><span>Инициативы</span><span>Профиль</span></div>
+    </div></div>
+
+    <div class="phone v"><div class="sb"><span>9:41</span><span>● ● ▮</span></div><div class="body">
+      <div class="apphead">Двор на Садовой<span>312 участников</span></div>
+      <div class="chat">
+        <div class="msg">Кто-нибудь знает, когда встреча с кандидатами по транспорту?</div>
+        <div class="msg me">22 сентября в 19:00, библиотека Горького. Я иду</div>
+        <div class="poll"><b>Нужна ли пешеходная улица Мира по выходным?</b>
+          <div class="opt"><i style="width:58%"></i><span>Да, с пропусками для жителей</span><span>58%</span></div>
+          <div class="opt"><i style="width:27%"></i><span>Нет</span><span>27%</span></div>
+          <div class="opt"><i style="width:15%"></i><span>Не знаю</span><span>15%</span></div></div>
+        <div class="msg">Проголосовала. Хорошо, что видно, что думают соседи</div>
+      </div>
+      <div class="tab"><span>Лента</span><span>Компас</span><span class="on">Чаты</span><span>Инициативы</span><span>Профиль</span></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- Талисман Галка -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="galka" viewBox="0 0 120 120">
+    <ellipse cx="60" cy="112" rx="26" ry="4" fill="#000" opacity=".08"/>
+    <path d="M52 104l-4 8M68 104l4 8" stroke="#2b2f36" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="60" cy="76" rx="33" ry="30" fill="#2f343c"/>
+    <path d="M30 70c8-6 18-6 24 4-10 8-20 8-24-4z" fill="#262a31"/>
+    <path d="M90 70c-8-6-18-6-24 4 10 8 20 8 24-4z" fill="#262a31"/>
+    <circle cx="60" cy="42" r="27" fill="#2f343c"/>
+    <path d="M38 52c-6-16 4-32 22-34-10 8-12 22-6 34z" fill="#8f98a3"/>
+    <path d="M82 52c6-16-4-32-22-34 10 8 12 22 6 34z" fill="#8f98a3"/>
+    <circle cx="49" cy="42" r="9" fill="#e9eef3"/><circle cx="71" cy="42" r="9" fill="#e9eef3"/>
+    <circle cx="50" cy="43" r="4" fill="#111"/><circle cx="70" cy="43" r="4" fill="#111"/>
+    <circle cx="51.5" cy="41.5" r="1.3" fill="#fff"/><circle cx="71.5" cy="41.5" r="1.3" fill="#fff"/>
+    <path d="M54 52h12l-6 10z" fill="#111"/>
+    <path d="M46 80l10 10 20-22" stroke="#ffc933" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<script>
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".tabs button").forEach((x) => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.id === b.dataset.p));
+  }));
+</script>
+</body>
+</html>
