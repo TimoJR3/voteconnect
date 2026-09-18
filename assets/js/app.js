@@ -10,7 +10,8 @@
   const topic = (id) => D.topics.find((t) => t.id === id);
   const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   const MONTHS_NOM = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-  const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--primary)"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Vote<b>Connect</b></span>`;
+  const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3.5" y="3.5" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M9 16.5l5 5L25 8" fill="none" stroke="var(--accent)" stroke-width="3.4" stroke-linecap="square"/></svg><span>Vote<i>Connect</i></span>`;
+  const { ic } = window.VCIcons;
 
   /* ---------- Состояние (хранится только в браузере пользователя) ---------- */
   const KEY = "voteconnect-demo-v1";
@@ -54,17 +55,19 @@
   $$("[data-logo]").forEach((el) => (el.innerHTML = LOGO));
   const daysLeft = Math.max(0, Math.ceil((new Date(D.election.date + "T08:00:00") - new Date()) / 864e5));
   $("#countdown").innerHTML = `
-    <div class="small" style="opacity:.85">До выборов в городской совет</div>
-    <div class="num">${daysLeft} дн.</div>
-    <div class="small" style="opacity:.85;margin-top:6px">8 ноября 2026 · ${esc(D.district)}</div>`;
+    <div class="kicker">До выборов в горсовет</div>
+    <div class="num">${daysLeft} ${daysLeft % 10 === 1 && daysLeft % 100 !== 11 ? "день" : [2, 3, 4].includes(daysLeft % 10) && ![12, 13, 14].includes(daysLeft % 100) ? "дня" : "дней"}</div>
+    <div class="small muted">8 ноября 2026 · округ № 7</div>`;
+  const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"], now = new Date();
+  $("#edition").textContent = `${WD[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
   $("#menuBtn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
 
   function topbar(title, sub, extra = "") {
     const unread = D.notifications.filter((n) => !S.readNotifs[n.id]).length;
     return `<div class="topbar"><div><h1>${title}</h1>${sub ? `<div class="sub">${sub}</div>` : ""}</div><div class="spacer"></div>${extra}
-      <button class="icon-btn" data-search aria-label="Поиск" title="Поиск (Ctrl+K)">🔍</button>
-      <button class="icon-btn bell" data-bell aria-label="Уведомления">🔔${unread ? `<span class="dot">${unread}</span>` : ""}</button>
-      <button class="icon-btn" data-theme-toggle aria-label="Сменить тему">◐</button></div>`;
+      <button class="icon-btn" data-search aria-label="Поиск" title="Поиск (Ctrl+K)">${ic("search")}</button>
+      <button class="icon-btn bell" data-bell aria-label="Уведомления">${ic("bell")}${unread ? `<span class="dot">${unread}</span>` : ""}</button>
+      <button class="icon-btn" data-theme-toggle aria-label="Сменить тему">${ic("theme")}</button></div>`;
   }
   function applyTheme(t) { if (t) document.documentElement.dataset.theme = t; }
   try { applyTheme(localStorage.getItem("vc-theme")); } catch (e) { /* ignore */ }
@@ -126,23 +129,23 @@
         </div>
         <div class="row">
           <div class="tabs" role="tablist">
-            <button data-sort="bridge" class="${feedSort === "bridge" ? "active" : ""}">🌉 Объединяющее</button>
-            <button data-sort="new" class="${feedSort === "new" ? "active" : ""}">🕒 Новое</button>
-            <button data-sort="verified" class="${feedSort === "verified" ? "active" : ""}">✔ С источниками</button>
+            <button data-sort="bridge" class="${feedSort === "bridge" ? "active" : ""}">Объединяющее</button>
+            <button data-sort="new" class="${feedSort === "new" ? "active" : ""}">Новое</button>
+            <button data-sort="verified" class="${feedSort === "verified" ? "active" : ""}">С источниками</button>
           </div>
         </div>
         ${feedSort === "bridge" ? `<div class="explain small"><b>Как работает «Объединяющее»:</b> выше поднимаются посты, которые одобряют люди с <i>разными</i> взглядами, а не просто самые залайканные. Так вместо «эхо-камер» лента показывает то, что объединяет округ.</div>` : ""}
         ${sorted.map(postCard).join("")}
       </div>
       <div class="stack">
-        ${top ? `<div class="card"><div class="small muted" style="font-weight:700">ВАШЕ СОВПАДЕНИЕ ПО КОМПАСУ</div>
+        ${top ? `<div class="card"><div class="kicker">Ваше совпадение по Компасу</div>
           <div class="row" style="margin-top:10px"><div class="avatar">${top.c.avatar}</div><div><b>${esc(top.c.name)}</b><div class="small muted">${esc(D.parties[top.c.party].name)}</div></div><span class="spacer"></span><b style="font-size:22px;color:var(--primary)">${top.pct}%</b></div>
           <a class="btn soft small" style="margin-top:12px" href="#/compass">Смотреть всех</a></div>`
-        : `<div class="card"><h3>🧭 За кого голосовать?</h3><p class="muted small">Ответьте на 12 утверждений о жизни города — и узнайте, чьи позиции ближе к вашим. Ответы не покидают ваше устройство.</p><a class="btn" href="#/compass">Пройти Компас · 3 мин</a></div>`}
-        <div class="card"><h3>📣 Набирают поддержку</h3>
+        : `<div class="card"><h3>За кого голосовать?</h3><p class="muted small">Ответьте на 12 утверждений о жизни города — и узнайте, чьи позиции ближе к вашим. Ответы не покидают ваше устройство.</p><a class="btn" href="#/compass">Пройти Компас · 3 мин</a></div>`}
+        <div class="card"><h3>Набирают поддержку</h3>
           ${D.initiatives.slice(0, 3).map((i) => `<div style="margin:10px 0"><a href="#/initiatives"><b>${esc(i.title)}</b></a><div class="bar" style="margin:6px 0"><span style="width:${Math.min(100, i.support / i.goal * 100)}%"></span></div><div class="small muted">${fmt(i.support)} из ${fmt(i.goal)}</div></div>`).join("")}
         </div>
-        <div class="card"><h3>📅 Скоро</h3>${upcoming(3)}</div>
+        <div class="card"><h3>Скоро</h3>${upcoming(3)}</div>
       </div>
     </div>`;
   };
@@ -150,28 +153,28 @@
     const c = p.candidate ? cand(p.candidate) : null;
     const t = p.topic ? topic(p.topic) : null;
     const liked = S.likes[p.id];
-    const typeChip = p.type === "official" ? `<span class="chip primary">🏛 Официально</span>` : c ? `<span class="chip"><i class="party-dot" style="background:${D.parties[c.party].color}"></i>Кандидат</span>` : "";
+    const typeChip = p.type === "official" ? `<span class="chip primary">Официально</span>` : c ? `<span class="chip"><i class="party-dot" style="background:${D.parties[c.party].color}"></i>Кандидат</span>` : "";
     return `<article class="card post fade-in ${p.flagged ? "flagged" : ""}">
       <div class="post-head">
         <div class="avatar" style="${p.flagged ? "background:var(--muted)" : ""}">${esc(p.avatar)}</div>
-        <div><div class="name">${c ? `<a href="#/candidate/${c.id}" style="color:inherit">${esc(p.author)}</a>` : esc(p.author)} ${c && c.verified ? "<span title='Личность подтверждена'>☑️</span>" : ""}</div>
-        <div class="small muted">${esc(p.time)}${t ? ` · ${t.icon} ${t.name}` : ""}</div></div>
+        <div><div class="name">${c ? `<a href="#/candidate/${c.id}" style="color:inherit">${esc(p.author)}</a>` : esc(p.author)} ${c && c.verified ? `<span class="vmark" title="Личность подтверждена">${ic("check")}</span>` : ""}</div>
+        <div class="small muted">${esc(p.time)}${t ? ` · ${t.name}` : ""}</div></div>
         <span class="spacer"></span>${typeChip}
       </div>
       <div class="post-text">${esc(p.text)}</div>
-      ${p.note ? `<div class="note ${p.flagged ? "bad" : ""}">${p.flagged ? "⛔" : "ℹ️"} ${esc(p.note)}</div>` : ""}
+      ${p.note ? `<div class="note ${p.flagged ? "bad" : ""}"><span class="note-k">${p.flagged ? "Ложная информация" : "Контекст"}</span>${esc(p.note.replace(/^(Контекст от сообщества|Ложная информация)\.?:?\s*/, ""))}</div>` : ""}
       <div class="row">
-        ${p.verified ? `<span class="chip ok">✔ ${esc(p.verified)}</span>` : ""}
-        <div class="bridge-meter" title="Доля одобрения среди людей с разными взглядами">🌉 Мост
+        ${p.verified ? `<span class="stamp">${esc(p.verified)}</span>` : ""}
+        <div class="bridge-meter" title="Доля одобрения среди людей с разными взглядами">${ic("bridge")} Мост
           ${p.bridge == null ? `<span>считаем…</span>` : `<div class="bar"><span style="width:${p.bridge * 100}%"></span></div><span>${Math.round(p.bridge * 100)}%</span>`}
         </div>
       </div>
       <div class="post-actions">
-        <button data-like="${p.id}" class="${liked ? "on" : ""}">${liked ? "❤️" : "🤍"} ${fmt(p.likes + (liked ? 1 : 0))}</button>
-        <button data-cm="${p.id}" class="${openThreads[p.id] ? "on-soft" : ""}">💬 ${fmt(p.comments + (S.comments[p.id] || []).length)}</button>
-        <button data-share="${p.id}">↗ Поделиться</button>
+        <button data-like="${p.id}" class="${liked ? "on" : ""}">${ic(liked ? "heartOn" : "heart")} ${fmt(p.likes + (liked ? 1 : 0))}</button>
+        <button data-cm="${p.id}" class="${openThreads[p.id] ? "on-soft" : ""}">${ic("comment")} ${fmt(p.comments + (S.comments[p.id] || []).length)}</button>
+        <button data-share="${p.id}">${ic("share")} Поделиться</button>
         <span class="spacer"></span>
-        ${!p.flagged ? `<button data-note="${p.id}" title="Добавить контекст с источником">📝 Добавить контекст</button>` : ""}
+        ${!p.flagged ? `<button data-note="${p.id}" title="Добавить контекст с источником">${ic("pen")} Добавить контекст</button>` : ""}
       </div>
       ${openThreads[p.id] ? threadHTML(p) : ""}
     </article>`;
@@ -183,8 +186,8 @@
       ${list.map((c, i) => { const k = p.id + ":" + i, liked = S.commentLikes[k]; const cc = c.candidate ? cand(c.candidate) : null;
         return `<div class="comment"><div class="avatar sm" style="${cc ? `background:${D.parties[cc.party].color}` : ""}">${esc(c.avatar)}</div>
         <div class="bubble"><div class="row" style="gap:6px"><b>${esc(c.author)}</b>${cc ? `<span class="chip">Кандидат</span>` : ""}<span class="small muted">${esc(c.time)}</span></div>
-        <div>${esc(c.text)}</div><button class="link-btn ${liked ? "on" : ""}" data-cl="${k}">${liked ? "❤️" : "🤍"} ${c.likes + (liked ? 1 : 0)}</button></div></div>`; }).join("") || `<p class="small muted">Комментариев пока нет — будьте первым.</p>`}
-      <div class="comment"><div class="avatar sm">${esc(myAva())}</div><div style="flex:1;display:flex;gap:8px"><input class="cm-input" data-ci="${p.id}" placeholder="Написать комментарий…" maxlength="300"><button class="btn small" data-cs="${p.id}">➤</button></div></div>
+        <div>${esc(c.text)}</div><button class="link-btn ${liked ? "on" : ""}" data-cl="${k}">${ic(liked ? "heartOn" : "heart")} ${c.likes + (liked ? 1 : 0)}</button></div></div>`; }).join("") || `<p class="small muted">Комментариев пока нет — будьте первым.</p>`}
+      <div class="comment"><div class="avatar sm">${esc(myAva())}</div><div style="flex:1;display:flex;gap:8px"><input class="cm-input" data-ci="${p.id}" placeholder="Написать комментарий…" maxlength="300"><button class="btn small" data-cs="${p.id}" aria-label="Отправить">${ic("send")}</button></div></div>
     </div>`;
   }
   const RUDE = ["идиот", "дурак", "туп", "бред", "заткнись", "дебил", "позор", "клоун"];
@@ -192,12 +195,12 @@
   function bindFeed() {
     const ta = $("#postText");
     ta.addEventListener("input", () => {
-      $("#toneHint").innerHTML = isRude(ta.value) ? `<span style="color:var(--warn)">🤖 Похоже на переход на личности — переформулируете?</span>` : "";
+      $("#toneHint").innerHTML = isRude(ta.value) ? `<span style="color:var(--warn)">Похоже на переход на личности — переформулируете?</span>` : "";
     });
     $("#postBtn").addEventListener("click", () => {
       const text = ta.value.trim();
       if (text.length < 5) return toast("Напишите чуть подробнее");
-      if (isRude(text)) return toast("🤖 ИИ-модератор: давайте обсуждать идеи, а не людей");
+      if (isRude(text)) return toast("ИИ-модератор: давайте обсуждать идеи, а не людей");
       S.posts.unshift({ id: "u" + Date.now(), type: "citizen", author: myName(), avatar: myAva(), time: "только что", text, topic: $("#postTopic").value || null, verified: null, bridge: null, likes: 0, comments: 0 });
       save(); addXP(5); toast("Опубликовано · +5 XP"); render();
     });
@@ -213,7 +216,7 @@
     const send = (id) => {
       const inp = $(`[data-ci="${id}"]`), text = inp.value.trim();
       if (text.length < 2) return;
-      if (isRude(text)) return toast("🤖 ИИ-модератор: похоже на оскорбление — переформулируйте");
+      if (isRude(text)) return toast("ИИ-модератор: похоже на оскорбление — переформулируйте");
       (S.comments[id] = S.comments[id] || []).push({ author: myName(), avatar: myAva(), text, likes: 0, time: "сейчас" });
       save(); addXP(2); render(); const n = $(`[data-ci="${id}"]`); if (n) n.focus();
     };
@@ -243,7 +246,7 @@
       </div>
     </div>
     <div class="stack">
-      <div class="explain small"><b>🔒 Приватность по умолчанию.</b> Ответы считаются прямо в вашем браузере и никуда не отправляются. Политические взгляды — чувствительные данные, поэтому VoteConnect не хранит их на сервере без явного согласия.</div>
+      <div class="explain small"><b>Приватность по умолчанию.</b> Ответы считаются прямо в вашем браузере и никуда не отправляются. Политические взгляды — чувствительные данные, поэтому VoteConnect не хранит их на сервере без явного согласия.</div>
       <div class="card small"><b>Откуда позиции кандидатов?</b><p class="muted" style="margin:6px 0 0">Каждый кандидат заполняет ту же анкету и прикладывает обоснование. Редакция сверяет ответы с публичными заявлениями и голосованиями — расхождения помечаются.</p></div>
     </div></div>`;
   };
@@ -265,7 +268,7 @@
     <div class="stack">
       <div class="card"><h3>Что дальше?</h3>
         <p class="small muted">Совпадение — повод присмотреться, а не готовый ответ. Сравните обещания и прошлые результаты кандидатов.</p>
-        <div class="stack" style="gap:8px"><a class="btn soft" href="#/promises">✅ Проверить обещания</a><a class="btn soft" href="#/calendar">📅 Сходить на дебаты</a><a class="btn soft" href="#/candidate/${m[0].c.id}">❓ Задать вопрос кандидату</a></div></div>
+        <div class="stack" style="gap:8px"><a class="btn soft" href="#/promises">Проверить обещания</a><a class="btn soft" href="#/calendar">Сходить на дебаты</a><a class="btn soft" href="#/candidate/${m[0].c.id}">Задать вопрос кандидату</a></div></div>
       <div class="explain small"><b>Методика.</b> Для каждого утверждения считаем расстояние между вашим ответом и ответом кандидата (шкала от −2 до +2), важные темы учитываются с весом ×2. Методика открыта и лежит в репозитории проекта.</div>
     </div></div>`;
   }
@@ -335,13 +338,13 @@
       </div>
       <div class="card"><h3>Ваше мнение</h3><p class="small muted">Здесь нет комментариев и ответов — только короткие утверждения и голоса. Алгоритм сам находит группы мнений и то, что их объединяет.</p>
         ${C.statements.map((s) => { const v = S.consensus[s.id]; return `<div class="vote-row"><div>${esc(s.text)}</div><div class="vote-btns">
-          <button data-cv="${s.id}:1" class="${v === 1 ? "sel a" : ""}">👍 За</button><button data-cv="${s.id}:-1" class="${v === -1 ? "sel d" : ""}">👎 Против</button><button data-cv="${s.id}:0" class="${v === 0 ? "sel p" : ""}">Пропуск</button></div></div>`; }).join("")}
+          <button data-cv="${s.id}:1" class="${v === 1 ? "sel a" : ""}">За</button><button data-cv="${s.id}:-1" class="${v === -1 ? "sel d" : ""}">Против</button><button data-cv="${s.id}:0" class="${v === 0 ? "sel p" : ""}">Пропуск</button></div></div>`; }).join("")}
       </div>
     </div>
     <div class="stack">
-      <div class="card" id="commonCard"><h3>🤝 Точки согласия</h3><p class="small muted">Поддержаны больше чем 70% в <b>каждой</b> группе — отличный старт для депутатов.</p>
+      <div class="card" id="commonCard"><h3>Точки согласия</h3><p class="small muted">Поддержаны больше чем 70% в <b>каждой</b> группе — отличный старт для депутатов.</p>
         ${common.map((s) => `<div class="row" style="flex-wrap:nowrap;padding:8px 0;border-bottom:1px solid var(--border)"><div class="small" style="flex:1"><b>${esc(s.text)}</b></div>${bars(s)}</div>`).join("")}</div>
-      <div class="card"><h3>⚡ Где мнения расходятся</h3>
+      <div class="card"><h3>Где мнения расходятся</h3>
         ${divisive.map((x) => `<div class="row" style="flex-wrap:nowrap;padding:8px 0;border-bottom:1px solid var(--border)"><div class="small" style="flex:1">${esc(x.s.text)}</div>${bars(x.s)}</div>`).join("")}</div>
       <div class="explain small"><b>Зачем это грантодателю?</b> Карта превращает тысячи голосов в понятный отчёт для городского совета: что поддерживают все и где нужен диалог.</div>
     </div></div>`;
@@ -376,7 +379,7 @@
           <span>${mine === i ? "✓ " : ""}${esc(o)}</span><span data-pct>${mine !== undefined ? Math.round(votes[i] / total * 100) + "%" : ""}</span></button>`).join("")}
         <div class="small muted" data-total>${mine !== undefined ? `Проголосовало: ${fmt(total)}` : "Проголосуйте, чтобы увидеть результаты — так они меньше влияют на ваш выбор"}</div></div>`;
     }).join("")}
-      <div class="card"><h3>🔐 Как защищены опросы</h3><ul class="small muted" style="padding-left:18px;margin:0">
+      <div class="card"><h3>Как защищены опросы</h3><ul class="small muted" style="padding-left:18px;margin:0">
         <li>Один человек — один голос: подтверждённый аккаунт, без хранения паспортных данных.</li>
         <li>Результаты видны после голосования — меньше «эффекта толпы».</li>
         <li>Обнаружение бот-ферм по аномалиям активности, открытый отчёт о снятых голосах.</li>
@@ -410,7 +413,7 @@
       ${D.topics.map((t) => `<button data-ct="${t.id}" class="${candTopic === t.id ? "active" : ""}">${t.icon} ${t.name}</button>`).join("")}</div></div>
     <div class="grid three">${list.map((c) => `<div class="card cand fade-in">
       <div class="row"><div class="avatar lg" style="background:${D.parties[c.party].color}">${c.avatar}</div>
-        <div style="flex:1"><b style="font-size:17px">${esc(c.name)}</b> ${c.verified ? "☑️" : ""}<div class="small muted"><i class="party-dot" style="background:${D.parties[c.party].color}"></i>${esc(D.parties[c.party].name)}, ${c.age}</div></div>
+        <div style="flex:1"><b style="font-size:17px">${esc(c.name)}</b> ${c.verified ? "" : ""}<div class="small muted"><i class="party-dot" style="background:${D.parties[c.party].color}"></i>${esc(D.parties[c.party].name)}, ${c.age}</div></div>
         ${m ? `<div style="text-align:right"><b style="color:var(--primary);font-size:20px">${m[c.id]}%</b><div class="small muted">совпадение</div></div>` : ""}</div>
       <div class="small">${esc(c.role)}</div>
       <div class="row" style="gap:6px">${c.focus.map((f) => `<span class="chip">${topic(f).icon} ${topic(f).name}</span>`).join("")}</div>
@@ -432,26 +435,26 @@
     const pr = D.promises.filter((p) => p.who === id), ev = D.events.filter((e) => e.org === c.name);
     return topbar(esc(c.name), `${esc(D.parties[c.party].name)} · ${esc(D.district)}`, `<a class="btn ghost small" href="#/candidates">← Все кандидаты</a>`) + `
     <div class="layout"><div class="stack">
-      <div class="card"><div class="row"><div class="avatar lg" style="background:${D.parties[c.party].color}">${c.avatar}</div><div style="flex:1"><h2 style="margin:0">${esc(c.name)} ${c.verified ? "☑️" : ""}</h2><div class="muted">${esc(c.role)}</div></div>
+      <div class="card"><div class="row"><div class="avatar lg" style="background:${D.parties[c.party].color}">${c.avatar}</div><div style="flex:1"><h2 style="margin:0">${esc(c.name)} ${c.verified ? "" : ""}</h2><div class="muted">${esc(c.role)}</div></div>
         <button class="btn" id="followBtn">${S.going["f-" + id] ? "✓ Вы подписаны" : "+ Подписаться"}</button></div>
         <p style="margin-top:14px">${esc(c.bio)}</p>
         <div class="row">${c.focus.map((f) => `<span class="chip">${topic(f).icon} ${topic(f).name}</span>`).join("")}<span class="chip ok">Отвечает на ${c.responseRate}% вопросов</span></div></div>
-      <div class="card"><h3>❓ Вопросы жителей</h3>
+      <div class="card"><h3>Вопросы жителей</h3>
         ${(QA[id] || []).map(([q, a]) => `<div class="arg"><b>${esc(q)}</b><div class="small" style="margin-top:6px"><b>${esc(c.name.split(" ")[0])}:</b> ${esc(a)}</div></div>`).join("")}
         <label class="field" style="margin-top:8px">Ваш вопрос<textarea id="qText" placeholder="Вопросы с наибольшей поддержкой кандидат обязуется разобрать публично"></textarea></label>
         <button class="btn small" id="askBtn" style="margin-top:8px">Отправить вопрос</button></div>
       <div class="card"><h3>Позиции по Компасу</h3><div style="overflow-x:auto"><table class="diff-table"><tbody>
         ${D.compass.map((st, i) => `<tr><td>${esc(st.text)}</td><td>${posChip(c.positions[i])}</td>${compassDone() ? `<td>${posChip(S.compass[i])}<div class="small muted" style="text-align:center">вы</div></td>` : ""}</tr>`).join("")}</tbody></table></div></div>
     </div><div class="stack">
-      <div class="card"><h3>✅ Обещания</h3>${pr.length ? pr.map(promiseRow).join("") : `<p class="small muted">Кандидат впервые участвует в выборах — обещания этой кампании появятся в трекере после регистрации.</p>`}</div>
-      <div class="card"><h3>📅 Мероприятия</h3>${ev.length ? ev.map(eventRow).join("") : `<p class="small muted">Нет запланированных.</p>`}</div>
+      <div class="card"><h3>Обещания</h3>${pr.length ? pr.map(promiseRow).join("") : `<p class="small muted">Кандидат впервые участвует в выборах — обещания этой кампании появятся в трекере после регистрации.</p>`}</div>
+      <div class="card"><h3>Мероприятия</h3>${ev.length ? ev.map(eventRow).join("") : `<p class="small muted">Нет запланированных.</p>`}</div>
     </div></div>`;
   };
   function bindCandidate(id) {
     $("#followBtn").addEventListener("click", () => { S.going["f-" + id] = !S.going["f-" + id]; save(); render(); });
     $("#askBtn").addEventListener("click", () => {
       const q = $("#qText").value.trim(); if (q.length < 8) return toast("Сформулируйте вопрос подробнее");
-      if (isRude(q)) return toast("🤖 ИИ-модератор: вопрос похож на оскорбление — переформулируйте");
+      if (isRude(q)) return toast("ИИ-модератор: вопрос похож на оскорбление — переформулируйте");
       $("#qText").value = ""; addXP(5); toast("Вопрос отправлен. Сейчас его поддерживают 1 человек — вы!");
     });
     bindEventButtons();
@@ -486,7 +489,7 @@
     const d = new Date(e.date + "T00:00:00"), i = D.events.indexOf(e);
     return `<div class="event-item"><div class="event-date"><b>${d.getDate()}</b><small>${MONTHS[d.getMonth()].slice(0, 3)}</small></div>
       <div><b>${esc(e.title)}</b><div class="small muted">${e.time} · ${esc(e.place)} · ${esc(e.org)}</div></div>
-      <div class="row" style="gap:6px"><button class="btn small ${S.going["e" + i] ? "" : "ghost"}" data-go-ev="${i}">${S.going["e" + i] ? "✓ Иду" : "Пойду"}</button><button class="icon-btn" data-ics="${i}" title="Добавить в календарь (.ics)">⤓</button></div></div>`;
+      <div class="row" style="gap:6px"><button class="btn small ${S.going["e" + i] ? "" : "ghost"}" data-go-ev="${i}">${S.going["e" + i] ? "✓ Иду" : "Пойду"}</button><button class="icon-btn" data-ics="${i}" title="Добавить в календарь (.ics)">${ic("download")}</button></div></div>`;
   }
   function upcoming(n) {
     return D.events.filter((e) => e.date >= todayISO).slice(0, n).map((e) => {
@@ -515,7 +518,7 @@
       </div>
       <div class="card"><h3>События месяца</h3>${monthEvents.map(eventRow).join("") || `<p class="muted">Нет событий.</p>`}</div>
     </div><div class="stack">
-      <div class="card"><h3>📍 Где мой участок?</h3><p class="small muted">Демо: введите улицу, чтобы найти участок и маршрут.</p>
+      <div class="card"><h3>Где мой участок?</h3><p class="small muted">Демо: введите улицу, чтобы найти участок и маршрут.</p>
         <label class="field">Улица<input id="street" placeholder="например, Садовая" list="streets"></label>
         <datalist id="streets"><option>Садовая</option><option>Ленинградская</option><option>Мира</option><option>Набережная</option></datalist>
         <button class="btn small" id="findBtn" style="margin-top:10px">Найти</button><div id="station" class="small" style="margin-top:10px"></div></div>
@@ -550,10 +553,10 @@
 
   /* ---------- Группы и дебаты ---------- */
   views.groups = () => topbar("Группы и дебаты", "Сообщества по темам и структурированные дискуссии") + `
-    <div class="explain" style="margin-bottom:16px"><b>🌉 Правило моста.</b> Чтобы ответить в дебатах, нужно сначала своими словами пересказать позицию другой стороны. Это простое правило снижает токсичность и заставляет слышать друг друга.</div>
+    <div class="explain" style="margin-bottom:16px"><b>Правило моста.</b> Чтобы ответить в дебатах, нужно сначала своими словами пересказать позицию другой стороны. Это простое правило снижает токсичность и заставляет слышать друг друга.</div>
     <div class="grid three">${D.groups.map((g) => `<a class="card" href="#/group/${g.id}" style="color:inherit;text-decoration:none">
-      <div style="font-size:30px">${topic(g.topic).icon}</div><h3>${esc(g.name)}</h3><p class="small muted">${esc(g.desc)}</p>
-      <div class="row"><span class="chip">👥 ${fmt(g.members)}</span>${g.id === D.debate.group ? `<span class="chip accent">🔥 Идут дебаты</span>` : ""}</div></a>`).join("")}</div>`;
+      <div class="kicker">${topic(g.topic).name}</div><h3>${esc(g.name)}</h3><p class="small muted">${esc(g.desc)}</p>
+      <div class="row"><span class="chip">${fmt(g.members)}</span>${g.id === D.debate.group ? `<span class="chip accent">Идут дебаты</span>` : ""}</div></a>`).join("")}</div>`;
   views.group = (id) => {
     const g = D.groups.find((x) => x.id === id); if (!g) return views.groups();
     const db = D.debate, mine = S.args.filter((a) => a.group === id);
@@ -564,8 +567,8 @@
     <div class="card" style="margin-bottom:16px"><div class="small muted" style="font-weight:800">ДЕБАТЫ НЕДЕЛИ</div>
       <h2 style="margin:6px 0 16px">«${esc(g.id === db.group ? db.thesis : "Какие три проблемы в этой теме нужно решить в первую очередь?")}»</h2>
       <div class="debate">
-        <div class="col-pro"><h3>👍 За</h3>${(g.id === db.group ? db.pro : []).concat(mine.filter((a) => a.side === "pro")).map(argHTML).join("") || `<p class="small muted">Будьте первым.</p>`}</div>
-        <div class="col-contra"><h3>👎 Против</h3>${(g.id === db.group ? db.contra : []).concat(mine.filter((a) => a.side === "contra")).map(argHTML).join("") || `<p class="small muted">Будьте первым.</p>`}</div>
+        <div class="col-pro"><h3>За</h3>${(g.id === db.group ? db.pro : []).concat(mine.filter((a) => a.side === "pro")).map(argHTML).join("") || `<p class="small muted">Будьте первым.</p>`}</div>
+        <div class="col-contra"><h3>Против</h3>${(g.id === db.group ? db.contra : []).concat(mine.filter((a) => a.side === "contra")).map(argHTML).join("") || `<p class="small muted">Будьте первым.</p>`}</div>
       </div></div>
     <div class="layout"><div class="card"><h3>Добавить аргумент</h3>
       <div class="stack" style="gap:12px">
@@ -581,7 +584,7 @@
     const check = () => {
       const rude = isRude(und.value + " " + argt.value);
       btn.disabled = und.value.trim().length < 20 || argt.value.trim().length < 10 || rude;
-      hint.innerHTML = rude ? `<span style="color:var(--warn)">🤖 Обсуждаем идеи, а не людей — переформулируйте</span>`
+      hint.innerHTML = rude ? `<span style="color:var(--warn)">Обсуждаем идеи, а не людей — переформулируйте</span>`
         : und.value.trim().length < 20 ? `Сначала перескажите позицию оппонента (${und.value.trim().length}/20)` : "✓ Правило моста соблюдено";
     };
     und.addEventListener("input", check); argt.addEventListener("input", check); check();
@@ -599,14 +602,14 @@
       ${all.map((i) => {
         const sup = i.support + (S.supported[i.id] ? 1 : 0), reached = sup >= i.goal;
         return `<div class="card initiative fade-in ${reached ? "reached" : ""}">
-          <div class="row"><span class="chip">${topic(i.topic).icon} ${topic(i.topic).name}</span>${reached ? `<span class="chip ok">🎯 Порог достигнут · кандидаты отвечают</span>` : ""}<span class="spacer"></span><span class="small muted">${esc(i.author)}</span></div>
+          <div class="row"><span class="chip">${topic(i.topic).icon} ${topic(i.topic).name}</span>${reached ? `<span class="chip ok">Порог достигнут · кандидаты отвечают</span>` : ""}<span class="spacer"></span><span class="small muted">${esc(i.author)}</span></div>
           <h3 style="margin:0">${esc(i.title)}</h3><p style="margin:0">${esc(i.text)}</p>
           <div class="bar"><span style="width:${Math.min(100, sup / i.goal * 100)}%;${reached ? "background:var(--ok)" : ""}"></span></div>
           <div class="row"><b>${fmt(sup)}</b><span class="muted small">из ${fmt(i.goal)} подписей · ответов кандидатов: ${i.responses}</span><span class="spacer"></span>
             <button class="btn small ${S.supported[i.id] ? "soft" : "accent"}" data-sup="${i.id}">${S.supported[i.id] ? "✓ Вы поддержали" : "Поддержать"}</button></div></div>`;
       }).join("")}
     </div><div class="stack">
-      <div class="card"><h3>✍️ Предложить инициативу</h3><div class="stack" style="gap:10px">
+      <div class="card"><h3>Предложить инициативу</h3><div class="stack" style="gap:10px">
         <label class="field">Название<input id="inTitle" maxlength="80" placeholder="Коротко и конкретно"></label>
         <label class="field">Тема<select id="inTopic">${D.topics.map((t) => `<option value="${t.id}">${t.icon} ${t.name}</option>`).join("")}</select></label>
         <label class="field">Что предлагаете?<textarea id="inText" placeholder="Проблема → решение → кто должен это сделать"></textarea></label>
@@ -619,7 +622,7 @@
     $("#inBtn").addEventListener("click", () => {
       const title = $("#inTitle").value.trim(), text = $("#inText").value.trim();
       if (title.length < 5 || text.length < 15) return toast("Заполните название и описание");
-      if (isRude(title + text)) return toast("🤖 ИИ-модератор: уберите оскорбления");
+      if (isRude(title + text)) return toast("ИИ-модератор: уберите оскорбления");
       S.myInitiatives.unshift({ id: "my" + Date.now(), title, text, topic: $("#inTopic").value, author: myName(), support: 0, goal: 1000, responses: 0 });
       save(); addXP(15); toast("Инициатива опубликована · +15 XP"); render();
     });
@@ -631,7 +634,7 @@
     return topbar("Академия избирателя", "Короткие уроки по 3 минуты — с квизом и значками") + `
     <div class="card" style="margin-bottom:16px"><div class="row"><b>Пройдено ${done} из ${D.academy.length}</b><span class="spacer"></span><span class="chip primary">Уровень ${level()} · ${S.xp} XP</span></div>
       <div class="bar" style="margin-top:10px"><span style="width:${done / D.academy.length * 100}%"></span></div></div>
-    <div class="grid two">${D.academy.map((m) => `<div class="card module"><div class="ico">${m.icon}</div><h3 style="margin:0">${esc(m.title)}</h3>
+    <div class="grid two">${D.academy.map((m) => `<div class="card module"><div class="num">${String(D.academy.indexOf(m) + 1).padStart(2, "0")}</div><h3 style="margin:0">${esc(m.title)}</h3>
       <div class="small muted">${m.cards.length} карточки · ${m.quiz.length} вопроса · +${m.xp} XP</div>
       <div class="row"><a class="btn small ${S.academy[m.id] ? "soft" : ""}" href="#/lesson/${m.id}">${S.academy[m.id] ? "✓ Пройдено · повторить" : "Начать урок"}</a></div></div>`).join("")}</div>`;
   };
@@ -648,9 +651,9 @@
       const q = m.quiz[s - m.cards.length], ans = lesson.answered;
       body = `<div class="small muted" style="font-weight:800">ВОПРОС ${s - m.cards.length + 1} / ${m.quiz.length}</div><h2 style="margin:14px 0 18px">${esc(q.q)}</h2>
         ${q.a.map((a, i) => `<button class="answer ${ans !== null ? (i === q.correct ? "right" : i === ans ? "wrong" : "") : ""}" data-qa="${i}" ${ans !== null ? "disabled" : ""}>${esc(a)}</button>`).join("")}
-        ${ans !== null ? `<div class="row" style="margin-top:10px"><b>${ans === q.correct ? "✅ Верно!" : "❌ Не совсем — правильный ответ подсвечен"}</b><span class="spacer"></span><button class="btn" data-step="1">Дальше →</button></div>` : ""}`;
+        ${ans !== null ? `<div class="row" style="margin-top:10px"><b>${ans === q.correct ? "Верно!" : "Не совсем — правильный ответ подсвечен"}</b><span class="spacer"></span><button class="btn" data-step="1">Дальше →</button></div>` : ""}`;
     } else {
-      body = `<div style="text-align:center;padding:20px 0"><div style="font-size:56px">🎉</div><h2>Урок пройден!</h2><p class="muted">Правильных ответов: ${lesson.score} из ${m.quiz.length} · +${m.xp} XP</p>
+      body = `<div style="text-align:center;padding:20px 0"><div style="font-size:56px"></div><h2>Урок пройден!</h2><p class="muted">Правильных ответов: ${lesson.score} из ${m.quiz.length} · +${m.xp} XP</p>
         <a class="btn" href="#/academy">К списку уроков</a></div>`;
     }
     return topbar(`${m.icon} ${esc(m.title)}`, "Академия избирателя", `<a class="btn ghost small" href="#/academy">← Все уроки</a>`) + `
@@ -677,20 +680,20 @@
   views.profile = () => {
     const m = compassDone() ? matches().slice(0, 3) : null;
     const opt = (k, v, l) => `<option value="${v}" ${S.privacy[k] === v ? "selected" : ""}>${l}</option>`;
-    const sel = (k) => `<select data-priv="${k}">${opt(k, "me", "🔒 Только я")}${opt(k, "friends", "👥 Друзья")}${opt(k, "all", "🌐 Все")}</select>`;
+    const sel = (k) => `<select data-priv="${k}">${opt(k, "me", "Только я")}${opt(k, "friends", "Друзья")}${opt(k, "all", "Все")}</select>`;
     const stats = [["Постов", S.posts.length], ["Аргументов", S.args.length], ["Поддержано инициатив", Object.values(S.supported).filter(Boolean).length], ["Уроков", Object.keys(S.academy).length]];
     return topbar("Гражданский паспорт", "Ваш профиль, прогресс и настройки приватности") + `
     <div class="layout"><div class="stack">
-      <div class="card"><div class="row"><div class="avatar lg">${esc(myAva())}</div><div style="flex:1"><h2 style="margin:0">${esc(myName())}</h2><div class="muted small">☑️ Подтверждённый житель · ${esc(D.city)} · ${esc((S.profile && S.profile.district) || D.district)}</div>
+      <div class="card"><div class="row"><div class="avatar lg">${esc(myAva())}</div><div style="flex:1"><h2 style="margin:0">${esc(myName())}</h2><div class="muted small">Подтверждённый житель · ${esc(D.city)} · ${esc((S.profile && S.profile.district) || D.district)}</div>
         ${S.profile && S.profile.interests ? `<div class="row" style="gap:6px;margin-top:8px">${S.profile.interests.map((t) => `<span class="chip">${topic(t).icon} ${topic(t).name}</span>`).join("")}</div>` : ""}</div>
         <div style="text-align:right"><div class="chip primary">Уровень ${level()}</div><div class="small muted" style="margin-top:4px">${S.xp} XP</div></div></div>
         <div class="bar" style="margin-top:14px"><span style="width:${S.xp % 100}%"></span></div><div class="small muted" style="margin-top:4px">${100 - (S.xp % 100)} XP до уровня ${level() + 1}</div>
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:16px">${stats.map(([l, v]) => `<div><b style="font-size:24px">${v}</b><div class="small muted">${l}</div></div>`).join("")}</div></div>
-      <div class="card"><h3>Значки</h3><div class="grid two">${D.badges.map((b) => `<div class="badge ${S.badges[b.id] ? "got" : ""}"><span class="b-ico">${b.icon}</span><div><b>${b.name}</b><div class="small muted">${b.desc}</div></div></div>`).join("")}</div></div>
-      <div class="card"><h3>🧭 Мои взгляды</h3>${m ? m.map((x) => `<div class="row" style="padding:6px 0"><span>${esc(x.c.name)}</span><span class="spacer"></span><b>${x.pct}%</b></div>`).join("") + `<p class="small muted" style="margin-top:8px">Видно: ${S.privacy.matches === "me" ? "только вам" : S.privacy.matches === "friends" ? "друзьям" : "всем"}</p>`
+      <div class="card"><h3>Значки</h3><div class="grid two">${D.badges.map((b) => `<div class="badge ${S.badges[b.id] ? "got" : ""}"><span class="b-ico">${b.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}</span><div><b>${b.name}</b><div class="small muted">${b.desc}</div></div></div>`).join("")}</div></div>
+      <div class="card"><h3>Мои взгляды</h3>${m ? m.map((x) => `<div class="row" style="padding:6px 0"><span>${esc(x.c.name)}</span><span class="spacer"></span><b>${x.pct}%</b></div>`).join("") + `<p class="small muted" style="margin-top:8px">Видно: ${S.privacy.matches === "me" ? "только вам" : S.privacy.matches === "friends" ? "друзьям" : "всем"}</p>`
         : `<p class="muted small">Вы ещё не прошли Компас.</p><a class="btn small" href="#/compass">Пройти</a>`}</div>
     </div><div class="stack">
-      <div class="card" id="privacyCard"><h3>🔐 Приватность</h3>
+      <div class="card" id="privacyCard"><h3>Приватность</h3>
         <div class="switch"><span>Политические предпочтения</span>${sel("views")}</div>
         <div class="switch"><span>Результаты Компаса</span>${sel("matches")}</div>
         <div class="switch"><span>Активность и значки</span>${sel("activity")}</div>
@@ -758,7 +761,7 @@
     const rate = Math.round((K.answerRate * 50 + done.length * 100) / (50 + done.length));
     const kpi = (label, val, delta, hint) => `<div class="card kpi"><div class="small muted">${label}</div><div class="kpi-val">${val}</div><div class="small ${delta && delta[0] === "+" ? "up" : "muted"}">${delta || hint || ""}</div></div>`;
     const maxC = Math.max(...K.concerns.map((x) => x[1]));
-    return topbar("Кабинет кандидата", `${esc(c.name)} · ${esc(D.parties[c.party].name)} · ${esc(D.district)}`, `<button class="btn ghost small" data-print>📄 Отчёт</button>`) + `
+    return topbar("Кабинет кандидата", `${esc(c.name)} · ${esc(D.parties[c.party].name)} · ${esc(D.district)}`, `<button class="btn ghost small" data-print>${ic("print")} Отчёт</button>`) + `
     <div class="grid kpis" id="kpis">
       ${kpi("Подписчики", fmt(K.followers), `+${K.followersDelta}% за неделю`)}
       ${kpi("Охват постов за 7 дней", fmt(K.reach), `+${K.reachDelta}% за неделю`)}
@@ -767,20 +770,20 @@
     </div>
     <div class="layout" style="margin-top:16px"><div class="stack">
       <div class="card"><div class="row"><h3 style="margin:0">Рост аудитории</h3><span class="spacer"></span><span class="small muted">подписчики, по неделям</span></div>${lineChart(K.weeks, K.followersByWeek)}</div>
-      <div class="card" id="qqueue"><div class="row"><h3 style="margin:0">❓ Вопросы жителей</h3><span class="spacer"></span><span class="chip">по поддержке</span></div>
+      <div class="card" id="qqueue"><div class="row"><h3 style="margin:0">Вопросы жителей</h3><span class="spacer"></span><span class="chip">по поддержке</span></div>
         <p class="small muted">Жители голосуют за вопросы — сверху самые важные для округа. Ответы публикуются в вашем профиле.</p>
         ${open.map((q) => `<div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">▲<b>${q.support}</b></div>
           <div style="flex:1"><b>${esc(q.text)}</b><div class="small muted">${esc(q.author)} · ${topic(q.topic).icon} ${topic(q.topic).name}</div>
           <textarea class="q-ans" data-qa-text="${q.id}" placeholder="Ваш публичный ответ…"></textarea>
-          <div class="row" style="margin-top:8px"><button class="btn ghost small" data-draft="${q.id}">✨ Черновик от ИИ</button><span class="spacer"></span><button class="btn small" data-answer="${q.id}">Ответить публично</button></div></div></div></div>`).join("") || `<p class="muted">🎉 Все вопросы отвечены.</p>`}
+          <div class="row" style="margin-top:8px"><button class="btn ghost small" data-draft="${q.id}">${ic("spark")} Черновик от ИИ</button><span class="spacer"></span><button class="btn small" data-answer="${q.id}">Ответить публично</button></div></div></div></div>`).join("") || `<p class="muted">Все вопросы отвечены.</p>`}
         ${done.length ? `<details style="margin-top:12px"><summary class="small" style="cursor:pointer;font-weight:700">Отвечено: ${done.length}</summary>${done.map((q) => `<div class="arg" style="margin-top:8px"><b>${esc(q.text)}</b><div class="small" style="margin-top:6px">${esc(S.answered[q.id])}</div></div>`).join("")}</details>` : ""}
       </div>
     </div><div class="stack">
       <div class="card"><h3>Что волнует округ</h3><p class="small muted">Доля упоминаний в постах, опросах и на Карте согласия, %</p>
         ${K.concerns.map(([n, v]) => `<div class="hbar" title="${esc(n)}: ${v}%"><div class="row" style="justify-content:space-between"><span class="small">${esc(n)}</span><b class="small">${v}%</b></div><div class="bar"><span style="width:${v / maxC * 100}%"></span></div></div>`).join("")}</div>
-      <div class="card"><h3>🎯 Инициативы для ответа</h3>
+      <div class="card"><h3>Инициативы для ответа</h3>
         ${K.pendingInitiatives.map((i) => `<div class="q-item"><b>${esc(i.title)}</b><div class="small muted">${fmt(i.support)} подписей</div>
-          ${S.answered[i.id] ? `<span class="chip ok">✓ Ответ опубликован</span>` : i.daysLeft !== null ? `<div class="row" style="margin-top:6px"><span class="chip warn">⏳ осталось ${i.daysLeft} дн.</span><span class="spacer"></span><button class="btn small" data-init-ans="${i.id}">Ответить</button></div>` : `<span class="chip">Порог ещё не достигнут</span>`}</div>`).join("")}</div>
+          ${S.answered[i.id] ? `<span class="chip ok">✓ Ответ опубликован</span>` : i.daysLeft !== null ? `<div class="row" style="margin-top:6px"><span class="chip warn">осталось ${i.daysLeft} дн.</span><span class="spacer"></span><button class="btn small" data-init-ans="${i.id}">Ответить</button></div>` : `<span class="chip">Порог ещё не достигнут</span>`}</div>`).join("")}</div>
       <div class="explain small"><b>Равные условия.</b> Все инструменты кабинета бесплатны для каждого зарегистрированного кандидата. Платного продвижения политического контента на платформе нет.</div>
     </div></div>`;
   };
@@ -812,7 +815,7 @@
     if (s === 0) {
       body = `<div class="ob-logo">${LOGO}</div><h1 class="ob-title">Ваш голос —<br>ваш город</h1>
         <p class="muted">Узнайте, чьи взгляды совпадают с вашими, влияйте на решения района и обсуждайте без токсичности.</p>
-        <ul class="ob-list"><li><span>🧭</span>Компас взглядов — совпадение с кандидатами за 3 минуты</li><li><span>🤝</span>Карта согласия: что объединяет жителей</li><li><span>🔒</span>Ваши взгляды видны только вам</li></ul>
+        <ol class="ob-list"><li>Компас взглядов — совпадение с кандидатами за 3 минуты</li><li>Карта согласия: что объединяет жителей</li><li>Ваши взгляды видны только вам</li></ol>
         <button class="btn block" data-ob="next">Создать профиль</button>
         <button class="btn ghost block" data-ob="demo">Войти в демо без регистрации</button>`;
     } else if (s === 1) {
@@ -833,15 +836,15 @@
         <button class="btn block" data-ob="interests" ${ob.interests.length < 2 ? "disabled" : ""}>Дальше · выбрано ${ob.interests.length}</button>`;
     } else if (s === 4) {
       body = `<h2>Приватность и правила</h2>
-        <div class="ob-rule"><span>🔒</span><div><b>Взгляды видны только вам</b><div class="small muted">Результаты Компаса считаются на устройстве. Открыть их другим можно в настройках.</div></div></div>
-        <div class="ob-rule"><span>🚫</span><div><b>Никакой политической рекламы</b><div class="small muted">Мы не продаём данные и не показываем таргетированную агитацию.</div></div></div>
-        <div class="ob-rule"><span>🌉</span><div><b>Обсуждаем идеи, а не людей</b><div class="small muted">ИИ-модератор мягко подскажет, если сообщение похоже на оскорбление.</div></div></div>
+        <div class="ob-rule">${ic("lock")}<div><b>Взгляды видны только вам</b><div class="small muted">Результаты Компаса считаются на устройстве. Открыть их другим можно в настройках.</div></div></div>
+        <div class="ob-rule">${ic("shield")}<div><b>Никакой политической рекламы</b><div class="small muted">Мы не продаём данные и не показываем таргетированную агитацию.</div></div></div>
+        <div class="ob-rule">${ic("bridge")}<div><b>Обсуждаем идеи, а не людей</b><div class="small muted">ИИ-модератор мягко подскажет, если сообщение похоже на оскорбление.</div></div></div>
         <label class="row small" style="margin:14px 0;gap:10px;font-weight:700;flex-wrap:nowrap"><input type="checkbox" id="obAgree" ${ob.agree ? "checked" : ""}> Принимаю правила сообщества</label>
         <button class="btn block" data-ob="finish" ${ob.agree ? "" : "disabled"}>Готово</button>`;
     } else {
-      body = `<div style="text-align:center"><div class="ob-party">🎉</div><h2>Добро пожаловать, ${esc(ob.name.split(" ")[0])}!</h2>
+      body = `<div style="text-align:center"><div class="ob-party">${ic("check")}</div><h2>Добро пожаловать, ${esc(ob.name.split(" ")[0])}!</h2>
         <p class="muted">Вы подтверждённый житель округа. Начните с Компаса — через 3 минуты узнаете, чьи позиции ближе к вашим.</p></div>
-        <a class="btn block" href="#/compass" data-ob="enter">🧭 Пройти Компас взглядов</a><a class="btn ghost block" href="#/feed" data-ob="enter">Перейти в ленту</a>`;
+        <a class="btn block" href="#/compass" data-ob="enter">Пройти Компас взглядов</a><a class="btn ghost block" href="#/feed" data-ob="enter">Перейти в ленту</a>`;
     }
     box.innerHTML = `<div class="ob-card card fade-in">
       ${s > 0 && s <= total ? `<div class="row" style="margin-bottom:18px"><button class="icon-btn" data-ob="back" aria-label="Назад">←</button><div class="progress-dots" style="flex:1">${[1, 2, 3, 4].map((i) => `<i class="${i < s ? "done" : i === s ? "cur" : ""}"></i>`).join("")}</div><span class="small muted">${s}/${total}</span></div>` : ""}
@@ -893,7 +896,7 @@
     p.className = "layer notif-panel card fade-in";
     p.style.top = r.bottom + 8 + "px"; p.style.right = Math.max(8, innerWidth - r.right) + "px";
     p.innerHTML = `<div class="row"><b>Уведомления</b><span class="spacer"></span><button class="link-btn" data-readall>Прочитать все</button></div>
-      ${D.notifications.map((n) => `<a class="notif ${S.readNotifs[n.id] ? "" : "unread"}" href="${n.link}" data-nid="${n.id}"><span class="n-ico">${n.icon}</span><span style="flex:1">${esc(n.text)}<br><span class="small muted">${n.time} назад</span></span></a>`).join("")}`;
+      ${D.notifications.map((n) => `<a class="notif ${S.readNotifs[n.id] ? "" : "unread"}" href="${n.link}" data-nid="${n.id}"><span class="n-ico"></span><span style="flex:1">${esc(n.text)}<br><span class="small muted">${n.time} назад</span></span></a>`).join("")}`;
     document.body.appendChild(p);
     $$("[data-nid]", p).forEach((a) => a.addEventListener("click", () => { S.readNotifs[a.dataset.nid] = true; save(); closeLayers(); }));
     $("[data-readall]", p).addEventListener("click", () => { D.notifications.forEach((n) => (S.readNotifs[n.id] = true)); save(); closeLayers(); render(); });
@@ -902,23 +905,23 @@
     return [
       ...D.candidates.map((c) => ({ g: "Кандидаты", t: c.name, s: c.role, l: "#/candidate/" + c.id, i: c.avatar })),
       ...D.groups.map((g) => ({ g: "Группы", t: g.name, s: g.desc, l: "#/group/" + g.id, i: topic(g.topic).icon })),
-      ...D.initiatives.map((x) => ({ g: "Инициативы", t: x.title, s: x.text, l: "#/initiatives", i: "📣" })),
-      ...D.events.map((e) => ({ g: "События", t: e.title, s: `${e.date.split("-").reverse().slice(0, 2).join(".")} · ${e.place}`, l: "#/calendar", i: "📅" })),
+      ...D.initiatives.map((x) => ({ g: "Инициативы", t: x.title, s: x.text, l: "#/initiatives", i: "" })),
+      ...D.events.map((e) => ({ g: "События", t: e.title, s: `${e.date.split("-").reverse().slice(0, 2).join(".")} · ${e.place}`, l: "#/calendar", i: "" })),
       ...D.academy.map((m) => ({ g: "Академия", t: m.title, s: m.cards[0], l: "#/lesson/" + m.id, i: m.icon })),
-      ...D.promises.map((p) => ({ g: "Обещания", t: p.text, s: cand(p.who).name, l: "#/promises", i: "✅" }))
+      ...D.promises.map((p) => ({ g: "Обещания", t: p.text, s: cand(p.who).name, l: "#/promises", i: "" }))
     ];
   }
   function openSearch() {
     closeLayers();
     const m = document.createElement("div"); m.className = "layer modal-bg";
-    m.innerHTML = `<div class="modal card fade-in" role="dialog" aria-label="Поиск"><div class="search-box"><span>🔍</span><input id="q" placeholder="Кандидаты, группы, события, инициативы…" autocomplete="off"><kbd>Esc</kbd></div><div id="results" class="results"></div></div>`;
+    m.innerHTML = `<div class="modal card fade-in" role="dialog" aria-label="Поиск"><div class="search-box">${ic("search")}<input id="q" placeholder="Кандидаты, группы, события, инициативы…" autocomplete="off"><kbd>Esc</kbd></div><div id="results" class="results"></div></div>`;
     document.body.appendChild(m);
     const idx = searchIndex(), q = $("#q", m), out = $("#results", m);
     const draw = () => {
       const v = q.value.trim().toLowerCase();
       const hits = v ? idx.filter((x) => (x.t + " " + x.s).toLowerCase().includes(v)).slice(0, 12) : idx.filter((x) => x.g === "Кандидаты" || x.g === "Группы").slice(0, 8);
       let last = "";
-      out.innerHTML = hits.map((x) => { const head = x.g !== last ? `<div class="res-g">${x.g}</div>` : ""; last = x.g; return head + `<a class="res" href="${x.l}"><span class="res-i">${esc(x.i)}</span><span><b>${esc(x.t)}</b><br><span class="small muted">${esc(x.s.slice(0, 90))}</span></span></a>`; }).join("") || `<p class="muted" style="padding:12px">Ничего не нашлось</p>`;
+      out.innerHTML = hits.map((x) => { const head = x.g !== last ? `<div class="res-g">${x.g}</div>` : ""; last = x.g; return head + `<a class="res" href="${x.l}"><span class="res-i">${esc(x.g === "Кандидаты" ? x.i : x.g[0])}</span><span><b>${esc(x.t)}</b><br><span class="small muted">${esc(x.s.slice(0, 90))}</span></span></a>`; }).join("") || `<p class="muted" style="padding:12px">Ничего не нашлось</p>`;
       $$(".res", out).forEach((a) => a.addEventListener("click", closeLayers));
     };
     q.addEventListener("input", draw); draw(); q.focus();
@@ -930,7 +933,7 @@
     closeLayers();
     const url = /^(localhost|127\.)/.test(location.hostname) || location.protocol === "file:" ? PUBLIC_URL : location.href.split("#")[0].split("?")[0];
     const m = document.createElement("div"); m.className = "layer modal-bg";
-    m.innerHTML = `<div class="modal card fade-in" style="max-width:360px;text-align:center"><h3>📱 Откройте на телефоне</h3><p class="small muted">Наведите камеру — прототип откроется как приложение. Его можно установить на главный экран.</p>
+    m.innerHTML = `<div class="modal card fade-in" style="max-width:360px;text-align:center"><h3>Откройте на телефоне</h3><p class="small muted">Наведите камеру — прототип откроется как приложение. Его можно установить на главный экран.</p>
       <div id="qr" class="qr">загрузка…</div><div class="small muted" style="word-break:break-all">${esc(url)}</div><button class="btn ghost small" style="margin-top:14px" data-close>Закрыть</button></div>`;
     document.body.appendChild(m);
     m.addEventListener("click", (e) => { if (e.target === m || e.target.hasAttribute("data-close")) closeLayers(); });
@@ -971,7 +974,7 @@
       tip.innerHTML = `<div class="row"><span class="chip primary">${tourStep + 1} / ${TOUR.length}</span><span class="spacer"></span><button class="link-btn" data-tour="end">Завершить ✕</button></div>
         <h3 style="margin:10px 0 6px">${st.t}</h3><p class="small" style="margin:0 0 14px">${st.x}</p>
         <div class="row">${tourStep > 0 ? `<button class="btn ghost small" data-tour="prev">← Назад</button>` : ""}<span class="spacer"></span>
-        <button class="btn small" data-tour="next">${tourStep === TOUR.length - 1 ? "Готово 🎉" : "Далее →"}</button></div>`;
+        <button class="btn small" data-tour="next">${tourStep === TOUR.length - 1 ? "Готово " : "Далее →"}</button></div>`;
       document.body.append(spot, tip);
       const place = () => {
         if (!el) { spot.style.display = "none"; tip.classList.add("center"); return; }
@@ -988,7 +991,7 @@
       $$("[data-tour]", tip).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.tour;
         if (a === "end") return endTour();
-        if (a === "next" && tourStep === TOUR.length - 1) { endTour(); toast("Спасибо за внимание! 🎉"); return; }
+        if (a === "next" && tourStep === TOUR.length - 1) { endTour(); toast("Спасибо за внимание! "); return; }
         tourStep += a === "next" ? 1 : -1; showTour();
       }));
     }, 120);
