@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoteConnect — прототип</title>
+  <meta name="description" content="Интерактивный прототип VoteConnect — гражданской социальной сети, которая объединяет, а не разделяет.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%234338ca'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="mobile-bar">
+    <button class="icon-btn" id="menuBtn" aria-label="Открыть меню">☰</button>
+    <a class="logo" href="index.html" data-logo></a>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <a class="logo" href="index.html" data-logo></a>
+      <nav class="nav" id="nav">
+        <a href="#/feed"><span class="ico">🏠</span>Лента</a>
+        <a href="#/compass"><span class="ico">🧭</span>Компас взглядов<span class="new">NEW</span></a>
+        <a href="#/consensus"><span class="ico">🤝</span>Карта согласия<span class="new">NEW</span></a>
+        <a href="#/polls"><span class="ico">📊</span>Опросы</a>
+        <div class="nav-title">Выборы</div>
+        <a href="#/candidates"><span class="ico">👥</span>Кандидаты</a>
+        <a href="#/promises"><span class="ico">✅</span>Трекер обещаний</a>
+        <a href="#/calendar"><span class="ico">📅</span>Календарь</a>
+        <div class="nav-title">Сообщество</div>
+        <a href="#/groups"><span class="ico">💬</span>Группы и дебаты</a>
+        <a href="#/initiatives"><span class="ico">📣</span>Голосуй за меня</a>
+        <a href="#/academy"><span class="ico">🎓</span>Академия</a>
+        <a href="#/profile"><span class="ico">🪪</span>Мой профиль</a>
+      </nav>
+      <div class="countdown" id="countdown"></div>
+    </aside>
+
+    <main class="main" id="main" tabindex="-1"></main>
+  </div>
+
+  <div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
