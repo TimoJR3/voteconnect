@@ -37,7 +37,12 @@
     bridge: '<path d="M3 16h18M5 16v-3M19 16v-3M3 13c3 0 5-4 9-4s6 4 9 4"/>',
     info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.01"/>',
     stop: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
-    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    home: '<path d="M4 11l8-6.5 8 6.5V20h-5v-5.5H9V20H4z"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+    chevron: '<path d="M9 6l6 6-6 6"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    thumb: '<path d="M7 11v8H4v-8zM7 11l4-7c1.5 0 2.5 1 2.2 2.6L12.8 10H19a1.8 1.8 0 0 1 1.8 2.1l-1.2 5.8A2 2 0 0 1 17.7 19H7"/>'
   };
   const ic = (n, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[n] || ""}</svg>`;
   window.VCIcons = { ICONS, ic };
