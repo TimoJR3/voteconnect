@@ -4,62 +4,63 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>VoteConnect</title>
-  <meta name="description" content="VoteConnect — гражданская социальная сеть, которая объединяет, а не разделяет.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f3efe6'/%3E%3Crect x='3.5' y='3.5' width='25' height='25' fill='none' stroke='%2316150f' stroke-width='2.2'/%3E%3Cpath d='M9 16.5l5 5L25 8' fill='none' stroke='%23b3261e' stroke-width='3.4'/%3E%3C/svg%3E">
+  <meta name="description" content="VoteConnect — соцсеть вашего района: кандидаты, их обещания и то, о чём договорились соседи.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%231d6b45'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400;1,7..72,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#f3efe6">
+  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="VoteConnect">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
-<body class="in-app">
-  <div class="mobile-bar">
-    <button class="icon-btn" id="menuBtn" aria-label="Открыть меню"><i data-i="menu"></i></button>
+<body>
+  <header class="hdr">
+    <button class="icon-btn mobile-only" id="menuBtn" aria-label="Меню"><i data-i="menu"></i></button>
     <a class="logo" href="index.html" data-logo></a>
+    <button class="district desk" data-go="#/profile"><i data-i="pin"></i><span id="districtName">Северный</span></button>
+    <button class="search" data-search><i data-i="search"></i>Поиск по району</button>
     <span class="spacer"></span>
-    <button class="icon-btn" data-search aria-label="Поиск"><i data-i="search"></i></button>
-  </div>
+    <button class="icon-btn mobile-only" data-search aria-label="Поиск"><i data-i="search"></i></button>
+    <button class="icon-btn" data-bell aria-label="Уведомления"><i data-i="bell"></i><span class="dot" id="bellDot" hidden></span></button>
+    <button class="icon-btn desk" data-theme-toggle aria-label="Тема"><i data-i="theme"></i></button>
+    <a href="#/profile" class="desk" aria-label="Профиль" id="meAva"></a>
+  </header>
 
-  <div class="app">
+  <div class="shell">
     <aside class="sidebar" id="sidebar">
-      <a class="logo" href="index.html" data-logo></a>
-      <div class="edition" id="edition"></div>
       <nav class="nav" id="nav">
-        <a href="#/feed"><i class="ico" data-i="feed"></i>Лента</a>
+        <a href="#/feed"><i class="ico" data-i="home"></i>Лента района</a>
         <a href="#/compass"><i class="ico" data-i="compass"></i>Компас взглядов</a>
         <a href="#/consensus"><i class="ico" data-i="consensus"></i>Карта согласия</a>
-        <a href="#/polls"><i class="ico" data-i="polls"></i>Опросы</a>
-        <div class="nav-title">Выборы</div>
         <a href="#/candidates"><i class="ico" data-i="people"></i>Кандидаты</a>
-        <a href="#/promises"><i class="ico" data-i="promise"></i>Трекер обещаний</a>
-        <a href="#/calendar"><i class="ico" data-i="calendar"></i>Календарь</a>
-        <div class="nav-title">Сообщество</div>
+        <a href="#/initiatives"><i class="ico" data-i="megaphone"></i>Инициативы</a>
+        <a href="#/calendar"><i class="ico" data-i="calendar"></i>События</a>
+        <a href="#/assistant"><i class="ico" data-i="spark"></i>Помощник</a>
+        <div class="nav-sec">Ещё</div>
+        <a href="#/promises"><i class="ico" data-i="promise"></i>Обещания</a>
+        <a href="#/polls"><i class="ico" data-i="polls"></i>Опросы</a>
         <a href="#/groups"><i class="ico" data-i="groups"></i>Группы и дебаты</a>
-        <a href="#/initiatives"><i class="ico" data-i="megaphone"></i>Голосуй за меня</a>
         <a href="#/academy"><i class="ico" data-i="book"></i>Академия</a>
-        <a href="#/profile"><i class="ico" data-i="profile"></i>Мой профиль</a>
-        <div class="nav-title">Для кандидатов</div>
+        <a href="#/profile"><i class="ico" data-i="profile"></i>Профиль</a>
         <a href="#/cabinet"><i class="ico" data-i="chart"></i>Кабинет кандидата</a>
       </nav>
-      <div class="side-actions">
+      <div class="side-foot">
+        <div class="countdown" id="countdown"></div>
         <button class="btn block" data-tour-start><i data-i="play"></i>Демо-тур</button>
         <button class="btn ghost block small" data-qr><i data-i="phone"></i>Открыть на телефоне</button>
       </div>
-      <div class="countdown" id="countdown"></div>
     </aside>
-
     <main class="main" id="main" tabindex="-1"></main>
   </div>
 
   <nav class="tabbar" id="tabbar" aria-label="Основное меню">
-    <a href="#/feed"><i data-i="feed"></i>Лента</a>
+    <a href="#/feed"><i data-i="home"></i>Лента</a>
     <a href="#/compass"><i data-i="compass"></i>Компас</a>
-    <a href="#/consensus"><i data-i="consensus"></i>Согласие</a>
     <a href="#/initiatives"><i data-i="megaphone"></i>Инициативы</a>
+    <a href="#/assistant"><i data-i="spark"></i>Помощник</a>
     <a href="#/profile"><i data-i="profile"></i>Профиль</a>
   </nav>
 

@@ -3,162 +3,89 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VoteConnect — сеть, которая объединяет</title>
-  <meta name="description" content="VoteConnect — гражданская социальная сеть для жителей и кандидатов: компас взглядов, карта согласия, трекер обещаний, инициативы. Лента, которая объединяет, а не разделяет.">
-  <meta property="og:title" content="VoteConnect — сеть, которая объединяет">
-  <meta property="og:description" content="Компас взглядов, карта согласия, трекер обещаний и лента, в которой побеждает согласие, а не громкость.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f3efe6'/%3E%3Crect x='3.5' y='3.5' width='25' height='25' fill='none' stroke='%2316150f' stroke-width='2.2'/%3E%3Cpath d='M9 16.5l5 5L25 8' fill='none' stroke='%23b3261e' stroke-width='3.4'/%3E%3C/svg%3E">
+  <title>VoteConnect — что решают в вашем районе</title>
+  <meta name="description" content="Соцсеть района: кандидаты, их обещания и то, о чём договорились соседи. Наверху ленты — то, с чем согласны все.">
+  <meta property="og:title" content="VoteConnect — что решают в вашем районе">
+  <meta property="og:description" content="Кандидаты, их обещания и то, о чём договорились соседи.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%231d6b45'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400;1,7..72,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#f3efe6">
+  <meta name="theme-color" content="#ffffff">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
-  <header class="wrap masthead">
-    <div class="mast-top">
-      <span>Выпуск № 1 · Новоград</span>
-      <span class="row" style="gap:18px"><a href="app.html?tour=1#/feed">Демо-тур</a><a href="app.html">Приложение</a><a href="https://github.com/TimoJR3/voteconnect">Исходный код</a></span>
-    </div>
-    <div class="mast-title">
-      <h1>Vote<i>Connect</i></h1>
-      <div class="motto">Гражданская сеть, которая объединяет, а не разделяет</div>
-    </div>
-    <div class="mast-line"><span id="today">Пятница, 18 сентября 2026</span><span>Открытый код · бесплатно для жителей</span><span id="days">До выборов — 51 день</span></div>
-    <nav class="mast-nav"><a href="#problem">Проблема</a><a href="#inside">Что внутри</a><a href="#principles">Принципы</a><a href="#compare">Сравнение</a><a href="#plan">План</a></nav>
+  <header class="lp-top">
+    <a class="logo" href="#"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="#fff"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#1d6b45" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
+    <nav><a href="#how">Как это работает</a><a href="#candidates">Кандидатам</a><a href="app.html?tour=1#/feed">Демо-тур</a></nav>
   </header>
 
-  <main class="wrap">
-    <section class="front">
-      <article>
-        <div class="lead-kicker">Главная тема выпуска</div>
-        <h2 class="lead-title">Соцсеть, в которой побеждает согласие, а не громкость</h2>
-        <p class="standfirst">VoteConnect помогает жителям разобраться в местных выборах, найти своих кандидатов и договориться друг с другом — без травли, ботов и политической рекламы.</p>
-        <div class="byline">Редакция VoteConnect · Демо-версия для партнёров и грантодателей</div>
-        <div class="body-cols">
-          <p>Обычные соцсети зарабатывают на вовлечении, а лучше всего вовлекает конфликт. Поэтому в ленте наверху оказывается самое резкое, а люди с разными взглядами видят друг в друге врагов.</p>
-          <p>Мы сделали наоборот. В VoteConnect пост поднимается, только если его <mark>одобряют люди из разных групп мнений</mark>. Фейки получают контекст с первоисточником и уходят из рекомендаций.</p>
-          <p>Жители проходят Компас взглядов и за три минуты узнают, чьи позиции им ближе. Голосуют на Карте согласия, где алгоритм сам находит то, что поддерживают все. Кандидаты получают кабинет с вопросами жителей и обязаны отвечать на инициативы, набравшие порог подписей.</p>
-          <p>Выборы перестают быть разовой кампанией: трекер обещаний показывает, что сделано после них.</p>
-        </div>
-        <div class="cta-row">
-          <a class="btn accent" href="app.html?tour=1#/feed"><i data-i="play"></i>Демо-тур за 2 минуты</a>
-          <a class="btn ghost" href="app.html">Открыть приложение</a>
-        </div>
-      </article>
-      <aside>
-        <h3 class="side-h">В этом выпуске</h3>
-        <ul class="toc">
-          <li><span>01</span><a href="app.html#/compass">Компас взглядов: совпадение с кандидатами</a></li>
-          <li><span>02</span><a href="app.html#/consensus">Карта согласия: что объединяет округ</a></li>
-          <li><span>03</span><a href="app.html#/feed">Лента с «рейтингом моста»</a></li>
-          <li><span>04</span><a href="app.html#/cabinet">Кабинет кандидата</a></li>
-        </ul>
-        <h3 class="side-h">Из ленты</h3>
-        <div class="clip">
-          <div class="post-head"><div class="avatar">ПР</div><div><div class="name">Павел Р.</div><div class="small muted">5 ч назад · Транспорт</div></div></div>
-          <p class="post-text" style="margin:12px 0">Каждое утро автобус 14 опаздывает на 15–20 минут. Собрал данные за месяц по GPS — кто из кандидатов готов заняться маршрутом?</p>
-          <div class="row"><span class="stamp">Данные открыты</span><span class="bridge-meter"><i data-i="bridge"></i> Мост <span class="bar"><span style="width:92%"></span></span> 92%</span></div>
-          <p class="small muted" style="margin:10px 0 0">Пост одобрили 92% участников из всех трёх групп мнений — поэтому он наверху ленты.</p>
-        </div>
-        <div class="clip">
-          <div class="note bad"><span class="note-k">Ложная информация</span>«Выборы перенесли, на участки не ходите». Дата не менялась: 8 ноября 2026. Пост скрыт из рекомендаций.</div>
-        </div>
-      </aside>
-    </section>
-
-    <section class="section" id="problem">
-      <div class="section-head"><span class="no">§ 1</span><h2>Что не так с политикой в соцсетях</h2></div>
-      <div class="cols3">
-        <div><h3>Алгоритмы ярости</h3><p>Ленты продвигают самые эмоциональные посты. Люди видят только «своих», а к оппонентам испытывают всё больше враждебности.</p></div>
-        <div><h3>Невидимые кандидаты</h3><p>О кандидатах в городской совет трудно узнать что-то, кроме листовки. Обещания забываются сразу после выборов.</p></div>
-        <div><h3>Всё разрознено</h3><p>Новости — в каналах, события — в чатах, опросы — ещё где-то. Молодым избирателям проще не участвовать вовсе.</p></div>
-      </div>
-    </section>
-
-    <section class="section" id="inside">
-      <div class="section-head"><span class="no">§ 2</span><h2>Что внутри</h2></div>
-      <div class="feature-list">
-        <a href="app.html#/compass"><div class="fk"><i data-i="compass"></i>Компас<em>Впервые</em></div><h3>Совпадение с кандидатами</h3><p>12 утверждений о жизни города и процент совпадения с каждым кандидатом с разбором по темам.</p></a>
-        <a href="app.html#/consensus"><div class="fk"><i data-i="consensus"></i>Карта согласия<em>Впервые</em></div><h3>Что поддерживают все</h3><p>Алгоритм группирует мнения жителей и показывает общие точки — готовую повестку для депутатов.</p></a>
-        <a href="app.html#/feed"><div class="fk"><i data-i="bridge"></i>Лента<em>Впервые</em></div><h3>Рейтинг моста</h3><p>Выше поднимается то, что одобряют люди с разными взглядами. Фейки получают контекст.</p></a>
-        <a href="app.html#/cabinet"><div class="fk"><i data-i="chart"></i>Кандидатам</div><h3>Кабинет кандидата</h3><p>Аудитория, вопросы жителей по поддержке, темы округа и помощник для черновиков ответов.</p></a>
-        <a href="app.html#/promises"><div class="fk"><i data-i="promise"></i>Подотчётность</div><h3>Трекер обещаний</h3><p>Каждое обещание — с датой, статусом и ссылкой на документ.</p></a>
-        <a href="app.html#/initiatives"><div class="fk"><i data-i="megaphone"></i>Голосуй за меня</div><h3>Инициативы жителей</h3><p>После порога подписей кандидаты обязаны публично ответить в течение 14 дней.</p></a>
-        <a href="app.html#/groups"><div class="fk"><i data-i="groups"></i>Дебаты</div><h3>Правило моста</h3><p>Прежде чем возразить, перескажи позицию оппонента. Модератор мягко гасит оскорбления.</p></a>
-        <a href="app.html#/polls"><div class="fk"><i data-i="polls"></i>Опросы</div><h3>Голоса в реальном времени</h3><p>Один человек — один голос, результаты видны после голосования.</p></a>
-        <a href="app.html#/calendar"><div class="fk"><i data-i="calendar"></i>Календарь</div><h3>События и участки</h3><p>Дебаты, встречи, напоминания, экспорт в календарь и поиск своего участка.</p></a>
-        <a href="app.html#/academy"><div class="fk"><i data-i="book"></i>Академия</div><h3>Уроки по 3 минуты</h3><p>Как устроены выборы, как проверить новость, как работает бюджет.</p></a>
-        <a href="app.html#/profile"><div class="fk"><i data-i="lock"></i>Приватность</div><h3>Взгляды видны только вам</h3><p>Компас считается на устройстве. Данные можно скачать или удалить в один клик.</p></a>
-        <a href="app.html"><div class="fk"><i data-i="phone"></i>Телефон</div><h3>Работает как приложение</h3><p>Устанавливается на главный экран и открывается без интернета.</p></a>
-      </div>
-    </section>
-
-    <section class="section" id="principles">
-      <div class="section-head"><span class="no">§ 3</span><h2>Пять принципов редакции</h2></div>
-      <div class="principles">
-        <div class="principle"><div><h3>Алгоритм, который объединяет</h3><p>Ранжирование по согласию людей из разных групп мнений, а не по числу лайков. Этот подход уже работает в системах проверки фактов крупных платформ.</p></div></div>
-        <div class="principle"><div><h3>Приватность по умолчанию</h3><p>Политические взгляды — особая категория персональных данных. Компас считается на устройстве, никакой таргетированной политической рекламы.</p></div></div>
-        <div class="principle"><div><h3>Строгая беспартийность</h3><p>Платформа не агитирует ни за кого. Все кандидаты получают одинаковые инструменты бесплатно, методика Компаса открыта.</p></div></div>
-        <div class="principle"><div><h3>От разговоров — к результату</h3><p>Карта согласия превращается в отчёт для городского совета, инициативы — в обязательные ответы, обещания — в трекер исполнения.</p></div></div>
-        <div class="principle"><div><h3>Открытый код</h3><p>Любой город может развернуть свой экземпляр. Агрегированные анонимные данные доступны исследователям и журналистам.</p></div></div>
-      </div>
-    </section>
-
-    <section class="section" id="compare">
-      <div class="section-head"><span class="no">§ 4</span><h2>Чего нет у других</h2></div>
-      <div class="table-scroll">
-        <table class="compare">
-          <thead><tr><th>Возможность</th><th>Обычные соцсети</th><th>Сайты комиссий</th><th>Тесты «за кого голосовать»</th><th class="us">VoteConnect</th></tr></thead>
-          <tbody>
-            <tr><td>Информация о выборах и участках</td><td>—</td><td>да</td><td>—</td><td class="us">да</td></tr>
-            <tr><td>Совпадение с кандидатами</td><td>—</td><td>—</td><td>да</td><td class="us">да</td></tr>
-            <tr><td>Обсуждения и сообщества</td><td>да</td><td>—</td><td>—</td><td class="us">да</td></tr>
-            <tr><td>Лента против поляризации</td><td>—</td><td>—</td><td>—</td><td class="us">да</td></tr>
-            <tr><td>Карта согласия жителей</td><td>—</td><td>—</td><td>—</td><td class="us">да</td></tr>
-            <tr><td>Трекер обещаний</td><td>—</td><td>—</td><td>—</td><td class="us">да</td></tr>
-            <tr><td>Инициативы с обязательным ответом</td><td>—</td><td>—</td><td>—</td><td class="us">да</td></tr>
-            <tr><td>Кабинет для кандидатов</td><td>частично</td><td>—</td><td>—</td><td class="us">да</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="section" id="plan">
-      <div class="section-head"><span class="no">§ 5</span><h2>План на 12 месяцев</h2></div>
-      <div class="timeline">
-        <div><div class="when">Месяцы 1–3</div><h4>Запуск</h4><ul><li>Серверная часть и модерация</li><li>Регистрация по номеру</li><li>Лента, Компас, календарь</li></ul></div>
-        <div><div class="when">Месяцы 4–6</div><h4>Пилот в округе</h4><ul><li>Карта согласия</li><li>Подключение кандидатов</li><li>1 000 активных жителей</li></ul></div>
-        <div><div class="when">Месяцы 7–9</div><h4>Выборы</h4><ul><li>Трекер обещаний и дебаты</li><li>Приложения в магазинах</li><li>10 000 пользователей</li></ul></div>
-        <div><div class="when">Месяцы 10–12</div><h4>Масштаб</h4><ul><li>Отчёт о результатах</li><li>Открытые данные</li><li>Ещё три города</li></ul></div>
-      </div>
-    </section>
-
-    <div class="notice">
-      <div class="kicker">Объявление</div>
-      <h2>Попробуйте сами — это займёт две минуты</h2>
-      <p>Все функции работают. Город Новоград, кандидаты и партии в демо вымышлены.</p>
-      <div class="cta-row"><a class="btn accent" href="app.html?tour=1#/feed"><i data-i="play"></i>Запустить демо-тур</a><a class="btn ghost" href="app.html">Открыть приложение</a></div>
+  <section class="lp-hero">
+    <img src="https://images.unsplash.com/photo-1789062665477-b58eb89a22b6?w=1800&q=70&auto=format&fit=crop" alt="Набережная реки">
+    <div class="lp-find">
+      <h1>Что решают в вашем районе</h1>
+      <p>Кандидаты, их обещания и то, о чём договорились соседи.</p>
+      <form action="app.html" method="get">
+        <input name="addr" placeholder="Ваш адрес, например Садовая, 14" aria-label="Ваш адрес" autocomplete="street-address">
+        <button class="btn" type="submit">Показать мой район</button>
+      </form>
+      <div class="alt"><a href="app.html?tour=1#/feed">Посмотреть демо-тур</a></div>
     </div>
+  </section>
 
-    <footer class="colophon">
-      <span>© 2026 VoteConnect · Открытый проект гражданских технологий</span>
-      <span>Демо-версия · все персонажи вымышлены</span>
-    </footer>
+  <div class="lp-strip"><span><b>5</b> кандидатов в округе</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b>8 ноября</b></span></div>
+
+  <main class="lp-wrap">
+    <section class="lp-sec" id="how">
+      <div class="lp-split">
+        <div class="lp-point"><div class="num">Лента района</div>
+          <h3>Наверху — то, с чем согласны все</h3>
+          <p>Пост поднимается, только если его поддерживают люди с разными взглядами. Спорное видно сразу, фейки получают контекст.</p></div>
+        <div class="lp-shot"><article class="card post" style="width:100%;max-width:420px">
+          <div class="post-body"><div class="post-head"><span class="avatar">ПР<img src="https://api.dicebear.com/9.x/notionists/svg?seed=%D0%9F%D0%B0%D0%B2%D0%B5%D0%BB%20%D0%A0.&backgroundColor=e8e2d6" alt="" onerror="this.remove()"></span>
+            <div><div class="name">Павел Р.</div><div class="meta">Житель района · 5 ч назад</div></div></div>
+            <p class="post-text">Автобус 14 опаздывает на 15–20 минут каждое утро. Выложил данные GPS за месяц.</p></div>
+          <img class="post-photo" src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=800&q=70&auto=format&fit=crop" alt="Автобус" loading="lazy">
+          <div class="post-foot"><div class="support"><div class="spec"><span class="a" style="width:32.4%"></span><span class="b" style="width:34.2%"></span><span class="c" style="width:33.4%"></span></div><span class="val">Согласны все</span>
+            <div class="cap"><span><i style="background:var(--c1)"></i>автомобилисты 90%</span><span><i style="background:var(--c2)"></i>пешеходы 95%</span><span><i style="background:var(--c3)"></i>семьи 91%</span></div></div></div>
+          <div style="height:10px"></div></article></div>
+      </div>
+    </section>
+
+    <section class="lp-sec" style="padding-top:0">
+      <div class="lp-split rev">
+        <div class="lp-point"><div class="num">Компас взглядов</div>
+          <h3>За кого голосовать — за 3 минуты</h3>
+          <p>12 вопросов о жизни района. Ответы сравниваются с позициями кандидатов и не покидают ваш телефон.</p></div>
+        <div class="lp-shot"><div class="card q-card" style="width:100%;max-width:420px">
+          <img class="q-photo" src="https://images.unsplash.com/photo-1780866701554-254dcf3fac8e?w=800&q=70&auto=format&fit=crop" alt="Улица вечером" loading="lazy">
+          <div class="q-in"><div class="q-step">Транспорт · 1 из 12</div><div class="q-text" style="font-size:19px">Выделенные полосы для автобусов — даже за счёт машин?</div>
+            <div class="answers"><button class="sel" tabindex="-1">Скорее за</button><button tabindex="-1">Не знаю</button><button tabindex="-1">Скорее против</button></div></div></div></div>
+      </div>
+    </section>
+
+    <section class="lp-sec" id="candidates" style="padding-top:0">
+      <div class="lp-split">
+        <div class="lp-point"><div class="num">Кандидатам</div>
+          <h3>Вопросы жителей — по важности</h3>
+          <p>Кабинет с аудиторией, темами округа и черновиками ответов. Бесплатно для всех кандидатов — равные условия.</p></div>
+        <div class="lp-shot"><div class="card" style="width:100%;max-width:420px">
+          <div class="small muted">Вопросы жителей</div>
+          <div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">▲<b>412</b></div><div><b>Когда будет выделенная полоса на Садовой?</b><div class="small muted">Павел Р. · Транспорт</div></div></div></div>
+          <div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">▲<b>287</b></div><div><b>Будет ли бюджет, который распределяют жители?</b><div class="small muted">Елена К. · Цифровые права</div></div></div></div>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="lp-cta">
+      <h2>Посмотрите, как это работает</h2>
+      <p>Две минуты — все основные функции. Город и кандидаты в демо вымышлены.</p>
+      <div class="row" style="justify-content:center"><a class="btn" href="app.html?tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="app.html">Открыть приложение</a></div>
+    </section>
+
+    <footer class="lp-foot"><span>© 2026 VoteConnect · открытый код</span><span>Фото: Unsplash · редактор: Yoopta-Editor · память помощника: ai-memory-service</span></footer>
   </main>
-
-  <script src="assets/js/icons.js"></script>
-  <script>
-    (function () {
-      var M = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
-      var W = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
-      var d = new Date(), left = Math.max(0, Math.ceil((new Date("2026-11-08T08:00:00") - d) / 864e5));
-      var word = left % 10 === 1 && left % 100 !== 11 ? "день" : [2, 3, 4].indexOf(left % 10) >= 0 && [12, 13, 14].indexOf(left % 100) < 0 ? "дня" : "дней";
-      document.getElementById("today").textContent = W[d.getDay()] + ", " + d.getDate() + " " + M[d.getMonth()] + " " + d.getFullYear();
-      document.getElementById("days").textContent = "До выборов — " + left + " " + word;
-    })();
-  </script>
 </body>
 </html>

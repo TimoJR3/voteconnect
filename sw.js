@@ -1,5 +1,5 @@
 /* VoteConnect service worker: сначала сеть (всегда свежая версия), при отсутствии сети — кэш. */
-const CACHE = "voteconnect-v3";
+const CACHE = "voteconnect-v4";
 const CORE = ["./", "index.html", "app.html", "assets/css/style.css", "assets/js/icons.js", "assets/js/data.js", "assets/js/app.js", "manifest.webmanifest", "assets/icons/icon-192.png"];
 
 self.addEventListener("install", (e) => {
