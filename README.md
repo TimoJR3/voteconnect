@@ -65,7 +65,7 @@ cd tests && npm ci && npx playwright test
 index.html            — сайт
 investors.html        — страница для инвесторов и грантовых фондов
 app.html              — приложение
-assets/css/style.css  — дизайн-система (светлая и тёмная темы)
+assets/css/style.css  — дизайн-система «Фото района»: фото на всю ширину, светлая и тёмная темы
 assets/js/app.js      — логика приложения
 assets/js/data.js     — демо-данные (вымышленный город Новоград)
 assets/js/icons.js    — набор иконок

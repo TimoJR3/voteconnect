@@ -10,7 +10,7 @@
   <meta property="og:title" content="VoteConnect — что решают в вашем районе">
   <meta property="og:description" content="Бюджет района, идеи соседей и то, что поддерживают все.">
   <meta property="og:image" content="https://timojr3.github.io/voteconnect/assets/img/1789062665477-b58eb89a22b6-1200.jpg">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%231d6b45'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%23178a4f'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/style.css">
@@ -20,39 +20,48 @@
 </head>
 <body>
   <header class="lp-top">
-    <a class="logo" href="#"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="#fff"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#1d6b45" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
+    <a class="logo" href="#"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="#fff"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#161616" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
     <nav><a href="#how">Как это работает</a><a href="#admins">Администрациям</a><a href="investors.html">Инвесторам</a><a href="app.html?demo=1&amp;tour=1#/feed">Демо-тур</a></nav>
   </header>
 
   <section class="lp-hero">
-    <img src="assets/img/1789062665477-b58eb89a22b6-1200.jpg" alt="Набережная реки">
-    <div class="lp-find">
-      <h1>Что решают в вашем районе</h1>
+    <img src="assets/img/1789062665477-b58eb89a22b6-1200.jpg" alt="Набережная реки Светлой">
+    <div class="lp-hero-in">
+      <span class="lp-kicker">Набережная реки Светлой · освещение в бюджете 2027</span>
+      <h1>Что решают<br>в вашем районе</h1>
       <p>Бюджет района, идеи соседей и то, что поддерживают все.</p>
-      <form action="app.html" method="get">
-        <input name="addr" placeholder="Ваш адрес, например Садовая, 14" aria-label="Ваш адрес" autocomplete="street-address">
-        <button class="btn" type="submit">Показать мой район</button>
+      <form class="lp-find" action="app.html" method="get">
+        <input name="addr" placeholder="Улица и дом, например Садовая, 14" aria-label="Ваш адрес" autocomplete="street-address">
+        <button class="btn" type="submit">Показать район</button>
       </form>
-      <div class="alt"><a href="app.html?demo=1&amp;tour=1#/feed">Посмотреть демо-тур</a></div>
+      <a class="lp-demo" href="app.html?demo=1&amp;tour=1#/feed">Посмотреть демо-тур →</a>
     </div>
   </section>
 
   <div class="lp-strip"><span><b>15 млн ₽</b> бюджета решают жители</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b id="electionDate">8 ноября</b></span></div>
 
   <main class="lp-wrap">
+    <section class="lp-sec" style="padding-bottom:24px">
+      <div class="lp-head"><h2>Сейчас решают в Северном</h2><a href="app.html?demo=1#/budget">Все 8 проектов →</a></div>
+      <div class="lp-cards">
+        <a class="lp-card" href="app.html?demo=1#/budget"><div class="pb-media"><img src="assets/img/1608487583634-0f31766e4cb1-700.jpg" alt="" loading="lazy"><span class="pm-tag">Школы</span><span class="pb-price">1,8 млн ₽</span></div><b>Светофор с кнопкой у школы № 12</b><span>1 290 голосов · согласны все</span></a>
+        <a class="lp-card" href="app.html?demo=1#/budget"><div class="pb-media"><img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="" loading="lazy"><span class="pm-tag">Транспорт</span><span class="pb-price">3,4 млн ₽</span></div><b>Вечерний автобус 14 до 23:30</b><span>1 180 голосов · согласны все</span></a>
+        <a class="lp-card" href="app.html?demo=1#/budget"><div class="pb-media"><img src="assets/img/1789062665477-b58eb89a22b6-700.jpg" alt="" loading="lazy"><span class="pm-tag">Экология</span><span class="pb-price">4,2 млн ₽</span></div><b>Освещение набережной</b><span>1 040 голосов</span></a>
+        <a class="lp-card" href="app.html?demo=1#/budget"><div class="pb-media"><img src="assets/img/1780866701554-254dcf3fac8e-700.jpg" alt="" loading="lazy"><span class="pm-tag">Транспорт</span><span class="pb-price">2,6 млн ₽</span></div><b>Навесы и табло на 12 остановках</b><span>960 голосов</span></a>
+      </div>
+    </section>
+
     <section class="lp-sec" id="how">
       <div class="lp-split">
         <div class="lp-point"><div class="num">Лента района</div>
           <h3>Наверху — то, с чем согласны все</h3>
           <p>Пост поднимается, только если его поддерживают люди с разными взглядами. Спорное видно сразу, фейки получают контекст.</p></div>
-        <div class="lp-shot"><article class="card post" style="width:100%;max-width:420px">
-          <div class="post-body"><div class="post-head"><span class="avatar">ПР<img src="assets/avatars/4obrbi.svg" alt=""></span>
+        <div class="lp-photo"><img src="assets/img/1632276536839-84cad7fd03b0-1200.jpg" alt="Автобус 14" loading="lazy">
+          <div class="card"><div class="post-head"><span class="avatar">ПР<img src="assets/avatars/4obrbi.svg" alt=""></span>
             <div><div class="name">Павел Р.</div><div class="meta">Житель района · 5 ч назад</div></div></div>
-            <p class="post-text">Автобус 14 опаздывает на 15–20 минут каждое утро. Выложил данные GPS за месяц.</p></div>
-          <img class="post-photo" src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="Автобус" loading="lazy">
-          <div class="post-foot"><div class="support"><div class="spec"><span class="a" style="width:32.4%"></span><span class="b" style="width:34.2%"></span><span class="c" style="width:33.4%"></span></div><span class="val">Согласны все</span>
-            <div class="cap"><span><i style="background:var(--c1)"></i>автомобилисты 90%</span><span><i style="background:var(--c2)"></i>пешеходы 95%</span><span><i style="background:var(--c3)"></i>семьи 91%</span></div></div></div>
-          <div style="height:10px"></div></article></div>
+            <p class="post-text" style="margin-bottom:12px">Автобус 14 опаздывает на 15–20 минут каждое утро. Выложил данные GPS за месяц.</p>
+            <div class="support"><div class="spec"><span class="a" style="width:32.4%"></span><span class="b" style="width:34.2%"></span><span class="c" style="width:33.4%"></span></div><span class="val">Согласны все</span>
+            <div class="cap"><span><i style="background:var(--c1)"></i>автомобилисты 90%</span><span><i style="background:var(--c2)"></i>пешеходы 95%</span><span><i style="background:var(--c3)"></i>семьи 91%</span></div></div></div></div>
       </div>
     </section>
 
@@ -61,13 +70,14 @@
         <div class="lp-point"><div class="num">Бюджет района</div>
           <h3>Жители сами решают, на что потратить 15 млн ₽</h3>
           <p>Соберите корзину проектов в пределах бюджета. Проходят те, за которые проголосовало больше всего соседей.</p></div>
-        <div class="lp-shot"><div class="card" style="width:100%;max-width:420px">
-          <div class="row" style="justify-content:space-between"><b>Ваша корзина: 9,4 млн ₽</b><span class="small muted">из 15 млн ₽</span></div>
-          <div class="bar" style="margin:8px 0 14px;height:8px"><span style="width:63%"></span></div>
-          <div class="rank-row win" style="padding:10px 0;border:none;background:none"><span class="rank-n">1</span><div style="flex:1"><b class="small">Светофор с кнопкой у школы № 12</b><div class="small muted">1,8 млн ₽ · 1 290 голосов</div></div></div>
-          <div class="rank-row win" style="padding:10px 0;border:none;background:none"><span class="rank-n">2</span><div style="flex:1"><b class="small">Вечерний автобус 14 до 23:30</b><div class="small muted">3,4 млн ₽ · 1 180 голосов</div></div></div>
-          <div class="rank-row win" style="padding:10px 0;border:none;background:none"><span class="rank-n">3</span><div style="flex:1"><b class="small">Освещение набережной</b><div class="small muted">4,2 млн ₽ · 1 040 голосов</div></div></div>
-        </div></div>
+        <div class="lp-photo"><img src="assets/img/1608487583634-0f31766e4cb1-1200.jpg" alt="Переход у школы" loading="lazy">
+          <div class="card">
+            <div class="row" style="justify-content:space-between"><b>Ваша корзина: 9,4 млн ₽</b><span class="small muted">из 15 млн ₽</span></div>
+            <div class="bar" style="margin:8px 0 6px;height:8px"><span style="width:63%"></span></div>
+            <div class="rank-row win" style="padding:8px 0;border:none;background:none"><span class="rank-n">1</span><div style="flex:1"><b class="small">Светофор с кнопкой у школы № 12</b><div class="small muted">1,8 млн ₽ · 1 290 голосов</div></div></div>
+            <div class="rank-row win" style="padding:8px 0;border:none;background:none"><span class="rank-n">2</span><div style="flex:1"><b class="small">Вечерний автобус 14 до 23:30</b><div class="small muted">3,4 млн ₽ · 1 180 голосов</div></div></div>
+            <div class="rank-row win" style="padding:8px 0;border:none;background:none"><span class="rank-n">3</span><div style="flex:1"><b class="small">Освещение набережной</b><div class="small muted">4,2 млн ₽ · 1 040 голосов</div></div></div>
+          </div></div>
       </div>
     </section>
 
@@ -77,19 +87,21 @@
           <h3>Отчёт для совета — в один клик</h3>
           <p>С чем согласны все группы жителей, что прошло по бюджету и где нужен диалог. Готово к заседанию, скачивается в PDF.</p>
           <p><a class="btn ghost" href="app.html?demo=1#/report">Открыть пример отчёта</a></p></div>
-        <div class="lp-shot"><div class="card" style="width:100%;max-width:420px">
-          <div class="small muted">Отчёт для совета депутатов</div>
-          <b style="display:block;font-size:18px;margin:4px 0 12px">Что решили жители Северного округа</b>
-          <div class="report-kpis" style="grid-template-columns:1fr 1fr;margin:0 0 12px"><div><b>2 318</b><span>проголосовали за бюджет</span></div><div><b>3</b><span>решения поддерживают все группы</span></div></div>
-          <table class="diff-table"><tbody>
-            <tr><td class="small">Остановки должны быть с навесами и табло</td><td class="nowrap"><span class="pct-cell" style="--c:var(--c1)">90%</span><span class="pct-cell" style="--c:var(--c2)">94%</span><span class="pct-cell" style="--c:var(--c3)">89%</span></td></tr>
-            <tr><td class="small">Отчёты о тратах района — каждый месяц</td><td class="nowrap"><span class="pct-cell" style="--c:var(--c1)">88%</span><span class="pct-cell" style="--c:var(--c2)">90%</span><span class="pct-cell" style="--c:var(--c3)">85%</span></td></tr>
-          </tbody></table>
-        </div></div>
+        <div class="lp-photo"><img src="assets/img/1777529178036-18e4a92ec0b6-1200.jpg" alt="Набережная осенью" loading="lazy">
+          <div class="card">
+            <div class="small muted">Отчёт для совета депутатов</div>
+            <b style="display:block;font-size:18px;margin:4px 0 12px">Что решили жители Северного округа</b>
+            <div class="report-kpis" style="grid-template-columns:1fr 1fr;margin:0 0 12px"><div><b>2 318</b><span>проголосовали за бюджет</span></div><div><b>3</b><span>решения поддерживают все группы</span></div></div>
+            <table class="diff-table"><tbody>
+              <tr><td class="small">Остановки должны быть с навесами и табло</td><td class="nowrap"><span class="pct-cell" style="--c:var(--c1)">90%</span><span class="pct-cell" style="--c:var(--c2)">94%</span><span class="pct-cell" style="--c:var(--c3)">89%</span></td></tr>
+              <tr><td class="small">Отчёты о тратах района — каждый месяц</td><td class="nowrap"><span class="pct-cell" style="--c:var(--c1)">88%</span><span class="pct-cell" style="--c:var(--c2)">90%</span><span class="pct-cell" style="--c:var(--c3)">85%</span></td></tr>
+            </tbody></table>
+          </div></div>
       </div>
     </section>
 
     <section class="lp-cta">
+      <img src="assets/img/1780866701554-254dcf3fac8e-1200.jpg" alt="" loading="lazy">
       <h2>Посмотрите, как это работает</h2>
       <p>Две минуты, без регистрации. Город и жители в демо вымышлены.</p>
       <div class="row" style="justify-content:center"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="investors.html">Для инвесторов</a></div>

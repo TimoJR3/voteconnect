@@ -11,7 +11,7 @@
   const topic = (id) => D.topics.find((t) => t.id === id);
   const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   const MONTHS_NOM = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-  const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span>`;
+  const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--brand)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span>`;
   const photo = (id, w = 900) => `assets/img/${id}-${w >= 1000 ? 1200 : 700}.jpg`;   // фото хранятся локально (Unsplash License)
   const AVA_BG = ["e2efe6", "f3e3c7", "dbe4f3", "f1d6d3", "ece3f5", "e8e2d6"];
   const hash = (s) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -94,6 +94,13 @@
     </div>`;
   }
 
+  // Короткая плашка поверх фото: согласны ли все группы
+  function supportPill(sup) {
+    const min = Math.min(...sup);
+    return `<span class="pm-pill ${min >= 70 ? "" : "split"}"><i></i>${min >= 70 ? `Поддерживают все группы · ${min}%` : "Мнения расходятся"}</span>`;
+  }
+  const mediaImg = (id, w) => `<img src="${photo(id, w)}" alt="" loading="lazy">`;
+
   /* ---------- Компас: расчёт ---------- */
   const compassDone = () => Object.keys(S.compass).length >= Math.ceil(D.compass.length * 0.6);
   function matches() {
@@ -161,15 +168,17 @@
     const cmCount = p.comments + (S.comments[p.id] || []).length;
     return `<article class="card post fade-in ${p.flagged ? "flagged" : ""}">
       <div class="post-body">
-        <div class="post-head">${p.type === "official" ? `<span class="avatar" style="background:var(--primary);color:#fff">${ic("shield")}</span>` : ava(p.author, "", c ? c.id : p.author)}
+        <div class="post-head">${p.type === "official" ? `<span class="avatar" style="background:var(--brand);color:#fff">${ic("shield")}</span>` : ava(p.author, "", c ? c.id : p.author)}
           <div><div class="name">${c ? `<a href="#/candidate/${c.id}">${esc(p.author)}</a>` : esc(p.author)}${c && c.verified ? ` <span class="vmark" title="Личность подтверждена">${ic("check")}</span>` : ""}</div>
           <div class="meta">${c ? `Кандидат · ${esc(D.parties[c.party].name)}` : p.type === "official" ? "Официальный аккаунт" : "Житель района"} · ${esc(p.time)}</div></div>
         </div>
+      </div>
+      ${p.photo ? `<figure class="post-media">${mediaImg(p.photo, 1200)}${t ? `<span class="pm-tag">${t.name}</span>` : ""}${p.support && !p.flagged ? supportPill(p.support) : ""}</figure>` : ""}
+      <div class="post-body">
         <p class="post-text">${esc(p.text)}</p>
-        ${t || p.verified ? `<div class="row" style="margin-top:10px">${t ? `<span class="chip">${t.name}</span>` : ""}${p.verified ? `<span class="chip ok">${ic("check")} ${esc(p.verified)}</span>` : ""}</div>` : ""}
+        ${(t && !p.photo) || p.verified ? `<div class="row" style="margin-top:10px">${t && !p.photo ? `<span class="chip">${t.name}</span>` : ""}${p.verified ? `<span class="chip ok">${ic("check")} ${esc(p.verified)}</span>` : ""}</div>` : ""}
         ${p.note ? `<div class="note ${p.flagged ? "bad" : ""}"><b>${p.flagged ? "Ложная информация" : "Контекст от жителей"}</b>${esc(p.note.replace(/^(Контекст от сообщества|Ложная информация)\.?:?\s*/, ""))}</div>` : ""}
       </div>
-      ${p.photo ? `<img class="post-photo" src="${photo(p.photo)}" alt="" loading="lazy">` : ""}
       ${p.support && !p.flagged ? `<div class="post-foot">${support(p.support)}</div>` : ""}
       <div class="post-actions">
         <button data-like="${p.id}" class="${liked ? "on" : ""}">${ic(liked ? "heartOn" : "heart")} ${fmt(p.likes + (liked ? 1 : 0))}</button>
@@ -810,9 +819,9 @@
       </div>
       <div class="grid three" style="margin-top:14px">${B.projects.map((p) => {
         const on = picks.includes(p.id), tooMuch = !on && spent + p.cost > B.total;
-        return `<div class="card init-card pb-card ${on ? "picked" : ""}">${p.photo ? `<img src="${photo(p.photo, 700)}" alt="" loading="lazy">` : `<div class="pb-noimg">${ic("pin")}</div>`}
-          <div class="in"><div class="row"><span class="chip">${topic(p.topic).name}</span><span class="spacer"></span><b>${rub(p.cost)}</b></div>
-          <h3>${esc(p.title)}</h3><div class="small muted">${esc(p.author)}</div><span class="spacer"></span>
+        return `<div class="card init-card pb-card ${on ? "picked" : ""}"><div class="pb-media">${p.photo ? mediaImg(p.photo, 700) : `<div class="pb-noimg">${ic("pin")}</div>`}
+            <span class="pm-tag">${topic(p.topic).name}</span><span class="pb-price">${rub(p.cost)}</span>${on ? `<span class="pb-on" aria-hidden="true">${ic("check")}</span>` : ""}</div>
+          <div class="in"><h3>${esc(p.title)}</h3><div class="small muted">${esc(p.author)}</div><span class="spacer"></span>
           ${S.pb.submitted ? `<div class="small muted">${fmt(pbVotes(p))} голосов</div>` : `<button class="btn small ${on ? "" : "ghost"}" data-pick-pb="${p.id}" ${tooMuch ? "disabled title=\"Не помещается в остаток бюджета\"" : ""}>${on ? `${ic("check")} В корзине` : tooMuch ? "Не помещается" : `${ic("plus")} В корзину`}</button>`}</div></div>`;
       }).join("")}</div>`;
     } else if (pbTab === "results") {
