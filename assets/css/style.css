@@ -8,14 +8,14 @@
   --surface-2: #eef0ec;
   --border: #e2e5e0;
   --text: #1b221f;
-  --muted: #65706a;
+  --muted: #5d6862;
   --primary: #1d6b45;
   --primary-2: #2c8657;
   --primary-soft: #e2efe6;
-  --accent: #e0542e;
+  --accent: #c8441f;
   --ok: #1d6b45;
   --ok-soft: #e2efe6;
-  --warn: #a45f00;
+  --warn: #925400;
   --warn-soft: #fbefd9;
   --bad: #c0392b;
   --bad-soft: #fbe5e2;
@@ -472,3 +472,5 @@ body.ob-mode .hdr, body.ob-mode .shell, body.ob-mode .tabbar { display: none !im
 .rail .event-item { grid-template-columns: 44px 1fr; gap: 6px 12px; }
 .rail .event-item > .row { grid-column: 2; }
 .rail .event-date b { font-size: 16px; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

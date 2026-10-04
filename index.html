@@ -23,7 +23,7 @@
   </header>
 
   <section class="lp-hero">
-    <img src="https://images.unsplash.com/photo-1789062665477-b58eb89a22b6?w=1800&q=70&auto=format&fit=crop" alt="Набережная реки">
+    <img src="https://images.unsplash.com/photo-1789062665477-b58eb89a22b6?w=1400&q=60&auto=format&fit=crop" alt="Набережная реки">
     <div class="lp-find">
       <h1>Что решают в вашем районе</h1>
       <p>Кандидаты, их обещания и то, о чём договорились соседи.</p>
@@ -35,7 +35,7 @@
     </div>
   </section>
 
-  <div class="lp-strip"><span><b>5</b> кандидатов в округе</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b>8 ноября</b></span></div>
+  <div class="lp-strip"><span><b>5</b> кандидатов в округе</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b id="electionDate">8 ноября</b></span></div>
 
   <main class="lp-wrap">
     <section class="lp-sec" id="how">
@@ -57,7 +57,7 @@
     <section class="lp-sec" style="padding-top:0">
       <div class="lp-split rev">
         <div class="lp-point"><div class="num">Компас взглядов</div>
-          <h3>За кого голосовать — за 3 минуты</h3>
+          <h3>Чьи позиции ближе — за 3 минуты</h3>
           <p>12 вопросов о жизни района. Ответы сравниваются с позициями кандидатов и не покидают ваш телефон.</p></div>
         <div class="lp-shot"><div class="card q-card" style="width:100%;max-width:420px">
           <img class="q-photo" src="https://images.unsplash.com/photo-1780866701554-254dcf3fac8e?w=800&q=70&auto=format&fit=crop" alt="Улица вечером" loading="lazy">
@@ -87,5 +87,7 @@
 
     <footer class="lp-foot"><span>© 2026 VoteConnect · открытый код</span><span>Фото: Unsplash · редактор: Yoopta-Editor · память помощника: ai-memory-service</span></footer>
   </main>
+  <script src="assets/js/data.js"></script>
+  <script>document.getElementById("electionDate").textContent = window.VC_DATA.election.label;</script>
 </body>
 </html>

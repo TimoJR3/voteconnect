@@ -12,13 +12,13 @@
   const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   const MONTHS_NOM = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span>`;
-  const photo = (id, w = 900) => `https://images.unsplash.com/photo-${id}?w=${w}&q=70&auto=format&fit=crop`;
+  const photo = (id, w = 900) => `https://images.unsplash.com/photo-${id}?w=${w}&q=60&auto=format&fit=crop`;
   const AVA_BG = ["e2efe6", "f3e3c7", "dbe4f3", "f1d6d3", "ece3f5", "e8e2d6"];
   const hash = (s) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
   function ava(name, cls = "", seed) {
     const s = seed || name, bg = AVA_BG[hash(s) % AVA_BG.length];
-    return `<span class="avatar ${cls}">${esc(initials(name))}<img src="https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(s)}&backgroundColor=${bg}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+    return `<span class="avatar ${cls}">${esc(initials(name))}<img src="https://api.dicebear.com/9.x/notionists/svg?seed=${hash(s).toString(36)}&backgroundColor=${bg}" alt="" loading="lazy" onerror="this.remove()"></span>`;
   }
 
   /* ---------- Состояние (только в браузере пользователя) ---------- */
@@ -55,7 +55,7 @@
   $$("[data-logo]").forEach((el) => (el.innerHTML = LOGO));
   const daysLeft = Math.max(0, Math.ceil((new Date(D.election.date + "T08:00:00") - new Date()) / 864e5));
   const plural = (n, a, b, c) => (n % 10 === 1 && n % 100 !== 11 ? a : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? b : c);
-  $("#countdown").innerHTML = `<div class="num">${daysLeft}</div><div class="small">${plural(daysLeft, "день", "дня", "дней")} до выборов<br><span class="muted">8 ноября</span></div>`;
+  $("#countdown").innerHTML = `<div class="num">${daysLeft}</div><div class="small">${plural(daysLeft, "день", "дня", "дней")} до выборов<br><span class="muted">${D.election.label}</span></div>`;
   $("#menuBtn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
   function applyTheme(t) { if (t) document.documentElement.dataset.theme = t; }
   try { applyTheme(localStorage.getItem("vc-theme")); } catch (e) { /* ignore */ }
@@ -145,7 +145,7 @@
     <aside class="rail">
       ${top ? `<a class="card" href="#/compass" style="color:inherit;text-decoration:none"><div class="small muted">Ближе всего к вам</div>
           <div class="row" style="margin-top:8px">${ava(top.c.name, "", top.c.id)}<div><b>${esc(top.c.name)}</b><div class="small muted">${esc(D.parties[top.c.party].name)}</div></div><span class="spacer"></span><b style="font-size:22px;color:var(--primary)">${top.pct}%</b></div></a>`
-        : `<div class="card"><h3>За кого голосовать?</h3><p class="small muted">12 вопросов о жизни района — и видно, чьи позиции ближе.</p><a class="btn small" href="#/compass">Пройти Компас</a></div>`}
+        : `<div class="card"><h3>Чьи позиции ближе?</h3><p class="small muted">12 вопросов о жизни района — и видно, с кем из кандидатов вы совпадаете.</p><a class="btn small" href="#/compass">Пройти Компас</a></div>`}
       <div class="card"><h3>Скоро</h3>${upcoming(2)}</div>
       <div class="card"><h3>Собирают подписи</h3>
         ${D.initiatives.slice(0, 2).map((i) => `<a href="#/initiatives" style="display:block;color:inherit;margin:10px 0">
@@ -324,11 +324,12 @@
   const pollVotes = D.polls.map((p) => p.votes.slice());
   views.polls = () => pageHead("Опросы", "Результаты видны после голосования", `<span class="live">Идёт голосование</span>`) + `
     <div class="grid two">${D.polls.map((p, pi) => {
-      const mine = S.polls[p.id], votes = pollVotes[pi].map((v, i) => v + (mine === i ? 1 : 0)), total = votes.reduce((a, b) => a + b, 0);
+      const silent = p.election && daysLeft <= 5, mine = silent ? undefined : S.polls[p.id], votes = pollVotes[pi].map((v, i) => v + (mine === i ? 1 : 0)), total = votes.reduce((a, b) => a + b, 0);
+      if (silent) return `<div class="card"><h3>${esc(p.text)}</h3><p class="small muted">Результаты скрыты: за 5 дней до голосования их публикация запрещена (ст. 46 67-ФЗ).</p></div>`;
       return `<div class="card" data-poll="${pi}"><h3>${esc(p.text)}</h3>
         ${p.options.map((o, i) => `<button class="poll-opt ${mine === i ? "mine" : ""}" data-pv="${pi}:${i}">
           <span class="fill" style="width:${mine !== undefined ? (votes[i] / total * 100).toFixed(1) : 0}%"></span><span>${esc(o)}</span><span data-pct>${mine !== undefined ? Math.round(votes[i] / total * 100) + "%" : ""}</span></button>`).join("")}
-        <div class="small muted" data-total>${mine !== undefined ? `${fmt(total)} голосов` : "Один человек — один голос"}</div></div>`;
+        <div class="small muted" data-total>${mine !== undefined ? `${fmt(total)} голосов` : "Один человек — один голос"}</div>${p.election ? `<p class="small muted" style="margin:8px 0 0">Опрос VoteConnect, онлайн, участники платформы округа № 7, ${esc(D.events[0].date.slice(0, 7))}. Выборка не репрезентативна, погрешность не оценивается. Заказчик — VoteConnect.</p>` : ""}</div>`;
     }).join("")}</div>`;
   binders.polls = () => {
     $$("[data-pv]").forEach((b) => b.addEventListener("click", () => {
@@ -415,7 +416,8 @@
   };
 
   /* ================= СОБЫТИЯ ================= */
-  let calMonth = 8;
+  const EV_MONTHS = D.events.map((e) => new Date(e.date + "T00:00:00").getMonth()), CAL_MIN = Math.min(...EV_MONTHS), CAL_MAX = Math.max(...EV_MONTHS);
+  let calMonth = Math.min(CAL_MAX, Math.max(CAL_MIN, new Date().getMonth()));
   const TODAY = new Date(), pad = (n) => String(n).padStart(2, "0");
   const todayISO = `${TODAY.getFullYear()}-${pad(TODAY.getMonth() + 1)}-${pad(TODAY.getDate())}`;
   function eventRow(e) {
@@ -431,7 +433,7 @@
     }).join("") + `<a class="small" style="display:inline-block;margin-top:10px;font-weight:600" href="#/calendar">Все события</a>`;
   }
   views.calendar = () => {
-    const y = 2026, first = new Date(y, calMonth, 1), days = new Date(y, calMonth + 1, 0).getDate(), off = (first.getDay() + 6) % 7, cells = [];
+    const y = new Date(D.events[0].date).getFullYear(), first = new Date(y, calMonth, 1), days = new Date(y, calMonth + 1, 0).getDate(), off = (first.getDay() + 6) % 7, cells = [];
     for (let i = 0; i < off; i++) cells.push(`<div class="day empty"></div>`);
     for (let d = 1; d <= days; d++) {
       const iso = `${y}-${pad(calMonth + 1)}-${pad(d)}`, evs = D.events.filter((e) => e.date === iso);
@@ -440,8 +442,8 @@
     const monthEvents = D.events.filter((e) => new Date(e.date + "T00:00:00").getMonth() === calMonth);
     return pageHead("События", "Встречи, дебаты и важные даты") + `
     <div class="layout wide"><div class="stack">
-      <div class="card"><div class="row" style="margin-bottom:12px"><button class="icon-btn" id="calPrev" ${calMonth <= 8 ? "disabled" : ""} aria-label="Назад" style="transform:scaleX(-1)">${ic("chevron")}</button>
-        <h3 style="margin:0;min-width:120px;text-align:center">${MONTHS_NOM[calMonth]}</h3><button class="icon-btn" id="calNext" ${calMonth >= 10 ? "disabled" : ""} aria-label="Вперёд">${ic("chevron")}</button>
+      <div class="card"><div class="row" style="margin-bottom:12px"><button class="icon-btn" id="calPrev" ${calMonth <= CAL_MIN ? "disabled" : ""} aria-label="Назад" style="transform:scaleX(-1)">${ic("chevron")}</button>
+        <h3 style="margin:0;min-width:120px;text-align:center">${MONTHS_NOM[calMonth]}</h3><button class="icon-btn" id="calNext" ${calMonth >= CAL_MAX ? "disabled" : ""} aria-label="Вперёд">${ic("chevron")}</button>
         <span class="spacer"></span><div class="legend">${["Важно", "Дебаты", "Встреча", "Обучение", "Акция"].map((t) => `<span><i class="ev-${t}"></i>${t}</span>`).join("")}</div></div>
         <div class="cal">${["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => `<div class="dow">${d}</div>`).join("")}${cells.join("")}</div></div>
       <div class="card">${monthEvents.map(eventRow).join("") || `<p class="muted">Нет событий.</p>`}</div>
@@ -462,8 +464,8 @@
     $$("[data-ics]").forEach((b) => b.addEventListener("click", () => downloadICS(D.events[b.dataset.ics])));
   }
   binders.calendar = () => {
-    $("#calPrev").addEventListener("click", () => { calMonth = Math.max(8, calMonth - 1); render(); });
-    $("#calNext").addEventListener("click", () => { calMonth = Math.min(10, calMonth + 1); render(); });
+    $("#calPrev").addEventListener("click", () => { calMonth = Math.max(CAL_MIN, calMonth - 1); render(); });
+    $("#calNext").addEventListener("click", () => { calMonth = Math.min(CAL_MAX, calMonth + 1); render(); });
     $$("[data-ev]").forEach((b) => b.addEventListener("click", () => { const e = D.events[b.dataset.ev]; toast(`${e.title} · ${e.time}, ${e.place}`); }));
     const find = () => { const s = $("#street").value.trim(); if (!s) return; const st = stationFor(s);
       $("#station").innerHTML = `<div class="arg"><b>Участок № ${st.num}</b><br>Школа № ${st.school}, ул. ${esc(s)}, ${st.house}<br><span class="muted">9 минут пешком · доступная среда</span></div>`; };
@@ -636,9 +638,9 @@
     if (/участ|где голос|куда идти/.test(t)) {
       if (!street) return { text: "Подскажите вашу улицу — например, «я живу на Садовой».", used: [] };
       const st = stationFor(street);
-      return { text: `Ваш участок № ${st.num}: школа № ${st.school}, ул. ${street}, ${st.house}. Голосование 8 ноября с 8:00 до 20:00.`, used: ["location.street", "location.district"] };
+      return { text: `Ваш участок № ${st.num}: школа № ${st.school}, ул. ${street}, ${st.house}. Голосование ${D.election.label} с 8:00 до 20:00.`, used: ["location.street", "location.district"] };
     }
-    if (/кандидат|за кого|совпад|голосовать/.test(t)) {
+    if (/кандидат|за кого|совпад|голосовать|ближе|позици/.test(t)) {
       if (!compassDone()) return { text: "Сначала пройдите Компас — 12 вопросов. Тогда покажу, чьи позиции ближе к вашим.", used: [] };
       const top = matches()[0]; mem.filter((x) => x.type === "opinion").slice(0, 2).forEach((x) => used.push(x.key));
       return { text: `Ближе всего к вам ${top.c.name} — ${top.pct}%. Это подсказка, а не агитация: сравните обещания в разделе «Обещания».`, used };
@@ -655,7 +657,7 @@
     return pageHead("Помощник", "Отвечает с учётом того, что знает о вас") + `
     <div class="asst"><div class="card">
       <div class="chat" id="chat">${chat.map((m) => `<div class="msg ${m.me ? "me" : ""}">${esc(m.text)}${m.used && m.used.length ? `<div class="used">Учёл: ${m.used.map((k) => `<code>${esc(k)}</code>`).join(" ")}</div>` : ""}</div>`).join("")}</div>
-      <div class="sugg" style="margin-top:10px">${["Где мой участок?", "Когда ближайшая встреча?", "За кого мне голосовать?", "Я живу на Мира", "Отвечай короче"].map((s) => `<button class="chip" data-sugg="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+      <div class="sugg" style="margin-top:10px">${["Где мой участок?", "Когда ближайшая встреча?", "Чьи позиции мне ближе?", "Я живу на Мира", "Отвечай короче"].map((s) => `<button class="chip" data-sugg="${esc(s)}">${esc(s)}</button>`).join("")}</div>
       <div class="ask"><input id="askInput" placeholder="Спросите помощника"><button class="btn" id="askSend" aria-label="Отправить">${ic("send")}</button></div></div>
     <aside class="card" id="memList"><h3>Что помнит помощник</h3>
       ${mem.map((m) => `<div class="mem"><span class="t">${TYPE_RU[m.type]}</span><code>${esc(m.key)}</code><span class="conf">${m.conf.toFixed(2)}</span><div>${esc(m.value)}</div>${m.old ? `<div class="old">было: ${esc(m.old)}</div>` : ""}</div>`).join("")}
@@ -812,7 +814,7 @@
       <button class="btn block" data-ob="finish" ${ob.agree ? "" : "disabled"}>Готово</button>`;
     else body = `<div style="text-align:center"><div class="ob-done">${ic("check")}</div><h2>Добро пожаловать, ${esc((ob.name || "").split(" ")[0])}!</h2><p class="muted">Начните с Компаса — 3 минуты.</p></div>
       <a class="btn block" href="#/compass" data-ob="enter">Пройти Компас</a><a class="btn ghost block" href="#/feed" data-ob="enter">В ленту района</a>`;
-    box.innerHTML = `<img class="bgimg" src="${photo("1789062665477-b58eb89a22b6", 1600)}" alt="">
+    box.innerHTML = `<img class="bgimg" src="${photo("1789062665477-b58eb89a22b6", 1200)}" alt="">
       <div class="ob-card fade-in">${s > 0 && s < 5 ? `<div class="row" style="margin-bottom:16px"><button class="icon-btn" data-ob="back" aria-label="Назад" style="transform:scaleX(-1)">${ic("chevron")}</button><div class="steps">${[1, 2, 3, 4].map((i) => `<i class="${i <= s ? "done" : ""}"></i>`).join("")}</div></div>` : ""}${body}</div>`;
     bindOnboarding();
   }

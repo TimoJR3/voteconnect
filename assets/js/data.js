@@ -115,7 +115,7 @@ window.VC_DATA = {
       id: "p7", support: [6, 4, 5], type: "citizen", author: "Анонимный аккаунт", avatar: "?", time: "13 ч назад",
       text: "СРОЧНО!!! Выборы перенесли, на участки не ходите, всё решат без вас!!!",
       topic: null, verified: null, bridge: 0.05, likes: 12, comments: 3, flagged: true,
-      note: "Ложная информация. Дата выборов не менялась: 8 ноября 2026. Источник: решение избирательной комиссии (демо). Пост скрыт из рекомендаций."
+      note: "Ложная информация. Дата выборов не менялась: {ELECTION}. Источник: решение избирательной комиссии (демо). Пост скрыт из рекомендаций."
     },
     {
       id: "p8", support: [80, 88, 93], type: "candidate", author: "Сергей Кузнецов", candidate: "kuznetsov", avatar: "СК", time: "1 д назад",
@@ -160,7 +160,7 @@ window.VC_DATA = {
 
   polls: [
     { id: "q1", text: "Какая проблема округа для вас главная?", options: ["Пробки и транспорт", "Очереди в поликлиниках", "Состояние дворов", "Экология реки Светлой"], votes: [412, 377, 298, 251] },
-    { id: "q2", text: "Пойдёте ли вы на выборы 8 ноября?", options: ["Да, точно", "Скорее да", "Ещё не решил(а)", "Нет"], votes: [1204, 530, 488, 97] },
+    { id: "q2", election: true, text: "Пойдёте ли вы на выборы {ELECTION}?", options: ["Да, точно", "Скорее да", "Ещё не решил(а)", "Нет"], votes: [1204, 530, 488, 97] },
     { id: "q3", text: "В каком формате вам удобнее смотреть дебаты?", options: ["Прямой эфир", "Короткие нарезки", "Текстовая расшифровка", "Живьём в зале"], votes: [320, 611, 190, 142] }
   ],
 
@@ -329,3 +329,27 @@ window.VC_DATA = {
     { id: "planner", name: "Всё по плану", icon: "", desc: "Добавить событие в календарь" }
   ]
 };
+
+/* Демо всегда «свежее»: все даты сдвигаются так, чтобы сегодняшний день
+   соответствовал 18 сентября 2026 года из исходного сценария. */
+(function () {
+  const D = window.VC_DATA, DAY = 864e5;
+  const MON = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+  const MON_S = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+  const base = Date.UTC(2026, 8, 18), now = new Date(), today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const shift = Math.max(0, Math.round((today - base) / DAY));
+  const move = (iso) => { const t = new Date(Date.parse(iso + "T00:00:00Z") + shift * DAY); return t.toISOString().slice(0, 10); };
+  D.events.forEach((e) => (e.date = move(e.date)));
+  D.election.date = move(D.election.date);
+  const el = new Date(D.election.date + "T00:00:00Z");
+  el.setUTCDate(el.getUTCDate() + ((7 - el.getUTCDay()) % 7));          // выборы — всегда в воскресенье
+  D.election.date = el.toISOString().slice(0, 10);
+  D.events.forEach((e) => { if (e.title === "ДЕНЬ ГОЛОСОВАНИЯ") e.date = D.election.date; });
+  const ed = new Date(D.election.date + "T00:00:00Z");
+  D.election.label = ed.getUTCDate() + " " + MON[ed.getUTCMonth()];
+  D.cabinet.weeks = D.cabinet.weeks.map((_, i, a) => { const t = new Date(today - (a.length - 1 - i) * 7 * DAY - 4 * DAY); return t.getUTCDate() + " " + MON_S[t.getUTCMonth()]; });
+  const fill = (s) => s.replace(/{ELECTION}/g, D.election.label);
+  D.feed.forEach((p) => { if (p.note) p.note = fill(p.note); });
+  D.polls.forEach((p) => (p.text = fill(p.text)));
+})();
+
