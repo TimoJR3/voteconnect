@@ -5,7 +5,7 @@
   const { ic } = window.VCIcons;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const { esc, cleanHTML, csvCell } = window.VCSanitize;
   const fmt = (n) => n.toLocaleString("ru-RU");
   const cand = (id) => D.candidates.find((c) => c.id === id);
   const topic = (id) => D.topics.find((t) => t.id === id);
@@ -19,8 +19,10 @@
   function ava(name, cls = "", seed) {
     const s = seed || name, bg = AVA_BG[hash(s) % AVA_BG.length];
     const key = hash(s).toString(36), known = (window.VC_AVATARS || []).includes(key);   // аватары только локальные, имя никуда не уходит
-    return `<span class="avatar ${cls}">${esc(initials(name))}${known ? `<img src="assets/avatars/${key}.svg" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>`;
+    return `<span class="avatar ${cls}">${esc(initials(name))}${known ? `<img src="assets/avatars/${key}.svg" alt="" loading="lazy">` : ""}</span>`;
   }
+
+  document.addEventListener("error", (e) => { if (e.target.tagName === "IMG" && e.target.closest(".avatar")) e.target.remove(); }, true);
 
   /* ---------- Состояние (только в браузере пользователя) ---------- */
   const KEY = "voteconnect-demo-v2";
@@ -509,16 +511,6 @@
   /* ================= ИНИЦИАТИВЫ (редактор Yoopta) ================= */
   let initForm = false, editorHandle = null;
   const TEMPLATE = "<h3>Проблема</h3><p></p><h3>Решение</h3><p></p><h3>Кто должен сделать</h3><p></p>";
-  const INLINE = { STRONG: "b", B: "b", EM: "i", I: "i", MARK: "mark" };
-  function cleanHTML(src) {
-    const box = document.createElement("div"); box.innerHTML = src; const out = [];
-    const inline = (n) => [...n.childNodes].map((c) => c.nodeType === 3 ? esc(c.textContent) : INLINE[c.tagName] ? `<${INLINE[c.tagName]}>${inline(c)}</${INLINE[c.tagName]}>` : inline(c)).join("");
-    box.querySelectorAll("h1,h2,h3,p,li,blockquote").forEach((n) => {
-      const t = inline(n).trim(); if (!t) return;
-      out.push(/^H/.test(n.tagName) ? `<h4>${t}</h4>` : n.tagName === "LI" ? `<p>• ${t}</p>` : n.tagName === "BLOCKQUOTE" ? `<p><i>${t}</i></p>` : `<p>${t}</p>`);
-    });
-    return out.join("");
-  }
   function loadEditor() {
     if (window.VCEditor) return Promise.resolve(window.VCEditor);
     return new Promise((ok, fail) => { const s = document.createElement("script"); s.src = "assets/js/editor.bundle.js"; s.onload = () => ok(window.VCEditor); s.onerror = fail; document.head.appendChild(s); });
@@ -536,7 +528,7 @@
       const sup = i.support + (S.supported[i.id] ? 1 : 0), reached = sup >= i.goal;
       return `<div class="card init-card fade-in ${reached ? "reached" : ""}">${i.photo ? `<img src="${photo(i.photo, 700)}" alt="" loading="lazy">` : ""}
         <div class="in"><div class="row"><span class="chip">${topic(i.topic).name}</span>${reached ? `<span class="chip on">Порог достигнут</span>` : ""}</div>
-        <h3>${esc(i.title)}</h3>${i.html ? `<div class="body small">${i.html}</div>` : `<div class="small">${esc(i.text)}</div>`}
+        <h3>${esc(i.title)}</h3>${i.html ? `<div class="body small">${cleanHTML(i.html)}</div>` : `<div class="small">${esc(i.text)}</div>`}
         <div class="small muted">${esc(i.author)} · ответов кандидатов: ${i.responses}</div>
         <span class="spacer"></span><div class="bar"><span style="width:${Math.min(100, sup / i.goal * 100)}%"></span></div>
         <div class="row"><b>${fmt(sup)}</b><span class="small muted">из ${fmt(i.goal)}</span><span class="spacer"></span>
@@ -662,7 +654,7 @@
       <div class="ask"><input id="askInput" placeholder="Спросите помощника"><button class="btn" id="askSend" aria-label="Отправить">${ic("send")}</button></div></div>
     <aside class="card" id="memList"><h3>Что помнит помощник</h3>
       ${mem.map((m) => `<div class="mem"><span class="t">${TYPE_RU[m.type]}</span><code>${esc(m.key)}</code><span class="conf">${m.conf.toFixed(2)}</span><div>${esc(m.value)}</div>${m.old ? `<div class="old">было: ${esc(m.old)}</div>` : ""}</div>`).join("")}
-      <p class="small muted" style="margin:12px 0 0">Модель памяти — как в открытом <a href="https://github.com/Darginec05/ai-memory-service" target="_blank" rel="noopener">ai-memory-service</a>: новое значение заменяет старое, история сохраняется. В демо всё хранится только в браузере.</p>
+      <p class="small muted" style="margin:12px 0 0">Модель памяти — как в открытом <a href="https://github.com/Darginec05/ai-memory-service" target="_blank" rel="noopener noreferrer">ai-memory-service</a>: новое значение заменяет старое, история сохраняется. В демо всё хранится только в браузере.</p>
       <button class="btn ghost small" id="memWipe" style="margin-top:10px">Забыть всё</button></aside></div>`;
   };
   binders.assistant = () => {
@@ -889,7 +881,7 @@
       const rows = [["Проект", "Тема", "Стоимость, руб.", "Голосов", "Проходит"]];
       const { win } = pbWinners();
       B.projects.forEach((p) => rows.push([p.title, topic(p.topic).name, p.cost, pbVotes(p), win.includes(p.id) ? "да" : "нет"]));
-      const csv = "﻿" + rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+      const csv = "\ufeff" + rows.map((r) => r.map(csvCell).join(";")).join("\r\n");
       const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "voteconnect-budget.csv"; a.click();
     });
   };

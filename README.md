@@ -1,5 +1,7 @@
 # VoteConnect
 
+[![Безопасность](https://github.com/TimoJR3/voteconnect/actions/workflows/security.yml/badge.svg)](https://github.com/TimoJR3/voteconnect/actions/workflows/security.yml)
+
 **Платформа соучастия района: жители распределяют бюджет и договариваются, администрация получает готовый отчёт для совета.**
 Наверху ленты — не самое громкое, а то, что поддерживают люди с разными взглядами.
 
@@ -49,6 +51,14 @@ cd editor && npm install && npm run build
 npx serve .
 ```
 
+## Безопасность
+
+28 автотестов в браузере проверяют утечки данных, внедрение кода, политику безопасности и выгрузки — см. [docs/SECURITY_TESTS.md](docs/SECURITY_TESTS.md). Запускаются при каждом изменении в GitHub Actions.
+
+```bash
+cd tests && npm ci && npx playwright test
+```
+
 ## Структура
 
 ```
@@ -61,7 +71,7 @@ assets/js/data.js     — демо-данные (вымышленный горо
 assets/js/icons.js    — набор иконок
 assets/img, avatars, fonts — локальные фото, аватары и шрифт
 editor/               — исходник редактора на Yoopta
-styles.html           — сравнение стилей, из которого выбран текущий
+tests/                — автотесты безопасности (Playwright)
 docs/                 — аудит (AUDIT.md), текст заявки и идеи развития
 ```
 

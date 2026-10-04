@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VoteConnect — что решают в вашем районе</title>
   <meta name="description" content="Соцсеть района: кандидаты, их обещания и то, о чём договорились соседи. Наверху ленты — то, с чем согласны все.">
@@ -44,7 +46,7 @@
           <h3>Наверху — то, с чем согласны все</h3>
           <p>Пост поднимается, только если его поддерживают люди с разными взглядами. Спорное видно сразу, фейки получают контекст.</p></div>
         <div class="lp-shot"><article class="card post" style="width:100%;max-width:420px">
-          <div class="post-body"><div class="post-head"><span class="avatar">ПР<img src="assets/avatars/4obrbi.svg" alt="" onerror="this.remove()"></span>
+          <div class="post-body"><div class="post-head"><span class="avatar">ПР<img src="assets/avatars/4obrbi.svg" alt=""></span>
             <div><div class="name">Павел Р.</div><div class="meta">Житель района · 5 ч назад</div></div></div>
             <p class="post-text">Автобус 14 опаздывает на 15–20 минут каждое утро. Выложил данные GPS за месяц.</p></div>
           <img class="post-photo" src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="Автобус" loading="lazy">
@@ -93,9 +95,9 @@
       <div class="row" style="justify-content:center"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="investors.html">Для инвесторов</a></div>
     </section>
 
-    <footer class="lp-foot"><span>© 2026 VoteConnect · <a href="investors.html">для инвесторов</a> · <a href="https://github.com/TimoJR3/voteconnect">открытый код</a></span><span>Фото: Unsplash · редактор: Yoopta-Editor · память помощника: ai-memory-service</span></footer>
+    <footer class="lp-foot"><span>© 2026 VoteConnect · <a href="investors.html">для инвесторов</a> · <a href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener noreferrer">открытый код</a></span><span>Фото: Unsplash · редактор: Yoopta-Editor · память помощника: ai-memory-service</span></footer>
   </main>
   <script src="assets/js/data.js"></script>
-  <script>document.getElementById("electionDate").textContent = window.VC_DATA.election.label;</script>
+  <script src="assets/js/landing.js"></script>
 </body>
 </html>
