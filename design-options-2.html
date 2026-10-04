@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoteConnect — шесть новых направлений</title>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/fonts-options.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 "Onest", system-ui, sans-serif; background: #ecebe8; color: #161616; }
+  img { display: block; max-width: 100%; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 26px 16px 60px; }
+  .wrap > h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -.02em; }
+  .wrap > p { margin: 0 0 22px; color: #555; max-width: 780px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 34px 24px; justify-items: center; }
+  .item { width: 340px; max-width: 100%; }
+  .item h2 { font-size: 18px; margin: 0 0 2px; letter-spacing: -.01em; }
+  .item h2 span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #161616; color: #fff; font-size: 13px; margin-right: 6px; vertical-align: 2px; }
+  .item .d { margin: 0 0 12px; color: #4a4a4a; font-size: 14px; min-height: 63px; }
+  .phone { height: 690px; border-radius: 40px; border: 9px solid #121212; overflow: hidden; position: relative; box-shadow: 0 18px 40px -22px rgba(0,0,0,.45); }
+  .sb { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 13px system-ui; position: relative; z-index: 3; }
+  .body { position: absolute; inset: 0; overflow: hidden; }
+  .ask { margin-top: 40px; background: #fff; border-radius: 12px; padding: 18px 22px; max-width: 780px; }
+  .ask h3 { margin: 0 0 6px; font-size: 17px; } .ask ul { margin: 0; padding-left: 20px; color: #3d3d3d; }
+
+  /* 1. Как родное приложение (iOS / Telegram) */
+  .a { background: #f2f2f7; color: #000; font-family: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+  .a .in { padding: 34px 16px 0; }
+  .a .lt { font-size: 32px; font-weight: 700; letter-spacing: -.02em; margin: 4px 0 8px; }
+  .a .search { background: #e3e3e8; border-radius: 10px; padding: 7px 10px; color: #8a8a8e; font-size: 15px; margin-bottom: 14px; }
+  .a .seg { display: flex; background: #e3e3e8; border-radius: 9px; padding: 2px; margin-bottom: 16px; font-size: 13px; font-weight: 600; }
+  .a .seg span { flex: 1; text-align: center; padding: 5px 0; border-radius: 7px; } .a .seg .on { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .a .hd { font-size: 13px; color: #6d6d72; text-transform: uppercase; margin: 0 0 6px 16px; letter-spacing: .02em; }
+  .a .grp { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 18px; }
+  .a .row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; position: relative; }
+  .a .row + .row::before { content: ""; position: absolute; top: 0; left: 62px; right: 0; border-top: .5px solid #c6c6c8; }
+  .a .ic { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-weight: 700; flex: none; }
+  .a .row img { width: 36px; height: 36px; border-radius: 50%; background: #e9eef7; flex: none; }
+  .a .tx { flex: 1; min-width: 0; } .a .tx b { display: block; font-weight: 600; font-size: 15px; } .a .tx small { color: #8a8a8e; font-size: 13px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .a .chev { color: #c4c4c6; font-size: 20px; } .a .badge { background: #007aff; color: #fff; border-radius: 99px; font-size: 13px; padding: 1px 8px; font-weight: 600; }
+  .a .prog { height: 4px; background: #e5e5ea; border-radius: 9px; margin-top: 6px; } .a .prog i { display: block; height: 100%; width: 63%; background: #34c759; border-radius: 9px; }
+  .a .tab { position: absolute; left: 0; right: 0; bottom: 0; height: 74px; background: rgba(249,249,249,.94); border-top: .5px solid #c6c6c8; display: flex; justify-content: space-around; padding-top: 8px; font-size: 10.5px; color: #8a8a8e; }
+  .a .tab div { text-align: center; } .a .tab svg { display: inline-block; } .a .tab div { line-height: 1.1; } .a .tab .on { color: #007aff; }
+
+  /* 2. Яркие плитки */
+  .b { background: #fff; color: #111; }
+  .b .in { padding: 34px 14px 0; }
+  .b .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .b .top b { font-size: 24px; font-weight: 800; letter-spacing: -.03em; } .b .top img { width: 38px; height: 38px; border-radius: 50%; background: #f1f1f1; }
+  .b .stories { display: flex; gap: 10px; margin-bottom: 14px; }
+  .b .stories div { text-align: center; font-size: 11px; width: 66px; line-height: 1.2; }
+  .b .stories img { width: 62px; height: 62px; border-radius: 18px; object-fit: cover; margin: 0 auto 4px; border: 2.5px solid #fff; outline: 2.5px solid #ff5a36; }
+  .b .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .b .t { border-radius: 22px; padding: 14px; min-height: 104px; position: relative; overflow: hidden; }
+  .b .t b { display: block; font-size: 17px; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; }
+  .b .t small { font-size: 13px; opacity: .75; }
+  .b .t.big { grid-column: span 2; background: #ffdb4d; min-height: 150px; }
+  .b .t.big b { font-size: 23px; max-width: 220px; margin-top: 18px; } .b .t.big .go { position: absolute; right: 14px; bottom: 14px; background: #111; color: #fff; font-weight: 700; border-radius: 14px; padding: 10px 16px; font-size: 14px; }
+  .b .t.big .num { position: absolute; right: 14px; top: 12px; font-weight: 800; font-size: 13px; background: #fff; border-radius: 99px; padding: 3px 10px; }
+  .b .t .ph { position: absolute; right: -8px; bottom: -14px; width: 58px; height: 58px; border-radius: 18px; object-fit: cover; transform: rotate(-8deg); }
+  .b .card { margin-top: 12px; border-radius: 22px; background: #f5f4f2; padding: 12px; display: flex; gap: 12px; align-items: center; }
+  .b .card img { width: 70px; height: 70px; border-radius: 16px; object-fit: cover; } .b .card b { font-size: 15px; line-height: 1.25; display: block; } .b .card small { color: #6b6b6b; font-size: 13px; }
+
+  /* 3. Плакат */
+  .c { background: #f4f1ea; color: #111; font-family: "Golos Text", system-ui, sans-serif; }
+  .c .in { padding: 34px 18px 0; }
+  .c .k { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .c .bar { display: flex; justify-content: space-between; border-bottom: 2px solid #111; padding-bottom: 8px; }
+  .c .bar .r { color: #e4002b; }
+  .c .huge { font-size: 64px; font-weight: 800; line-height: .9; letter-spacing: -.05em; margin: 18px 0 6px; }
+  .c .huge span { color: #e4002b; }
+  .c .sub { font-size: 16px; line-height: 1.3; max-width: 260px; margin: 0 0 16px; }
+  .c .cols { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid #111; border-bottom: 1px solid #111; margin-bottom: 4px; }
+  .c .cols div { padding: 8px 0; } .c .cols div + div { border-left: 1px solid #111; padding-left: 8px; }
+  .c .cols b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+  .c .cols small { font-size: 11px; }
+  .c .li { display: grid; grid-template-columns: 34px 1fr auto; gap: 6px; padding: 11px 0; border-bottom: 1px solid #111; align-items: baseline; }
+  .c .li i { font-style: normal; font-weight: 800; color: #e4002b; font-size: 14px; }
+  .c .li b { font-size: 16px; line-height: 1.2; } .c .li em { font-style: normal; font-weight: 700; font-size: 14px; }
+  .c .li.off { color: #8c877c; } .c .li.off i { color: #8c877c; }
+  .c .cta { display: block; margin-top: 16px; background: #111; color: #f4f1ea; padding: 14px; font-weight: 700; text-align: center; letter-spacing: .04em; text-transform: uppercase; font-size: 14px; }
+
+  /* 4. Линии метро */
+  .dd { background: #fff; color: #1a1a1a; font-family: "Golos Text", system-ui, sans-serif; }
+  .dd .in { padding: 34px 16px 0; }
+  .dd .top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .dd .logo { width: 34px; height: 34px; border-radius: 50%; background: #d6083b; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 18px; }
+  .dd .top b { font-size: 21px; display: block; line-height: 1.1; } .dd .top small { color: #737373; font-size: 13px; }
+  .dd .lines { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+  .dd .ln { display: flex; align-items: center; gap: 6px; border: 1.5px solid #e2e2e2; border-radius: 99px; padding: 3px 10px 3px 3px; font-size: 13px; font-weight: 600; }
+  .dd .ln i { width: 22px; height: 22px; border-radius: 50%; color: #fff; font-style: normal; font-weight: 800; font-size: 12px; display: grid; place-items: center; }
+  .dd .box { border-radius: 16px; background: #f5f5f5; padding: 14px 14px 10px; margin-bottom: 16px; }
+  .dd .box h4 { margin: 0 0 12px; font-size: 16px; }
+  .dd .route { position: relative; padding-left: 4px; }
+  .dd .st { display: flex; align-items: center; gap: 12px; height: 34px; position: relative; font-size: 14px; }
+  .dd .st::before { content: ""; position: absolute; left: 7px; top: 17px; height: 34px; border-left: 5px solid #009a49; }
+  .dd .st:last-child::before { display: none; } .dd .st.fut::before { border-left-color: #cfcfcf; }
+  .dd .st i { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 4px solid #009a49; position: relative; z-index: 1; flex: none; }
+  .dd .st.now i { background: #009a49; box-shadow: 0 0 0 4px rgba(0,154,73,.2); } .dd .st.now b { font-weight: 700; } .dd .st.fut i { border-color: #cfcfcf; } .dd .st.fut { color: #8a8a8a; }
+  .dd .st small { margin-left: auto; color: #737373; font-size: 12.5px; }
+  .dd .post { border-top: 1px solid #ececec; padding: 12px 0; display: flex; gap: 12px; }
+  .dd .post .ln i { width: 30px; height: 30px; font-size: 14px; }
+  .dd .post b { font-size: 15px; line-height: 1.3; display: block; } .dd .post small { color: #737373; font-size: 13px; }
+
+  /* 5. Фото во весь экран */
+  .e { background: #fff; color: #111; }
+  .e .in { padding: 34px 14px 0; }
+  .e .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .e .top b { font-size: 22px; font-weight: 700; letter-spacing: -.02em; } .e .top span { font-size: 14px; color: #6b6b6b; }
+  .e .chips { display: flex; gap: 6px; margin-bottom: 12px; font-size: 13.5px; font-weight: 600; }
+  .e .chips span { white-space: nowrap; padding: 6px 12px; border-radius: 99px; background: #f1f1f1; } .e .chips .on { background: #111; color: #fff; }
+  .e .hero { position: relative; border-radius: 24px; overflow: hidden; height: 380px; }
+  .e .hero img { width: 100%; height: 100%; object-fit: cover; }
+  .e .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(0,0,0,.72)); }
+  .e .hero .cap { position: absolute; left: 16px; right: 16px; bottom: 16px; color: #fff; z-index: 1; }
+  .e .hero .cap small { font-size: 13px; opacity: .9; } .e .hero .cap b { display: block; font-size: 23px; line-height: 1.15; letter-spacing: -.01em; margin: 4px 0 10px; }
+  .e .pill { display: inline-flex; gap: 6px; align-items: center; background: rgba(255,255,255,.95); color: #111; border-radius: 99px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
+  .e .pill i { width: 8px; height: 8px; border-radius: 50%; background: #1fa463; }
+  .e .tag { position: absolute; top: 14px; left: 14px; z-index: 1; background: rgba(0,0,0,.55); color: #fff; border-radius: 99px; padding: 4px 10px; font-size: 12.5px; font-weight: 600; }
+  .e .who { display: flex; gap: 10px; align-items: center; margin: 12px 4px; font-size: 14px; }
+  .e .who img { width: 36px; height: 36px; border-radius: 50%; background: #f0ece4; } .e .who small { color: #6b6b6b; display: block; font-size: 12.5px; }
+  .e .next { display: flex; gap: 8px; } .e .next img { flex: 1; height: 120px; object-fit: cover; border-radius: 18px; min-width: 0; }
+
+  /* 6. Карта района */
+  .f { background: #e8eee6; color: #1c1c1c; font-family: "Golos Text", system-ui, sans-serif; }
+  .f .map { position: absolute; inset: 0; }
+  .f .srch { position: absolute; top: 40px; left: 14px; right: 14px; background: #fff; border-radius: 14px; padding: 11px 14px; box-shadow: 0 4px 16px rgba(0,0,0,.12); font-size: 15px; color: #7a7a7a; z-index: 2; display: flex; justify-content: space-between; }
+  .f .srch b { color: #1c1c1c; }
+  .f .pin { position: absolute; z-index: 2; transform: translate(-50%, -100%); }
+  .f .pin span { display: block; background: #fff; border-radius: 12px; padding: 4px 9px 4px 4px; font-size: 12.5px; font-weight: 700; box-shadow: 0 3px 10px rgba(0,0,0,.18); white-space: nowrap; display: flex; gap: 6px; align-items: center; }
+  .f .pin i { width: 22px; height: 22px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-style: normal; font-size: 12px; }
+  .f .pin::after { content: ""; display: block; width: 10px; height: 10px; background: #fff; transform: rotate(45deg); margin: -6px auto 0; box-shadow: 3px 3px 6px rgba(0,0,0,.1); }
+  .f .me { position: absolute; left: 47%; top: 46%; width: 20px; height: 20px; border-radius: 50%; background: #2f6df6; border: 3px solid #fff; box-shadow: 0 0 0 10px rgba(47,109,246,.18); z-index: 2; }
+  .f .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 22px 22px 0 0; padding: 8px 16px 16px; box-shadow: 0 -6px 24px rgba(0,0,0,.12); z-index: 3; }
+  .f .grab { width: 40px; height: 5px; border-radius: 9px; background: #d4d4d4; margin: 0 auto 10px; }
+  .f .sheet h4 { margin: 0; font-size: 19px; } .f .sheet > small { color: #6f6f6f; font-size: 13.5px; }
+  .f .it { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #efefef; }
+  .f .it img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; } .f .it b { display: block; font-size: 15px; line-height: 1.25; } .f .it small { color: #6f6f6f; font-size: 13px; }
+  .f .it .m { margin-left: auto; text-align: right; font-weight: 700; font-size: 13px; color: #1f8a4c; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Шесть новых направлений</h1>
+  <p>Главный экран приложения в каждом стиле, содержание одно и то же. Выберите один или два — полный вариант с сайтом, лентой и бюджетом сделаю по выбранному.</p>
+
+  <div class="grid">
+
+    <!-- 1 -->
+    <div class="item">
+      <h2><span>1</span>Как родное приложение</h2>
+      <p class="d">Выглядит как приложения iPhone и Telegram: серый фон, белые группы, системный шрифт. Ничего лишнего — кажется, что приложение было в телефоне всегда.</p>
+      <div class="phone a"><div class="body">
+        <div class="sb"><span>9:41</span><span>●●▮</span></div>
+        <div class="in">
+          <div class="lt">Северный</div>
+          <div class="search">Поиск по району</div>
+          <div class="seg"><span class="on">Главное</span><span>Лента</span><span>Карта</span></div>
+          <div class="hd">Сейчас идёт</div>
+          <div class="grp">
+            <div class="row"><span class="ic" style="background:#34c759">₽</span><div class="tx"><b>Бюджет района 2027</b><small>Выбрано на 9,4 из 15 млн ₽</small><div class="prog"><i></i></div></div><span class="chev">›</span></div>
+            <div class="row"><span class="ic" style="background:#ff9500">✓</span><div class="tx"><b>Согласие района</b><small>3 решения поддерживают все</small></div><span class="badge">3</span></div>
+            <div class="row"><span class="ic" style="background:#5856d6">◷</span><div class="tx"><b>Встреча с депутатом</b><small>Сб, 12:00 · библиотека № 4</small></div><span class="chev">›</span></div>
+          </div>
+          <div class="hd">Соседи пишут</div>
+          <div class="grp">
+            <div class="row"><img src="assets/avatars/peeps-pavel.svg" alt=""><div class="tx"><b>Павел Р.</b><small>Автобус 14 опаздывает на 15–20 минут…</small></div><span class="chev">›</span></div>
+            <div class="row"><img src="assets/avatars/peeps-marina.svg" alt=""><div class="tx"><b>Марина Соколова</b><small>Парк вместо промзоны у реки — смета…</small></div><span class="chev">›</span></div>
+            <div class="row"><img src="assets/avatars/peeps-olga.svg" alt=""><div class="tx"><b>Ольга К.</b><small>Кто за навес на остановке у школы?</small></div><span class="chev">›</span></div>
+          </div>
+        </div>
+        <div class="tab"><div class="on"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><br>Район</div><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 17V7h3.5a2.5 2.5 0 0 1 0 5H8M8 14.5h5"/></svg><br>Бюджет</div><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg><br>Идеи</div><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><br>Профиль</div></div>
+      </div></div>
+    </div>
+
+    <!-- 2 -->
+    <div class="item">
+      <h2><span>2</span>Яркие плитки</h2>
+      <p class="d">Знакомо по Яндекс Go, Авито и Самокату: крупные цветные плитки, истории сверху, жирный шрифт. Привычно для российского пользователя и легко для любого возраста.</p>
+      <div class="phone b"><div class="body">
+        <div class="sb"><span>9:41</span><span>●●▮</span></div>
+        <div class="in">
+          <div class="top"><b>Северный</b><img src="assets/avatars/peeps-me.svg" alt=""></div>
+          <div class="stories">
+            <div><img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="">Автобус 14</div>
+            <div><img src="assets/img/1789062665477-b58eb89a22b6-700.jpg" alt="">Набережная</div>
+            <div><img src="assets/img/1608487583634-0f31766e4cb1-700.jpg" alt="">Школа 12</div>
+            <div><img src="assets/img/1780866701554-254dcf3fac8e-700.jpg" alt="">Остановки</div>
+          </div>
+          <div class="tiles">
+            <div class="t big"><span class="num">до 22.10</span><b>Решите, куда пойдут 15 млн ₽</b><small>8 проектов района</small><span class="go">Выбрать</span></div>
+            <div class="t" style="background:#d9f2e3"><b>Согласие</b><small>3 общих решения</small></div>
+            <div class="t" style="background:#e3ecff"><b>Идеи соседей</b><small>24 новых</small><img class="ph" src="assets/img/1683144651287-f00e40a97199-700.jpg" alt=""></div>
+            <div class="t" style="background:#ffe4dc"><b>События</b><small>Сб, встреча</small></div>
+            <div class="t" style="background:#f0e6ff"><b>Кандидаты</b><small>4 в округе</small></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 3 -->
+    <div class="item">
+      <h2><span>3</span>Плакат</h2>
+      <p class="d">Швейцарская типографика: огромные цифры, строгая сетка, тонкие линейки, чёрный и один красный. Ни теней, ни скруглений — смело, взросло и запоминается.</p>
+      <div class="phone c"><div class="body">
+        <div class="sb"><span>9:41</span><span>●●▮</span></div>
+        <div class="in">
+          <div class="bar k"><span>Северный район</span><span class="r">● Голосование</span></div>
+          <div class="huge">15 млн<span>₽</span></div>
+          <p class="sub">на ваш район в 2027 году. Решаете вы — до 22 октября.</p>
+          <div class="cols"><div><b>2 318</b><small>проголосовали</small></div><div><b>8</b><small>проектов</small></div><div><b>17</b><small>дней осталось</small></div></div>
+          <div class="li"><i>01</i><b>Светофор у школы № 12</b><em>1,8</em></div>
+          <div class="li"><i>02</i><b>Вечерний автобус 14</b><em>3,4</em></div>
+          <div class="li"><i>03</i><b>Освещение набережной</b><em>4,2</em></div>
+          <div class="li off"><i>04</i><b>Навесы на остановках</b><em>2,6</em></div>
+          <div class="li off"><i>05</i><b>Кружки робототехники</b><em>2,1</em></div>
+          <span class="cta">Выбрать проекты →</span>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 4 -->
+    <div class="item">
+      <h2><span>4</span>Линии метро</h2>
+      <p class="d">Язык городской навигации: у каждой темы свой цвет и буква, как у линий метро, а этапы бюджета — станции на линии. Свой узнаваемый характер, которого нет у других.</p>
+      <div class="phone dd"><div class="body">
+        <div class="sb"><span>9:41</span><span>●●▮</span></div>
+        <div class="in">
+          <div class="top"><span class="logo">V</span><div><b>Северный</b><small>1 847 соседей · округ № 7</small></div></div>
+          <div class="lines">
+            <span class="ln"><i style="background:#d6083b">Т</i>Транспорт</span>
+            <span class="ln"><i style="background:#009a49">Б</i>Благоустройство</span>
+            <span class="ln"><i style="background:#0078c9">Ш</i>Школы</span>
+            <span class="ln"><i style="background:#ffa300">Д</i>Двор</span>
+          </div>
+          <div class="box"><h4>Бюджет района 2027</h4>
+            <div class="route">
+              <div class="st"><i></i>Сбор идей<small>июль</small></div>
+              <div class="st"><i></i>Проверка смет<small>август</small></div>
+              <div class="st now"><i></i><b>Голосование</b><small>до 22 октября</small></div>
+              <div class="st fut"><i></i>Итоги<small>ноябрь</small></div>
+              <div class="st fut"><i></i>Работы<small>2027</small></div>
+            </div>
+          </div>
+          <div class="post"><span class="ln" style="border:0;padding:0"><i style="background:#d6083b">Т</i></span><div><b>Автобус 14 опаздывает на 15–20 минут каждое утро</b><small>Павел Р. · согласны все группы</small></div></div>
+          <div class="post"><span class="ln" style="border:0;padding:0"><i style="background:#009a49">Б</i></span><div><b>Парк вместо промзоны у реки</b><small>Марина Соколова · 48 млн ₽</small></div></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 5 -->
+    <div class="item">
+      <h2><span>5</span>Фото во весь экран</h2>
+      <p class="d">Как Airbnb и Instagram: главное — живые фотографии района на всю ширину, текст поверх, минимум интерфейса. Эмоционально и сразу понятно, о каком месте речь.</p>
+      <div class="phone e"><div class="body">
+        <div class="sb"><span>9:41</span><span>●●▮</span></div>
+        <div class="in">
+          <div class="top"><b>Северный</b><span>1 847 соседей</span></div>
+          <div class="chips"><span class="on">Для всех</span><span>Рядом</span><span>Бюджет</span><span>Новое</span></div>
+          <div class="hero"><img src="assets/img/1789062665477-b58eb89a22b6-1200.jpg" alt="Набережная"><span class="tag">Бюджет 2027 · 4,2 млн ₽</span>
+            <div class="cap"><small>Набережная реки Светлой</small><b>Осветить набережную от моста до парка</b><span class="pill"><i></i>Поддерживают все группы · 88%</span></div></div>
+          <div class="who"><img src="assets/avatars/peeps-olga.svg" alt=""><div>Ольга К. предложила<small>1 040 соседей за</small></div></div>
+          <div class="next"><img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt=""><img src="assets/img/1608487583634-0f31766e4cb1-700.jpg" alt=""></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 6 -->
+    <div class="item">
+      <h2><span>6</span>Карта района</h2>
+      <p class="d">Как Яндекс Карты и Citymapper: главный экран — карта, на ней вопросы и проекты рядом с вами, снизу шторка со списком. Сразу видно: это про мой двор и мою улицу.</p>
+      <div class="phone f"><div class="body">
+        <svg class="map" viewBox="0 0 322 672" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="322" height="672" fill="#eef1ea"/>
+          <path d="M-10 250 C 60 230, 110 300, 170 280 S 280 200, 340 230 L 340 275 C 280 250, 230 330, 170 325 S 60 275, -10 295 Z" fill="#b9d8ef"/>
+          <path d="M20 70 h110 v120 h-110z" fill="#d6e8cf" rx="10"/>
+          <path d="M210 360 h90 v90 h-90z" fill="#d6e8cf"/>
+          <g fill="#e2e2dc"><rect x="150" y="60" width="50" height="40" rx="4"/><rect x="215" y="60" width="70" height="40" rx="4"/><rect x="150" y="115" width="135" height="60" rx="4"/><rect x="20" y="340" width="70" height="50" rx="4"/><rect x="105" y="340" width="85" height="50" rx="4"/><rect x="20" y="405" width="170" height="45" rx="4"/></g>
+          <g stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"><path d="M140 -10 V 700"/><path d="M-10 200 H 340"/><path d="M-10 330 H 340"/><path d="M200 330 L 320 470"/><path d="M-10 460 H 340"/></g>
+          <path d="M140 -10 V 700" stroke="#ffd54a" stroke-width="5" fill="none"/>
+          <text x="148" y="48" font-family="Golos Text" font-size="10" fill="#7d7d74">ул. Садовая</text>
+          <text x="40" y="135" font-family="Golos Text" font-size="10" fill="#5c7a52">Сквер</text>
+          <text x="200" y="262" font-family="Golos Text" font-size="10" fill="#4f7894" font-style="italic">р. Светлая</text>
+        </svg>
+        <div class="sb"><span>9:41</span><span>●●▮</span></div>
+        <div class="srch"><span>Садовая, 14</span><b>Северный</b></div>
+        <div class="pin" style="left:30%;top:24%"><span><i style="background:#e0533a">Т</i>Автобус 14</span></div>
+        <div class="pin" style="left:72%;top:31%"><span><i style="background:#2f6df6">₽</i>Свет · 4,2 млн</span></div>
+        <div class="pin" style="left:24%;top:48%"><span><i style="background:#1f8a4c">✓</i>Светофор</span></div>
+        <span class="me"></span>
+        <div class="sheet"><div class="grab"></div>
+          <h4>Рядом с вами</h4><small>3 вопроса в 500 м · голосование до 22 октября</small>
+          <div class="it"><img src="assets/img/1608487583634-0f31766e4cb1-700.jpg" alt=""><div><b>Светофор у школы № 12</b><small>200 м · 1,8 млн ₽</small></div><span class="m">92%<br><small>за</small></span></div>
+          <div class="it"><img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt=""><div><b>Вечерний автобус 14</b><small>350 м · 3,4 млн ₽</small></div><span class="m">90%<br><small>за</small></span></div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="ask"><h3>Чтобы попасть точнее</h3>
+    <ul><li>Можно выбрать сочетание: например, «карта из 6 + плитки из 2».</li><li>Если есть приложение или сайт, который нравится по виду, — назовите его, сделаю в том же духе.</li></ul></div>
+</div>
+</body>
+</html>
