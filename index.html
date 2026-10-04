@@ -6,11 +6,11 @@
   <title>VoteConnect — что решают в вашем районе</title>
   <meta name="description" content="Соцсеть района: кандидаты, их обещания и то, о чём договорились соседи. Наверху ленты — то, с чем согласны все.">
   <meta property="og:title" content="VoteConnect — что решают в вашем районе">
-  <meta property="og:description" content="Кандидаты, их обещания и то, о чём договорились соседи.">
+  <meta property="og:description" content="Бюджет района, идеи соседей и то, что поддерживают все.">
+  <meta property="og:image" content="https://timojr3.github.io/voteconnect/assets/img/1789062665477-b58eb89a22b6-1200.jpg">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%231d6b45'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#ffffff">
@@ -19,23 +19,23 @@
 <body>
   <header class="lp-top">
     <a class="logo" href="#"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="#fff"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#1d6b45" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
-    <nav><a href="#how">Как это работает</a><a href="#candidates">Кандидатам</a><a href="app.html?tour=1#/feed">Демо-тур</a></nav>
+    <nav><a href="#how">Как это работает</a><a href="#admins">Администрациям</a><a href="investors.html">Инвесторам</a><a href="app.html?demo=1&amp;tour=1#/feed">Демо-тур</a></nav>
   </header>
 
   <section class="lp-hero">
-    <img src="https://images.unsplash.com/photo-1789062665477-b58eb89a22b6?w=1400&q=60&auto=format&fit=crop" alt="Набережная реки">
+    <img src="assets/img/1789062665477-b58eb89a22b6-1200.jpg" alt="Набережная реки">
     <div class="lp-find">
       <h1>Что решают в вашем районе</h1>
-      <p>Кандидаты, их обещания и то, о чём договорились соседи.</p>
+      <p>Бюджет района, идеи соседей и то, что поддерживают все.</p>
       <form action="app.html" method="get">
         <input name="addr" placeholder="Ваш адрес, например Садовая, 14" aria-label="Ваш адрес" autocomplete="street-address">
         <button class="btn" type="submit">Показать мой район</button>
       </form>
-      <div class="alt"><a href="app.html?tour=1#/feed">Посмотреть демо-тур</a></div>
+      <div class="alt"><a href="app.html?demo=1&amp;tour=1#/feed">Посмотреть демо-тур</a></div>
     </div>
   </section>
 
-  <div class="lp-strip"><span><b>5</b> кандидатов в округе</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b id="electionDate">8 ноября</b></span></div>
+  <div class="lp-strip"><span><b>15 млн ₽</b> бюджета решают жители</span><span><b>1 847</b> соседей уже здесь</span><span>Выборы — <b id="electionDate">8 ноября</b></span></div>
 
   <main class="lp-wrap">
     <section class="lp-sec" id="how">
@@ -44,10 +44,10 @@
           <h3>Наверху — то, с чем согласны все</h3>
           <p>Пост поднимается, только если его поддерживают люди с разными взглядами. Спорное видно сразу, фейки получают контекст.</p></div>
         <div class="lp-shot"><article class="card post" style="width:100%;max-width:420px">
-          <div class="post-body"><div class="post-head"><span class="avatar">ПР<img src="https://api.dicebear.com/9.x/notionists/svg?seed=%D0%9F%D0%B0%D0%B2%D0%B5%D0%BB%20%D0%A0.&backgroundColor=e8e2d6" alt="" onerror="this.remove()"></span>
+          <div class="post-body"><div class="post-head"><span class="avatar">ПР<img src="assets/avatars/4obrbi.svg" alt="" onerror="this.remove()"></span>
             <div><div class="name">Павел Р.</div><div class="meta">Житель района · 5 ч назад</div></div></div>
             <p class="post-text">Автобус 14 опаздывает на 15–20 минут каждое утро. Выложил данные GPS за месяц.</p></div>
-          <img class="post-photo" src="https://images.unsplash.com/photo-1632276536839-84cad7fd03b0?w=800&q=70&auto=format&fit=crop" alt="Автобус" loading="lazy">
+          <img class="post-photo" src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="Автобус" loading="lazy">
           <div class="post-foot"><div class="support"><div class="spec"><span class="a" style="width:32.4%"></span><span class="b" style="width:34.2%"></span><span class="c" style="width:33.4%"></span></div><span class="val">Согласны все</span>
             <div class="cap"><span><i style="background:var(--c1)"></i>автомобилисты 90%</span><span><i style="background:var(--c2)"></i>пешеходы 95%</span><span><i style="background:var(--c3)"></i>семьи 91%</span></div></div></div>
           <div style="height:10px"></div></article></div>
@@ -56,36 +56,44 @@
 
     <section class="lp-sec" style="padding-top:0">
       <div class="lp-split rev">
-        <div class="lp-point"><div class="num">Компас взглядов</div>
-          <h3>Чьи позиции ближе — за 3 минуты</h3>
-          <p>12 вопросов о жизни района. Ответы сравниваются с позициями кандидатов и не покидают ваш телефон.</p></div>
-        <div class="lp-shot"><div class="card q-card" style="width:100%;max-width:420px">
-          <img class="q-photo" src="https://images.unsplash.com/photo-1780866701554-254dcf3fac8e?w=800&q=70&auto=format&fit=crop" alt="Улица вечером" loading="lazy">
-          <div class="q-in"><div class="q-step">Транспорт · 1 из 12</div><div class="q-text" style="font-size:19px">Выделенные полосы для автобусов — даже за счёт машин?</div>
-            <div class="answers"><button class="sel" tabindex="-1">Скорее за</button><button tabindex="-1">Не знаю</button><button tabindex="-1">Скорее против</button></div></div></div></div>
+        <div class="lp-point"><div class="num">Бюджет района</div>
+          <h3>Жители сами решают, на что потратить 15 млн ₽</h3>
+          <p>Соберите корзину проектов в пределах бюджета. Проходят те, за которые проголосовало больше всего соседей.</p></div>
+        <div class="lp-shot"><div class="card" style="width:100%;max-width:420px">
+          <div class="row" style="justify-content:space-between"><b>Ваша корзина: 9,4 млн ₽</b><span class="small muted">из 15 млн ₽</span></div>
+          <div class="bar" style="margin:8px 0 14px;height:8px"><span style="width:63%"></span></div>
+          <div class="rank-row win" style="padding:10px 0;border:none;background:none"><span class="rank-n">1</span><div style="flex:1"><b class="small">Светофор с кнопкой у школы № 12</b><div class="small muted">1,8 млн ₽ · 1 290 голосов</div></div></div>
+          <div class="rank-row win" style="padding:10px 0;border:none;background:none"><span class="rank-n">2</span><div style="flex:1"><b class="small">Вечерний автобус 14 до 23:30</b><div class="small muted">3,4 млн ₽ · 1 180 голосов</div></div></div>
+          <div class="rank-row win" style="padding:10px 0;border:none;background:none"><span class="rank-n">3</span><div style="flex:1"><b class="small">Освещение набережной</b><div class="small muted">4,2 млн ₽ · 1 040 голосов</div></div></div>
+        </div></div>
       </div>
     </section>
 
-    <section class="lp-sec" id="candidates" style="padding-top:0">
+    <section class="lp-sec" id="admins" style="padding-top:0">
       <div class="lp-split">
-        <div class="lp-point"><div class="num">Кандидатам</div>
-          <h3>Вопросы жителей — по важности</h3>
-          <p>Кабинет с аудиторией, темами округа и черновиками ответов. Бесплатно для всех кандидатов — равные условия.</p></div>
+        <div class="lp-point"><div class="num">Администрациям</div>
+          <h3>Отчёт для совета — в один клик</h3>
+          <p>С чем согласны все группы жителей, что прошло по бюджету и где нужен диалог. Готово к заседанию, скачивается в PDF.</p>
+          <p><a class="btn ghost" href="app.html?demo=1#/report">Открыть пример отчёта</a></p></div>
         <div class="lp-shot"><div class="card" style="width:100%;max-width:420px">
-          <div class="small muted">Вопросы жителей</div>
-          <div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">▲<b>412</b></div><div><b>Когда будет выделенная полоса на Садовой?</b><div class="small muted">Павел Р. · Транспорт</div></div></div></div>
-          <div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">▲<b>287</b></div><div><b>Будет ли бюджет, который распределяют жители?</b><div class="small muted">Елена К. · Цифровые права</div></div></div></div>
+          <div class="small muted">Отчёт для совета депутатов</div>
+          <b style="display:block;font-size:18px;margin:4px 0 12px">Что решили жители Северного округа</b>
+          <div class="report-kpis" style="grid-template-columns:1fr 1fr;margin:0 0 12px"><div><b>2 318</b><span>проголосовали за бюджет</span></div><div><b>3</b><span>решения поддерживают все группы</span></div></div>
+          <table class="diff-table"><tbody>
+            <tr><td class="small">Остановки должны быть с навесами и табло</td><td class="nowrap"><span class="pct-cell" style="--c:var(--c1)">90%</span><span class="pct-cell" style="--c:var(--c2)">94%</span><span class="pct-cell" style="--c:var(--c3)">89%</span></td></tr>
+            <tr><td class="small">Отчёты о тратах района — каждый месяц</td><td class="nowrap"><span class="pct-cell" style="--c:var(--c1)">88%</span><span class="pct-cell" style="--c:var(--c2)">90%</span><span class="pct-cell" style="--c:var(--c3)">85%</span></td></tr>
+          </tbody></table>
         </div></div>
       </div>
     </section>
 
     <section class="lp-cta">
       <h2>Посмотрите, как это работает</h2>
-      <p>Две минуты — все основные функции. Город и кандидаты в демо вымышлены.</p>
-      <div class="row" style="justify-content:center"><a class="btn" href="app.html?tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="app.html">Открыть приложение</a></div>
+      <p>Две минуты, без регистрации. Город и жители в демо вымышлены.</p>
+      <div class="row" style="justify-content:center"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="investors.html">Для инвесторов</a></div>
     </section>
 
-    <footer class="lp-foot"><span>© 2026 VoteConnect · открытый код</span><span>Фото: Unsplash · редактор: Yoopta-Editor · память помощника: ai-memory-service</span></footer>
+    <footer class="lp-foot"><span>© 2026 VoteConnect · <a href="investors.html">для инвесторов</a> · <a href="https://github.com/TimoJR3/voteconnect">открытый код</a></span><span>Фото: Unsplash · редактор: Yoopta-Editor · память помощника: ai-memory-service</span></footer>
   </main>
   <script src="assets/js/data.js"></script>
   <script>document.getElementById("electionDate").textContent = window.VC_DATA.election.label;</script>

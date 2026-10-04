@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoteConnect — для инвесторов и грантовых фондов</title>
+  <meta name="description" content="VoteConnect — инструмент инициативного бюджетирования, где жители договариваются, а администрация получает готовый отчёт для совета.">
+  <meta property="og:title" content="VoteConnect — для инвесторов">
+  <meta property="og:description" content="Рынок инициативного бюджетирования — 67,7 млрд ₽ в 2025 году. Жители договариваются, администрация получает отчёт для совета.">
+  <meta property="og:image" content="https://timojr3.github.io/voteconnect/assets/img/1789062665477-b58eb89a22b6-1200.jpg">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%231d6b45'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="inv">
+  <header class="inv-top lp-wrap">
+    <a class="logo" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
+    <nav><a href="#market">Рынок</a><a href="#model">Модель</a><a href="#status">Статус</a><a href="#funds">Деньги</a><a href="#risks">Риски</a></nav>
+  </header>
+
+  <main class="lp-wrap">
+    <section class="inv-hero">
+      <div class="small muted" style="font-weight:600">Для инвесторов и грантовых фондов</div>
+      <h1>Инициативный бюджет, в котором жители договариваются, а не только голосуют</h1>
+      <p class="lead">Жители распределяют бюджет района и видят, что поддерживают все группы. Администрация получает готовый отчёт для совета депутатов.</p>
+      <div class="row"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур за 2 минуты</a><a class="btn ghost" href="app.html?demo=1#/report">Пример отчёта для совета</a></div>
+    </section>
+
+    <section class="lp-sec inv-sec" id="market">
+      <h2>Рынок уже существует и растёт</h2>
+      <p class="lead">Инициативное бюджетирование — государственная практика, в которой жители предлагают и выбирают проекты для своего района.</p>
+      <div class="stat-tiles">
+        <div class="card"><b>67,7 млрд ₽</b><span>стоимость проектов инициативного бюджетирования в 2025 году</span></div>
+        <div class="card"><b>31 812</b><span>реализованных проектов за год</span></div>
+        <div class="card"><b>14,2 млн</b><span>жителей участвовали в выдвижении идей</span></div>
+        <div class="card"><b>632</b><span>практики в 84 регионах — каждой нужны сбор идей, голосование и отчёт</span></div>
+      </div>
+      <p class="small muted">Источник: <a href="https://www.nifi.ru/ru/news-ru/novosti/2847-minfin-rossii-i-nifi-podveli-itogi-razvitiya-initsiativnogo-byudzhetirovaniya-v-2025-godu" target="_blank" rel="noopener">Минфин России и НИФИ, итоги 2025 года</a>. Молодёжное инициативное бюджетирование — ещё 1,7 млрд ₽ и 2,9 тыс. проектов (<a href="https://www.pnp.ru/economics/v-2025-godu-na-molodezhnoe-iniciativnoe-byudzhetirovanie-potratili-pochti-17-mlrd-rubley.html" target="_blank" rel="noopener">Парламентская газета</a>).</p>
+    </section>
+
+    <section class="lp-sec inv-sec">
+      <h2>Проблема</h2>
+      <div class="grid three">
+        <div class="card"><h3>Голосуют за готовый список</h3><p class="small muted">Жители выбирают из предложенного, но не обсуждают и не договариваются между собой.</p></div>
+        <div class="card"><h3>Власть не видит согласия</h3><p class="small muted">Видны жалобы и самые громкие голоса, но не то, что поддерживают разные группы жителей.</p></div>
+        <div class="card"><h3>Отчёты собирают вручную</h3><p class="small muted">Идеи, голоса и итоги сводят в таблицы перед каждым заседанием.</p></div>
+      </div>
+    </section>
+
+    <section class="lp-sec inv-sec" id="model">
+      <h2>Кто пользуется и кто платит</h2>
+      <div class="grid three">
+        <a class="card inv-side" href="app.html?demo=1#/budget"><span class="chip">Бесплатно</span><h3>Жители</h3><p class="small muted">Бюджет района, Карта согласия, лента с полоской поддержки групп, инициативы.</p><span class="small">Открыть экран →</span></a>
+        <a class="card inv-side paid" href="app.html?demo=1#/admin"><span class="chip on">Платит</span><h3>Администрация</h3><p class="small muted">Кабинет с воронкой бюджета, представленность групп, отчёт для совета и выгрузка.</p><span class="small">Открыть экран →</span></a>
+        <a class="card inv-side" href="app.html?demo=1#/cabinet"><span class="chip">Позже</span><h3>Депутаты</h3><p class="small muted">Вопросы жителей по важности и публичные ответы между выборами.</p><span class="small">Открыть экран →</span></a>
+      </div>
+      <div class="card" style="margin-top:14px"><table class="diff-table">
+        <thead><tr><th>Клиент</th><th>Что покупает</th><th>Модель</th></tr></thead>
+        <tbody>
+          <tr><td>Администрации округов и центры инициативного бюджетирования</td><td>Сбор идей, голосование, Карта согласия, отчёт для совета</td><td>Лицензия на округ в год и внедрение</td></tr>
+          <tr><td>Вузы и молодёжные центры</td><td>Молодёжный бюджет и студенческие решения</td><td>Пилот, затем годовая лицензия</td></tr>
+          <tr><td>Представительные органы</td><td>Кабинет обратной связи с жителями</td><td>Годовая лицензия; в период выборов бесплатно для всех кандидатов</td></tr>
+        </tbody></table>
+        <p class="small muted" style="margin:10px 0 0">Цены определим по итогам 10 интервью с заказчиками — это первый шаг плана.</p></div>
+    </section>
+
+    <section class="lp-sec inv-sec">
+      <h2>Чем отличаемся</h2>
+      <div class="card table-wrap"><table class="diff-table">
+        <thead><tr><th></th><th>Госуслуги «Решаем вместе»</th><th>«Активный гражданин»</th><th>Чаты районов</th><th>VoteConnect</th></tr></thead>
+        <tbody>
+          <tr><td>Как устроено</td><td>Обращения и голосования сверху вниз</td><td>Опросы городских властей</td><td>Обсуждение без итогов</td><td><b>Жители договариваются, власть получает итог</b></td></tr>
+          <tr><td>Видно, что поддерживают все группы</td><td>—</td><td>—</td><td>—</td><td><b>Да</b></td></tr>
+          <tr><td>Отчёт для совета</td><td>—</td><td>—</td><td>—</td><td><b>Да, в один клик</b></td></tr>
+          <tr><td>Масштаб</td><td>Вся страна</td><td>Москва, 7,2 млн участников</td><td>Любой район</td><td>Любой округ</td></tr>
+        </tbody></table></div>
+      <p class="small muted">Мы не заменяем государственные платформы, а дополняем их: вход через российские сервисы, выгрузка итогов в формате администрации. Источник по «Активному гражданину»: <a href="https://riamo.ru/news/obschestvo/72-mln-chelovek-uchastvujut-v-moskovskom-proekte-aktivnyj-grazhdanin/" target="_blank" rel="noopener">РИАМО</a>.</p>
+    </section>
+
+    <section class="lp-sec inv-sec" id="status">
+      <h2>Где мы сейчас</h2>
+      <div class="grid two">
+        <div class="card"><h3>Готово</h3><ul class="inv-list">
+          <li>Работающий прототип: 19 экранов для жителей, администрации и кандидатов</li>
+          <li>Бюджет района с корзиной проектов и правилом отбора</li>
+          <li>Карта согласия и отчёт для совета в PDF</li>
+          <li>Приложение для телефона, работает без интернета</li>
+          <li>Открытые компоненты: редактор Yoopta-Editor, модель памяти ai-memory-service</li>
+        </ul></div>
+        <div class="card"><h3>Следующий шаг — пилот</h3><ul class="inv-list">
+          <li>10 интервью с жителями, депутатами и администрацией</li>
+          <li>Пилот на 100–300 участников в вузе или округе</li>
+          <li>Отчёт для совета по реальным данным</li>
+          <li>Письма о намерениях от организаций</li>
+        </ul><p class="small muted" style="margin:10px 0 0">Реальных пользователей пока нет — все данные в демо вымышлены.</p></div>
+      </div>
+    </section>
+
+    <section class="lp-sec inv-sec" id="funds">
+      <h2>На что пойдёт грант 1 млн ₽</h2>
+      <div class="card"><table class="diff-table">
+        <thead><tr><th>Статья</th><th>Доля</th><th>Результат</th></tr></thead>
+        <tbody>
+          <tr><td>Сервер и база данных в российском облаке, безопасность</td><td>25%</td><td>Данные жителей хранятся в России</td></tr>
+          <tr><td>Разработка: вход по номеру и через российские сервисы, модерация, отчёты</td><td>30%</td><td>Продукт для реального пилота</td></tr>
+          <tr><td>Пилот в вузе и одном округе</td><td>30%</td><td>Первые метрики и письма о намерениях</td></tr>
+          <tr><td>Юридическая проверка: персональные данные, избирательное право</td><td>10%</td><td>Заключение юриста до запуска</td></tr>
+          <tr><td>Резерв</td><td>5%</td><td></td></tr>
+        </tbody></table></div>
+      <div class="timeline-grid">
+        <div class="card"><span class="chip on">Месяцы 1–3</span><h3>Пилот</h3><p class="small muted">Интервью, сервер, пилот в вузе, первый отчёт</p></div>
+        <div class="card"><span class="chip">Месяцы 4–6</span><h3>Первый заказчик</h3><p class="small muted">Цикл бюджета в одном округе, договор с администрацией</p></div>
+        <div class="card"><span class="chip">Месяцы 7–9</span><h3>Тиражирование</h3><p class="small muted">Ещё 2–3 округа, шаблоны отчётов</p></div>
+        <div class="card"><span class="chip">Месяцы 10–12</span><h3>Регион</h3><p class="small muted">Партнёрство с региональным центром инициативного бюджетирования</p></div>
+      </div>
+    </section>
+
+    <section class="lp-sec inv-sec" id="risks">
+      <h2>Риски и что с ними делаем</h2>
+      <div class="card table-wrap"><table class="diff-table">
+        <thead><tr><th>Риск</th><th>Что делаем</th></tr></thead>
+        <tbody>
+          <tr><td>Выборная тема: агитация и опросы регулируются законом</td><td>Основной продукт работает круглый год вокруг бюджета; выборы — отдельный режим с ограничителями. Опросы о выборах публикуются с методикой и скрываются за 5 дней до голосования</td></tr>
+          <tr><td>Политические взгляды — особая категория персональных данных</td><td>Компас считается только на телефоне, голоса анонимны и не связаны с личностью, отдельное согласие</td></tr>
+          <tr><td>Долгие закупки у администраций</td><td>Начинаем с вузов и молодёжного бюджета, где решение принимается быстрее</td></tr>
+          <tr><td>Конкуренция с государственными платформами</td><td>Дополняем их: вход через российские сервисы, выгрузка итогов для администрации</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <section class="lp-cta" style="margin:20px 0 60px">
+      <h2>Посмотрите продукт сами</h2>
+      <p>Демо-тур — две минуты, без регистрации.</p>
+      <div class="row" style="justify-content:center"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener">Исходный код</a></div>
+    </section>
+  </main>
+</body>
+</html>

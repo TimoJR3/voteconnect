@@ -4,11 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>VoteConnect</title>
-  <meta name="description" content="VoteConnect — соцсеть вашего района: кандидаты, их обещания и то, о чём договорились соседи.">
+  <meta name="description" content="VoteConnect — платформа соучастия района: бюджет, который распределяют жители, инициативы и отчёт для совета.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%231d6b45'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#ffffff">
@@ -33,6 +32,7 @@
     <aside class="sidebar" id="sidebar">
       <nav class="nav" id="nav">
         <a href="#/feed"><i class="ico" data-i="home"></i>Лента района</a>
+        <a href="#/budget"><i class="ico" data-i="polls"></i>Бюджет района</a>
         <a href="#/compass"><i class="ico" data-i="compass"></i>Компас взглядов</a>
         <a href="#/consensus"><i class="ico" data-i="consensus"></i>Карта согласия</a>
         <a href="#/candidates"><i class="ico" data-i="people"></i>Кандидаты</a>
@@ -41,11 +41,13 @@
         <a href="#/assistant"><i class="ico" data-i="spark"></i>Помощник</a>
         <div class="nav-sec">Ещё</div>
         <a href="#/promises"><i class="ico" data-i="promise"></i>Обещания</a>
-        <a href="#/polls"><i class="ico" data-i="polls"></i>Опросы</a>
+        <a href="#/polls"><i class="ico" data-i="comment"></i>Опросы</a>
         <a href="#/groups"><i class="ico" data-i="groups"></i>Группы и дебаты</a>
         <a href="#/academy"><i class="ico" data-i="book"></i>Академия</a>
         <a href="#/profile"><i class="ico" data-i="profile"></i>Профиль</a>
-        <a href="#/cabinet"><i class="ico" data-i="chart"></i>Кабинет кандидата</a>
+        <div class="nav-sec">Для власти</div>
+        <a href="#/admin"><i class="ico" data-i="chart"></i>Кабинет администрации</a>
+        <a href="#/cabinet"><i class="ico" data-i="people"></i>Кабинет кандидата</a>
       </nav>
       <div class="side-foot">
         <div class="countdown" id="countdown"></div>
@@ -58,9 +60,9 @@
 
   <nav class="tabbar" id="tabbar" aria-label="Основное меню">
     <a href="#/feed"><i data-i="home"></i>Лента</a>
-    <a href="#/compass"><i data-i="compass"></i>Компас</a>
+    <a href="#/budget"><i data-i="polls"></i>Бюджет</a>
+    <a href="#/consensus"><i data-i="consensus"></i>Согласие</a>
     <a href="#/initiatives"><i data-i="megaphone"></i>Инициативы</a>
-    <a href="#/assistant"><i data-i="spark"></i>Помощник</a>
     <a href="#/profile"><i data-i="profile"></i>Профиль</a>
   </nav>
 
@@ -69,6 +71,7 @@
 
   <script src="assets/js/icons.js"></script>
   <script src="assets/js/data.js"></script>
+  <script src="assets/avatars/list.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>

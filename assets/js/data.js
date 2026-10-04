@@ -213,7 +213,7 @@ window.VC_DATA = {
   initiatives: [
     { id: "i1", photo: "1608487583634-0f31766e4cb1", title: "Светофор с кнопкой у школы № 12", author: "Родительский комитет", topic: "edu", support: 1840, goal: 2000, text: "Дети переходят четырёхполосную дорогу без светофора. Просим установить пешеходный светофор с кнопкой вызова.", responses: 3 },
     { id: "i2", photo: "1632276536839-84cad7fd03b0", title: "Вечерний маршрут автобуса 14", author: "Павел Р.", topic: "transport", support: 2650, goal: 2000, text: "Последний автобус уходит в 21:10. Просим продлить маршрут до 23:30 хотя бы по будням.", responses: 5, reached: true },
-    { id: "i3", photo: "1706217968045-2210de668c03", title: "Площадка для выгула собак в сквере Юности", author: "Ирина Л.", topic: "housing", support: 610, goal: 1000, text: "Сейчас собак выгуливают на детской площадке. Нужна огороженная площадка в дальней части сквера.", responses: 1 },
+    { id: "i3", photo: "1777529178036-18e4a92ec0b6", title: "Площадка для выгула собак в сквере Юности", author: "Ирина Л.", topic: "housing", support: 610, goal: 1000, text: "Сейчас собак выгуливают на детской площадке. Нужна огороженная площадка в дальней части сквера.", responses: 1 },
     { id: "i4", photo: "1683144651287-f00e40a97199", title: "Открытая карта ремонтов дорог", author: "Цифровой город", topic: "digital", support: 430, goal: 1000, text: "Публиковать все контракты на ремонт дорог на карте: подрядчик, сроки, гарантия.", responses: 2 }
   ],
 
@@ -320,6 +320,43 @@ window.VC_DATA = {
     ]
   },
 
+  // Инициативное бюджетирование: жители распределяют часть бюджета округа
+  budget: {
+    title: "Бюджет Северного округа на 2027 год",
+    total: 15000000,
+    ideas: 126, checked: 18, voters: 2318,
+    stages: [
+      { id: "ideas", name: "Сбор идей", from: "2026-08-01", to: "2026-08-24" },
+      { id: "review", name: "Проверка смет", from: "2026-08-25", to: "2026-09-09" },
+      { id: "vote", name: "Голосование", from: "2026-09-10", to: "2026-10-05" },
+      { id: "build", name: "Реализация", from: "2027-03-01", to: "2027-10-31" }
+    ],
+    projects: [
+      { id: "b1", title: "Светофор с кнопкой у школы № 12", topic: "edu", cost: 1800000, votes: 1290, photo: "1608487583634-0f31766e4cb1", author: "Родительский комитет" },
+      { id: "b2", title: "Вечерний автобус 14 до 23:30 на год", topic: "transport", cost: 3400000, votes: 1180, photo: "1632276536839-84cad7fd03b0", author: "Павел Р." },
+      { id: "b3", title: "Освещение набережной реки Светлой", topic: "eco", cost: 4200000, votes: 1040, photo: "1789062665477-b58eb89a22b6", author: "Группа «Чистая Светлая»" },
+      { id: "b4", title: "Навесы и табло на 12 остановках", topic: "transport", cost: 2600000, votes: 960, photo: "1780866701554-254dcf3fac8e", author: "Группа «Удобный транспорт»" },
+      { id: "b6", title: "Бесплатные кружки робототехники в школе № 5", topic: "edu", cost: 2100000, votes: 880, photo: "1683144651287-f00e40a97199", author: "Группа «Родители и школа»" },
+      { id: "b7", title: "Ремонт двора на Садовой, 14–18", topic: "housing", cost: 5600000, votes: 720, photo: "1714931773030-5d57ca092d77", author: "Жители Садовой" },
+      { id: "b5", title: "Площадка для выгула собак в сквере Юности", topic: "housing", cost: 900000, votes: 610, photo: "1777529178036-18e4a92ec0b6", author: "Ирина Л." },
+      { id: "b8", title: "Велодорожка вдоль Ленинградской", topic: "transport", cost: 6800000, votes: 540, photo: null, author: "Группа «Удобный транспорт»" }
+    ],
+    // доля групп среди голосующих и среди жителей округа, %
+    turnout: [31, 38, 31], population: [35, 34, 31],
+    lastYear: [
+      { title: "Детская площадка во дворе на улице Мира", cost: 2400000, status: "done", progress: 100 },
+      { title: "Пандусы в поликлинике № 3", cost: 1100000, status: "done", progress: 100 },
+      { title: "Сквер у библиотеки им. Горького", cost: 6900000, status: "progress", progress: 60 },
+      { title: "Освещение тропы к школе № 12", cost: 1500000, status: "contract", progress: 15 }
+    ]
+  },
+
+  admin: {
+    org: "Администрация Северного округа",
+    adults: 48200, registered: 3120, active30: 1847,
+    participantsByWeek: [120, 260, 410, 690, 980, 1320, 1610, 1847]
+  },
+
   badges: [
     { id: "compass", name: "Знаю, чего хочу", icon: "", desc: "Пройти «Компас взглядов»" },
     { id: "bridge", name: "Строитель мостов", icon: "", desc: "Написать аргумент по Правилу моста" },
@@ -340,6 +377,7 @@ window.VC_DATA = {
   const shift = Math.max(0, Math.round((today - base) / DAY));
   const move = (iso) => { const t = new Date(Date.parse(iso + "T00:00:00Z") + shift * DAY); return t.toISOString().slice(0, 10); };
   D.events.forEach((e) => (e.date = move(e.date)));
+  D.budget.stages.forEach((s) => { s.from = move(s.from); s.to = move(s.to); });
   D.election.date = move(D.election.date);
   const el = new Date(D.election.date + "T00:00:00Z");
   el.setUTCDate(el.getUTCDate() + ((7 - el.getUTCDay()) % 7));          // выборы — всегда в воскресенье

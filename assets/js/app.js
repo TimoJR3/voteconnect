@@ -12,13 +12,14 @@
   const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   const MONTHS_NOM = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span>`;
-  const photo = (id, w = 900) => `https://images.unsplash.com/photo-${id}?w=${w}&q=60&auto=format&fit=crop`;
+  const photo = (id, w = 900) => `assets/img/${id}-${w >= 1000 ? 1200 : 700}.jpg`;   // фото хранятся локально (Unsplash License)
   const AVA_BG = ["e2efe6", "f3e3c7", "dbe4f3", "f1d6d3", "ece3f5", "e8e2d6"];
   const hash = (s) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
   function ava(name, cls = "", seed) {
     const s = seed || name, bg = AVA_BG[hash(s) % AVA_BG.length];
-    return `<span class="avatar ${cls}">${esc(initials(name))}<img src="https://api.dicebear.com/9.x/notionists/svg?seed=${hash(s).toString(36)}&backgroundColor=${bg}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+    const key = hash(s).toString(36), known = (window.VC_AVATARS || []).includes(key);   // аватары только локальные, имя никуда не уходит
+    return `<span class="avatar ${cls}">${esc(initials(name))}${known ? `<img src="assets/avatars/${key}.svg" alt="" loading="lazy" onerror="this.remove()">` : ""}</span>`;
   }
 
   /* ---------- Состояние (только в браузере пользователя) ---------- */
@@ -26,7 +27,7 @@
   const defaults = () => ({
     compass: {}, weights: {}, consensus: {}, polls: {}, likes: {}, supported: {}, academy: {}, badges: {}, xp: 0,
     going: {}, posts: [], args: [], myInitiatives: [], comments: {}, commentLikes: {}, answered: {}, readNotifs: {},
-    privacy: { views: "me", activity: "friends", matches: "me" }, profile: null, memory: [], chat: []
+    privacy: { views: "me", activity: "friends", matches: "me" }, profile: null, memory: [], chat: [], pb: { picks: [], submitted: false }
   });
   let S = defaults();
   try {
@@ -106,7 +107,7 @@
   const POS = { "-2": ["Против", "bad"], "-1": ["Скорее против", "bad"], "0": ["Нейтрально", ""], "1": ["Скорее за", "ok"], "2": ["За", "ok"] };
   const posChip = (v) => (v === undefined || v === null) ? `<span class="chip pos">—</span>` : `<span class="chip pos ${POS[v][1]}">${POS[v][0]}</span>`;
   const COMPASS_PHOTO = { transport: "1780866701554-254dcf3fac8e", "eco-n": "1683144651287-f00e40a97199", eco: "1789062665477-b58eb89a22b6", digital: "1714931773030-5d57ca092d77",
-    housing: "1714931773030-5d57ca092d77", social: "1706217968045-2210de668c03", edu: "1608487583634-0f31766e4cb1", health: "1777529178036-18e4a92ec0b6" };
+    housing: "1714931773030-5d57ca092d77", social: "1777529178036-18e4a92ec0b6", edu: "1608487583634-0f31766e4cb1", health: "1777529178036-18e4a92ec0b6" };
 
   const views = {}, binders = {};
   const RUDE = ["идиот", "дурак", "туп", "бред", "заткнись", "дебил", "клоун"];
@@ -714,11 +715,11 @@
     cq4: "Раз в месяц — отчёт здесь, раз в квартал — открытая встреча. Все мои голосования будут в трекере обещаний."
   };
   const CW = 640, CH = 220, PL = 44, PR = 16, PT = 16, PB = 30;
-  function lineChart(labels, values) {
+  function lineChart(labels, values, unit = "подписчиков") {
     const max = Math.ceil(Math.max(...values) / 500) * 500, last = values.length - 1;
     const x = (i) => PL + i * (CW - PL - PR) / last, y = (v) => PT + (1 - v / max) * (CH - PT - PB);
     const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
-    return `<div class="chart" data-chart='${JSON.stringify({ labels, values })}'><svg viewBox="0 0 ${CW} ${CH}" role="img" aria-label="Подписчики по неделям: с ${fmt(values[0])} до ${fmt(values[last])}">
+    return `<div class="chart" data-chart='${JSON.stringify({ labels, values, unit })}'><svg viewBox="0 0 ${CW} ${CH}" role="img" aria-label="${unit} по неделям: с ${fmt(values[0])} до ${fmt(values[last])}">
       ${[0, max / 2, max].map((t) => `<line x1="${PL}" x2="${CW - PR}" y1="${y(t)}" y2="${y(t)}" stroke="var(--border)"/><text x="${PL - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t)}</text>`).join("")}
       ${labels.map((l, i) => (i % 2 === 1 || i === last) ? `<text x="${x(i)}" y="${CH - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${l}</text>` : "").join("")}
       <path d="M${pts.join("L")}L${x(last)},${y(0)}L${x(0)},${y(0)}Z" fill="var(--primary)" opacity=".1"/>
@@ -731,7 +732,7 @@
   }
   function bindCharts() {
     $$(".chart").forEach((wrap) => {
-      const { labels, values } = JSON.parse(wrap.dataset.chart), svg = $("svg", wrap), tip = $(".tip", wrap);
+      const { labels, values, unit } = JSON.parse(wrap.dataset.chart), svg = $("svg", wrap), tip = $(".tip", wrap);
       const max = Math.ceil(Math.max(...values) / 500) * 500, last = values.length - 1;
       const move = (e) => {
         const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * CW;
@@ -739,7 +740,7 @@
         const cx = PL + i * (CW - PL - PR) / last, cy = PT + (1 - values[i] / max) * (CH - PT - PB);
         $(".xh", svg).setAttribute("x1", cx); $(".xh", svg).setAttribute("x2", cx); $(".xh", svg).setAttribute("opacity", ".6");
         $(".xh-dot", svg).setAttribute("cx", cx); $(".xh-dot", svg).setAttribute("cy", cy); $(".xh-dot", svg).setAttribute("opacity", "1");
-        tip.hidden = false; tip.innerHTML = `<span class="muted">${labels[i]}</span><br><b>${fmt(values[i])}</b> подписчиков${i ? ` <span class="muted">+${fmt(values[i] - values[i - 1])}</span>` : ""}`;
+        tip.hidden = false; tip.innerHTML = `<span class="muted">${labels[i]}</span><br><b>${fmt(values[i])}</b> ${unit}${i ? ` <span class="muted">+${fmt(values[i] - values[i - 1])}</span>` : ""}`;
         tip.style.left = Math.min(r.width - 170, Math.max(0, cx / CW * r.width - 85)) + "px"; tip.style.top = (cy / CH * r.height - 64) + "px";
       };
       const leave = () => { tip.hidden = true; $(".xh", svg).setAttribute("opacity", "0"); $(".xh-dot", svg).setAttribute("opacity", "0"); };
@@ -782,6 +783,155 @@
     $$("[data-init-ans]").forEach((b) => b.addEventListener("click", () => { S.answered[b.dataset.initAns] = "ok"; save(); toast("Ответ опубликован"); render(); }));
     $$("[data-print]").forEach((b) => b.addEventListener("click", () => window.print()));
   };
+
+  /* ================= БЮДЖЕТ РАЙОНА (инициативное бюджетирование) ================= */
+  const B = D.budget, A = D.admin;
+  const rub = (n) => (n / 1e6).toLocaleString("ru-RU", { maximumFractionDigits: 1 }) + " млн ₽";
+  const dShort = (iso) => { const d = new Date(iso + "T00:00:00"); return `${d.getDate()} ${MONTHS[d.getMonth()]}`; };
+  const stageIdx = () => { const i = B.stages.findIndex((s) => todayISO >= s.from && todayISO <= s.to); return i < 0 ? 2 : i; };
+  const pbVotes = (p) => p.votes + (S.pb.submitted && S.pb.picks.includes(p.id) ? 1 : 0);
+  const pbVoters = () => B.voters + (S.pb.submitted ? 1 : 0);
+  function pbWinners() {          // правило отбора: по убыванию голосов, пока проект помещается в остаток бюджета
+    let left = B.total; const win = [];
+    [...B.projects].sort((a, b) => pbVotes(b) - pbVotes(a)).forEach((p) => { if (p.cost <= left) { win.push(p.id); left -= p.cost; } });
+    return { win, left };
+  }
+  const LAST_ST = { done: ["Готово", "ok"], progress: ["Работы идут", "warn"], contract: ["Заключён контракт", ""] };
+  let pbTab = "vote";
+  function stagesHTML() {
+    const cur = stageIdx();
+    return `<div class="stages">${B.stages.map((s, i) => `<div class="stage ${i < cur ? "done" : i === cur ? "cur" : ""}"><i></i><b>${s.name}</b><span>${dShort(s.from)} — ${dShort(s.to)}</span></div>`).join("")}</div>`;
+  }
+  views.budget = () => {
+    const picks = S.pb.picks, spent = B.projects.filter((p) => picks.includes(p.id)).reduce((a, p) => a + p.cost, 0);
+    const voteEnd = B.stages[2].to, daysToEnd = Math.max(0, Math.round((new Date(voteEnd + "T23:59:59") - new Date()) / 864e5));
+    const { win, left } = pbWinners(), maxV = Math.max(...B.projects.map(pbVotes));
+    const tabs = `<div class="seg" style="margin:14px 0"><button data-pbtab="vote" class="${pbTab === "vote" ? "active" : ""}">Голосование</button><button data-pbtab="results" class="${pbTab === "results" ? "active" : ""}">Итоги сейчас</button><button data-pbtab="last" class="${pbTab === "last" ? "active" : ""}">Прошлый год</button></div>`;
+    let body = "";
+    if (pbTab === "vote") {
+      body = `<div class="card pb-meter" id="pbMeter">
+        ${S.pb.submitted ? `<div class="row"><span class="chip ok">${ic("check")} Ваш голос учтён</span><span class="small muted">Выбрано проектов: ${picks.length} на ${rub(spent)}</span></div>`
+        : `<div class="row"><div style="flex:1;min-width:200px"><div class="row" style="justify-content:space-between"><b>Ваша корзина: ${rub(spent)}</b><span class="small muted">из ${rub(B.total)}</span></div>
+            <div class="bar" style="margin-top:8px;height:8px"><span style="width:${spent / B.total * 100}%"></span></div></div>
+            <button class="btn" id="pbSubmit" ${picks.length ? "" : "disabled"}>Отдать голос</button></div>
+          <div class="small muted" style="margin-top:8px">Выберите проекты, которые помещаются в бюджет. Голосование закончится через ${daysToEnd} ${plural(daysToEnd, "день", "дня", "дней")}.</div>`}
+      </div>
+      <div class="grid three" style="margin-top:14px">${B.projects.map((p) => {
+        const on = picks.includes(p.id), tooMuch = !on && spent + p.cost > B.total;
+        return `<div class="card init-card pb-card ${on ? "picked" : ""}">${p.photo ? `<img src="${photo(p.photo, 700)}" alt="" loading="lazy">` : `<div class="pb-noimg">${ic("pin")}</div>`}
+          <div class="in"><div class="row"><span class="chip">${topic(p.topic).name}</span><span class="spacer"></span><b>${rub(p.cost)}</b></div>
+          <h3>${esc(p.title)}</h3><div class="small muted">${esc(p.author)}</div><span class="spacer"></span>
+          ${S.pb.submitted ? `<div class="small muted">${fmt(pbVotes(p))} голосов</div>` : `<button class="btn small ${on ? "" : "ghost"}" data-pick-pb="${p.id}" ${tooMuch ? "disabled title=\"Не помещается в остаток бюджета\"" : ""}>${on ? `${ic("check")} В корзине` : tooMuch ? "Не помещается" : `${ic("plus")} В корзину`}</button>`}</div></div>`;
+      }).join("")}</div>`;
+    } else if (pbTab === "results") {
+      body = `<div class="card pad0">${[...B.projects].sort((a, b) => pbVotes(b) - pbVotes(a)).map((p, i) => `<div class="rank-row ${win.includes(p.id) ? "win" : ""}">
+        <span class="rank-n">${i + 1}</span><div style="flex:1;min-width:0"><div class="row" style="justify-content:space-between"><b>${esc(p.title)}</b><span class="small">${rub(p.cost)}</span></div>
+        <div class="bar" style="margin-top:6px"><span style="width:${pbVotes(p) / maxV * 100}%"></span></div>
+        <div class="row small muted" style="margin-top:4px"><span>${fmt(pbVotes(p))} голосов</span><span class="spacer"></span>${win.includes(p.id) ? `<span class="chip on">Проходит</span>` : `<span class="chip">Не помещается в бюджет</span>`}</div></div></div>`).join("")}
+        <div class="rank-row"><span class="small muted">Остаток бюджета: <b>${rub(left)}</b> · проголосовали ${fmt(pbVoters())} человек</span></div></div>
+        <div class="info" style="margin-top:12px">${ic("info")}<span>Правило отбора: проекты идут по числу голосов и проходят, пока хватает бюджета.</span></div>`;
+    } else {
+      body = `<div class="card">${B.lastYear.map((p) => `<div class="promise"><div><b>${esc(p.title)}</b><div class="small muted">${rub(p.cost)}</div></div>
+        <span class="chip ${LAST_ST[p.status][1]}">${LAST_ST[p.status][0]}</span><div class="bar" style="grid-column:1/-1"><span style="width:${p.progress}%"></span></div></div>`).join("")}</div>`;
+    }
+    return pageHead("Бюджет района", `${esc(B.title)} · ${rub(B.total)} решают жители`) + stagesHTML() + tabs + body;
+  };
+  binders.budget = () => {
+    $$("[data-pbtab]").forEach((b) => b.addEventListener("click", () => { pbTab = b.dataset.pbtab; render(); }));
+    $$("[data-pick-pb]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.dataset.pickPb, i = S.pb.picks.indexOf(id);
+      if (i >= 0) S.pb.picks.splice(i, 1); else S.pb.picks.push(id);
+      save(); const y = scrollY; render(); scrollTo(0, y);
+    }));
+    const sub = $("#pbSubmit");
+    if (sub) sub.addEventListener("click", () => { S.pb.submitted = true; save(); addXP(10); award("voice"); pbTab = "results"; render(); toast("Голос учтён. Итоги обновлены"); });
+  };
+
+  /* ================= КАБИНЕТ АДМИНИСТРАЦИИ ================= */
+  function consensusSplit() {
+    const C = D.consensus;
+    const common = C.statements.filter((s) => G.every((c) => c.agree[s.id] >= 0.7));
+    const divisive = C.statements.map((s) => { const v = G.map((c) => c.agree[s.id]); return { s, gap: Math.max(...v) - Math.min(...v) }; }).filter((x) => x.gap >= 0.6).sort((a, b) => b.gap - a.gap).map((x) => x.s);
+    return { common, divisive };
+  }
+  const agreeCells = (s) => G.map((c, i) => `<span class="pct-cell" style="--c:var(--c${i + 1})">${Math.round(c.agree[s.id] * 100)}%</span>`).join("");
+  views.admin = () => {
+    const { win } = pbWinners(), { common } = consensusSplit(), winners = B.projects.filter((p) => win.includes(p.id));
+    const skew = Math.max(...B.turnout.map((t, i) => Math.abs(t - B.population[i])));
+    const funnel = [["Идей подано", B.ideas], ["Прошли проверку смет", B.checked], ["Вынесено на голосование", B.projects.length], ["Проходят по бюджету", winners.length]];
+    const kpi = (l, v, h) => `<div class="card kpi"><div class="lbl">${l}</div><div class="kpi-val">${v}</div><div class="small muted">${h}</div></div>`;
+    return pageHead("Кабинет администрации", `${esc(A.org)} · текущий цикл`, `<a class="btn" href="#/report">${ic("print")} Отчёт для совета</a><button class="btn ghost" id="csvBtn">${ic("download")} CSV</button>`) + `
+    <div class="grid kpis" id="adminKpis">
+      ${kpi("Активны за 30 дней", fmt(A.active30), `${(A.active30 / A.adults * 100).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}% взрослых жителей`)}
+      ${kpi("Проголосовали за бюджет", fmt(pbVoters()), `${(pbVoters() / A.adults * 100).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}% взрослых жителей`)}
+      ${kpi("Идей от жителей", fmt(B.ideas), `${B.checked} прошли проверку смет`)}
+      ${kpi("Согласны все группы", common.length, "утверждений на Карте согласия")}
+    </div>
+    <div class="layout wide" style="margin-top:14px"><div class="stack">
+      <div class="card"><div class="row"><h3 style="margin:0">Участники</h3><span class="spacer"></span><span class="small muted">по неделям</span></div>${lineChart(D.cabinet.weeks, A.participantsByWeek, "участников")}</div>
+      <div class="card"><h3>С чем согласны все группы</h3><p class="small muted" style="margin-top:-4px">Можно включать в план — поддержка не менее 70% в каждой группе</p>
+        <div style="overflow-x:auto"><table class="diff-table"><thead><tr><th>Утверждение</th>${G.map((c) => `<th>${c.short}</th>`).join("")}</tr></thead><tbody>
+        ${common.map((s) => `<tr><td>${esc(s.text)}</td>${G.map((c) => `<td><b>${Math.round(c.agree[s.id] * 100)}%</b></td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+      <div class="card"><h3>Бюджет: проходят по итогам голосования</h3>
+        ${winners.map((p) => `<div class="promise"><div><b>${esc(p.title)}</b><div class="small muted">${fmt(pbVotes(p))} голосов</div></div><b>${rub(p.cost)}</b></div>`).join("")}</div>
+    </div>
+    <aside class="rail">
+      <div class="card"><h3>Воронка бюджета</h3>${funnel.map(([l, v]) => `<div class="hbar"><div class="row" style="justify-content:space-between"><span class="small">${l}</span><b class="small">${v}</b></div><div class="bar"><span style="width:${v / B.ideas * 100}%"></span></div></div>`).join("")}</div>
+      <div class="card"><h3>Кто голосует</h3><p class="small muted" style="margin-top:-4px">Доля групп среди голосующих и среди жителей</p>
+        ${G.map((c, i) => `<div class="hbar"><div class="row" style="justify-content:space-between"><span class="small"><i class="party-dot" style="background:var(--c${i + 1})"></i>${c.short}</span><span class="small">${B.turnout[i]}% / ${B.population[i]}%</span></div><div class="bar"><span style="width:${B.turnout[i] * 2}%;background:var(--c${i + 1})"></span></div></div>`).join("")}
+        <span class="chip ${skew <= 5 ? "ok" : "warn"}">${skew <= 5 ? "Представлены все группы" : `Перекос до ${skew} п.п.`}</span></div>
+      <div class="card"><h3>Прошлый цикл</h3>${B.lastYear.map((p) => `<div class="row" style="padding:6px 0;flex-wrap:nowrap"><span class="small" style="flex:1">${esc(p.title)}</span><span class="chip ${LAST_ST[p.status][1]}">${LAST_ST[p.status][0]}</span></div>`).join("")}</div>
+    </aside></div>`;
+  };
+  binders.admin = () => {
+    bindCharts();
+    $("#csvBtn").addEventListener("click", () => {
+      const rows = [["Проект", "Тема", "Стоимость, руб.", "Голосов", "Проходит"]];
+      const { win } = pbWinners();
+      B.projects.forEach((p) => rows.push([p.title, topic(p.topic).name, p.cost, pbVotes(p), win.includes(p.id) ? "да" : "нет"]));
+      const csv = "﻿" + rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "voteconnect-budget.csv"; a.click();
+    });
+  };
+
+  /* ================= ОТЧЁТ ДЛЯ СОВЕТА ================= */
+  views.report = () => {
+    const { win, left } = pbWinners(), { common, divisive } = consensusSplit(), winners = B.projects.filter((p) => win.includes(p.id));
+    const reached = D.initiatives.filter((i) => i.support >= i.goal), today = dShort(todayISO) + " " + TODAY.getFullYear();
+    return `<div class="page-head no-print"><a class="btn ghost small" href="#/admin">Кабинет администрации</a><span class="spacer"></span><button class="btn" id="printBtn">${ic("download")} Скачать PDF</button></div>
+    <article class="card report">
+      <div class="row" style="align-items:flex-start"><div class="logo">${LOGO}</div><span class="spacer"></span><div class="small muted" style="text-align:right">Подготовлено ${today}<br>${esc(A.org)}</div></div>
+      <h1 style="margin:22px 0 4px">Что решили жители Северного округа</h1>
+      <p class="muted">Отчёт для совета депутатов · ${esc(B.title[0].toLowerCase() + B.title.slice(1))}</p>
+      <div class="report-kpis">
+        <div><b>${fmt(A.active30)}</b><span>активных жителей за 30 дней</span></div>
+        <div><b>${fmt(pbVoters())}</b><span>проголосовали за бюджет</span></div>
+        <div><b>${B.ideas}</b><span>идей от жителей</span></div>
+        <div><b>${common.length}</b><span>решений, которые поддерживают все группы</span></div>
+      </div>
+      <h2>1. С чем согласны все группы жителей</h2>
+      <p class="small muted">Поддержка в каждой из трёх групп мнений: ${G.map((c) => c.short).join(", ")}.</p>
+      <table class="diff-table"><tbody>${common.map((s) => `<tr><td>${esc(s.text)}</td><td class="nowrap">${agreeCells(s)}</td></tr>`).join("")}</tbody></table>
+      <h2>2. Где мнения расходятся</h2>
+      <p class="small muted">Перед решением нужно публичное обсуждение.</p>
+      <table class="diff-table"><tbody>${divisive.map((s) => `<tr><td>${esc(s.text)}</td><td class="nowrap">${agreeCells(s)}</td></tr>`).join("")}</tbody></table>
+      <h2>3. Итоги голосования по бюджету</h2>
+      <table class="diff-table"><thead><tr><th>Проект</th><th>Голосов</th><th>Стоимость</th></tr></thead><tbody>
+        ${winners.map((p) => `<tr><td>${esc(p.title)}</td><td>${fmt(pbVotes(p))}</td><td class="nowrap">${rub(p.cost)}</td></tr>`).join("")}
+        <tr><td><b>Итого</b></td><td></td><td class="nowrap"><b>${rub(B.total - left)}</b> из ${rub(B.total)}</td></tr></tbody></table>
+      <h2>4. Инициативы, набравшие порог подписей</h2>
+      ${reached.map((i) => `<p><b>${esc(i.title)}</b> — ${fmt(i.support)} подписей. ${esc(i.text)}</p>`).join("") || `<p class="muted">Нет.</p>`}
+      <h2>5. Рекомендации</h2>
+      <ol class="report-list">
+        <li>Включить в план работ: ${common.slice(0, 2).map((s) => `«${esc(s.text.replace(/\.$/, ""))}»`).join(" и ")}.</li>
+        <li>Утвердить ${winners.length} проектов-победителей бюджета на ${rub(B.total - left)}.</li>
+        <li>Провести публичное обсуждение: «${esc(divisive[0].text.replace(/\.$/, ""))}».</li>
+        ${reached.length ? `<li>Дать публичный ответ на инициативу «${esc(reached[0].title)}» в течение 14 дней.</li>` : ""}
+      </ol>
+      <p class="small muted report-foot">Методика: голоса анонимны и не связаны с личностью. Группы мнений определены алгоритмом по ответам жителей на Карте согласия. Демо-данные: город и участники вымышлены.</p>
+    </article>`;
+  };
+  binders.report = () => $("#printBtn").addEventListener("click", () => window.print());
 
   /* ================= РЕГИСТРАЦИЯ ================= */
   let ob = { step: 0, interests: [] };
@@ -887,7 +1037,7 @@
     m.addEventListener("click", (e) => { if (e.target === m || e.target.hasAttribute("data-close")) closeLayers(); });
     const draw = () => { const qr = window.qrcode(0, "M"); qr.addData(url); qr.make(); $("#qr", m).innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); };
     if (window.qrcode) return draw();
-    const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js";
+    const s = document.createElement("script"); s.src = "assets/js/qrcode.min.js";
     s.onload = draw; s.onerror = () => ($("#qr", m).textContent = url); document.head.appendChild(s);
   }
 
@@ -896,13 +1046,14 @@
     { r: "#/feed", sel: ".seg", t: "Лента района", x: "Наверху — то, что поддерживают все группы жителей, а не самое громкое." },
     { r: "#/feed", sel: ".post .support", t: "Кто поддерживает", x: "Полоска показывает одобрение в каждой группе мнений. Спорные темы видны сразу." },
     { r: "#/feed", sel: "[data-sort=blind]", t: "Слепое пятно", x: "То, что обсуждают другие группы, но почти не видит ваша. Лекарство от эхо-камер." },
-    { r: "#/compass", sel: ".q-card, .match-row", t: "Компас взглядов", x: "12 вопросов о районе — и процент совпадения с каждым кандидатом. Ответы не покидают телефон." },
-    { r: "#/consensus", sel: ".cmap", t: "Карта согласия", x: "Жители голосуют по коротким утверждениям, алгоритм находит группы мнений." },
-    { r: "#/consensus", sel: "#commonCard", t: "С чем согласны все", x: "Готовая повестка для городского совета — основанная на согласии." },
-    { r: "#/initiatives", sel: ".init-card.reached", t: "Инициативы", x: "Набрали порог подписей — кандидаты обязаны ответить публично." },
+    { r: "#/budget", sel: "#pbMeter", t: "Бюджет района", x: "Жители сами распределяют 15 млн ₽: собирают корзину проектов в пределах бюджета. Так работает инициативное бюджетирование — 67 млрд ₽ в год по стране." },
+    { r: "#/consensus", sel: ".cmap", t: "Карта согласия", x: "Жители голосуют по коротким утверждениям, алгоритм находит группы мнений и то, что их объединяет." },
+    { r: "#/compass", sel: ".q-card, .match-row", t: "Компас взглядов", x: "В период выборов — 12 вопросов и совпадение с кандидатами. Ответы не покидают телефон." },
     { r: "#/assistant", sel: "#memList", t: "Помощник с памятью", x: "Помнит район, интересы и мнения жителя — по модели открытого ai-memory-service." },
-    { r: "#/cabinet", sel: "#kpis", t: "Кабинет кандидата", x: "Вторая сторона платформы: аудитория, вопросы жителей и черновики ответов с ИИ." },
-    { r: "#/profile", sel: "#privacyCard", t: "Приватность", x: "Взгляды видны только владельцу. Данные можно скачать или удалить." }
+    { r: "#/admin", sel: "#adminKpis", t: "Кабинет администрации", x: "Платящий клиент — администрация: участие, воронка бюджета и представленность всех групп." },
+    { r: "#/report", sel: ".report-kpis", t: "Отчёт для совета", x: "Готовый документ: с чем согласны все, что прошло по бюджету и рекомендации. Скачивается в PDF." },
+    { r: "#/cabinet", sel: "#kpis", t: "Кабинет кандидата", x: "Депутаты и кандидаты видят вопросы жителей по важности и отвечают публично." },
+    { r: "#/profile", sel: "#privacyCard", t: "Приватность", x: "Взгляды видны только владельцу, голоса анонимны. Данные можно скачать или удалить." }
   ];
   let tourStep = -1;
   function startTour() { if (!S.profile) finishOnboarding({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"] }); tourStep = 0; showTour(); }
@@ -961,7 +1112,7 @@
   });
 
   /* ================= МАРШРУТИЗАЦИЯ ================= */
-  const navOf = { candidate: "candidates", group: "groups", lesson: "academy" };
+  const navOf = { candidate: "candidates", group: "groups", lesson: "academy", report: "admin" };
   let lastRoute = "";
   function render() {
     clearTimers();
@@ -978,6 +1129,7 @@
     lastRoute = route + (arg || "");
   }
   window.addEventListener("hashchange", render);
+  if (/[?&]demo=1/.test(location.search) && !S.profile) finishOnboarding({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"] });
   render();
   if (/[?&]tour=1/.test(location.search)) setTimeout(startTour, 400);
   if (location.search) history.replaceState(null, "", location.pathname + location.hash);
