@@ -37,6 +37,21 @@ function Toolbar() {
   );
 }
 
+// Документ сериализуется здесь, с экранированием текста. Штатный html.serialize в Yoopta 6.0.5 вставляет текст как есть:
+// набранное обычным текстом «<img …>» превращалось в настоящую разметку, а разбор через innerHTML загружал картинку.
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const TAG = { Paragraph: "p", HeadingTwo: "h2", HeadingThree: "h3", BulletedList: "li", NumberedList: "li", Blockquote: "blockquote" };
+const blocksOf = (ed) => Object.values(ed.getEditorValue() || {}).sort((a, b) => a.meta.order - b.meta.order);
+const leafHTML = (n) => {
+  if (typeof n.text !== "string") return (n.children || []).map(leafHTML).join("");
+  let h = esc(n.text);
+  if (n.highlight) h = `<mark>${h}</mark>`;
+  if (n.italic) h = `<i>${h}</i>`;
+  if (n.bold) h = `<b>${h}</b>`;
+  return h;
+};
+const leafText = (n) => (typeof n.text === "string" ? n.text : (n.children || []).map(leafText).join(""));
+
 const ICON = { Paragraph: "¶", HeadingTwo: "H2", HeadingThree: "H3", BulletedList: "•", NumberedList: "1.", Blockquote: "❝" };
 
 function SlashMenu() {
@@ -79,12 +94,11 @@ window.VCEditor = {
     let ed = null;
     const root = createRoot(el);
     root.render(<Editor placeholder={placeholder} template={template} onReady={(e) => (ed = e)} onChange={onChange} />);
-    const toHTML = () => (ed ? html.serialize(ed, ed.getEditorValue()) : "");
-    const toText = () => {
-      const box = document.createElement("div");
-      box.innerHTML = toHTML();
-      return Array.from(box.querySelectorAll("h1,h2,h3,p,li,blockquote")).map((n) => n.textContent.trim()).filter(Boolean).join("\n");
-    };
+    const toHTML = () => (ed ? blocksOf(ed).map((b) => {
+      const inner = (b.value || []).map(leafHTML).join(""), tag = TAG[b.type] || "p";
+      return inner.trim() ? `<${tag}>${inner}</${tag}>` : "";
+    }).join("") : "");
+    const toText = () => (ed ? blocksOf(ed).map((b) => (b.value || []).map(leafText).join("").trim()).filter(Boolean).join("\n") : "");
     return {
       getHTML: toHTML,
       getText: toText,

@@ -12,7 +12,8 @@
   const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   const MONTHS_NOM = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
   const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--brand)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span>`;
-  const photo = (id, w = 900) => `assets/img/${id}-${w >= 1000 ? 1200 : 700}.jpg`;   // фото хранятся локально (Unsplash License)
+  const photo = (id, w = 900) => `assets/img/${String(id).replace(/[^\w-]/g, "")}-${w >= 1000 ? 1200 : 700}.jpg`;   // фото хранятся локально (Unsplash License)
+  const topicName = (id) => (topic(id) || { name: "" }).name;
   const AVA_BG = ["e2efe6", "f3e3c7", "dbe4f3", "f1d6d3", "ece3f5", "e8e2d6"];
   const hash = (s) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
@@ -29,13 +30,41 @@
   const defaults = () => ({
     compass: {}, weights: {}, consensus: {}, polls: {}, likes: {}, supported: {}, academy: {}, badges: {}, xp: 0,
     going: {}, posts: [], args: [], myInitiatives: [], comments: {}, commentLikes: {}, answered: {}, readNotifs: {},
-    privacy: { views: "me", activity: "friends", matches: "me" }, profile: null, memory: [], chat: [], pb: { picks: [], submitted: false }
+    privacy: { views: "me", activity: "friends", matches: "me" }, profile: null, memory: [], chat: [], pb: { picks: [], submitted: false, receipt: "" },
+    forget: {}, consents: {}
   });
+  // Сохранённые данные проверяются по типам: испорченное или устаревшее поле заменяется значением по умолчанию,
+  // а не роняет экран. Берутся только известные ключи — лишние (в том числе __proto__) отбрасываются.
+  const isObj = (v) => !!v && typeof v === "object" && !Array.isArray(v);
+  function normalize(o) {
+    const d = defaults(); if (!isObj(o)) return d;
+    Object.keys(d).forEach((k) => {
+      const v = o[k], dv = d[k];
+      if (k === "profile") d.profile = isObj(v) ? v : null;
+      else if (Array.isArray(dv)) { if (Array.isArray(v)) d[k] = v.filter(isObj); }
+      else if (isObj(dv)) { if (isObj(v)) d[k] = v; }
+      else if (typeof v === typeof dv) d[k] = v;
+    });
+    d.pb = { ...defaults().pb, ...d.pb }; if (!Array.isArray(d.pb.picks)) d.pb.picks = []; d.pb.receipt = String(d.pb.receipt || "");
+    d.privacy = { ...defaults().privacy, ...d.privacy };
+    Object.keys(d.compass).forEach((i) => { if (!(i in D.compass) || ![-2, -1, 0, 1, 2].includes(d.compass[i])) delete d.compass[i]; });
+    d.posts = d.posts.map((p) => ({ ...p, id: String(p.id), text: String(p.text || ""), author: String(p.author || ""), likes: +p.likes || 0, comments: +p.comments || 0, support: Array.isArray(p.support) && p.support.length === 3 ? p.support.map((x) => +x || 0) : undefined }));
+    d.myInitiatives = d.myInitiatives.map((i) => ({ ...i, id: String(i.id), support: +i.support || 0, goal: +i.goal || 1000, responses: +i.responses || 0 }));
+    d.memory = d.memory.filter((m) => ["fact", "preference", "opinion", "event"].includes(m.type) && typeof m.key === "string")
+      .map((m) => ({ ...m, value: String(m.value), conf: typeof m.conf === "number" ? m.conf : 0.9 }));
+    const P = d.profile;
+    if (P) {
+      P.name = String(P.name || "Гость"); P.street = P.street ? String(P.street) : "";
+      P.district = !P.district || /избирательный/.test(P.district) ? D.district : String(P.district);
+      P.interests = Array.isArray(P.interests) ? P.interests.filter((t) => topic(t)) : [];
+    }
+    return d;
+  }
   let S = defaults();
   try {
     if (/[?&]reset=1/.test(location.search)) localStorage.removeItem(KEY);
-    const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(defaults(), JSON.parse(raw));
-  } catch (e) { /* приватный режим */ }
+    const raw = localStorage.getItem(KEY); if (raw) S = normalize(JSON.parse(raw));
+  } catch (e) { /* приватный режим или повреждённые данные */ }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } };
   const myName = () => (S.profile && S.profile.name) || "Гость";
 
@@ -51,17 +80,21 @@
   }
   const level = () => Math.floor(S.xp / 100) + 1;
   let timers = [];
-  const every = (fn, ms) => timers.push(setInterval(fn, ms));
   const clearTimers = () => { timers.forEach(clearInterval); timers = []; };
 
   /* ---------- Каркас ---------- */
   $$("[data-logo]").forEach((el) => (el.innerHTML = LOGO));
   const daysLeft = Math.max(0, Math.ceil((new Date(D.election.date + "T08:00:00") - new Date()) / 864e5));
   const plural = (n, a, b, c) => (n % 10 === 1 && n % 100 !== 11 ? a : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? b : c);
-  $("#countdown").innerHTML = `<div class="num">${daysLeft}</div><div class="small">${plural(daysLeft, "день", "дня", "дней")} до выборов<br><span class="muted">${D.election.label}</span></div>`;
+  // Главный цикл продукта — бюджет района, поэтому в боковой панели срок голосования за проекты, а не до выборов.
+  const voteDaysLeft = Math.max(0, Math.round((new Date(D.budget.stages[2].to + "T23:59:59") - new Date()) / 864e5));
+  $("#countdown").innerHTML = `<a href="#/budget" class="countdown-link"><div class="num">${voteDaysLeft}</div><div class="small">${plural(voteDaysLeft, "день", "дня", "дней")} до конца<br><span class="muted">голосования за бюджет</span></div></a>`;
   $("#menuBtn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
   function applyTheme(t) { if (t) document.documentElement.dataset.theme = t; }
   try { applyTheme(localStorage.getItem("vc-theme")); } catch (e) { /* ignore */ }
+  // Крупный шрифт — для старшего поколения и слабовидящих; хранится только на устройстве.
+  const bigFont = () => document.documentElement.dataset.size === "lg";
+  try { if (localStorage.getItem("vc-font") === "lg") document.documentElement.dataset.size = "lg"; } catch (e) { /* ignore */ }
   function refreshShell() {
     const unread = D.notifications.filter((n) => !S.readNotifs[n.id]).length;
     $("#bellDot").hidden = !unread; $("#bellDot").textContent = unread;
@@ -99,7 +132,7 @@
     const min = Math.min(...sup);
     return `<span class="pm-pill ${min >= 70 ? "" : "split"}"><i></i>${min >= 70 ? `Поддерживают все группы · ${min}%` : "Мнения расходятся"}</span>`;
   }
-  const mediaImg = (id, w) => `<img src="${photo(id, w)}" alt="" loading="lazy">`;
+  const mediaImg = (id, w, eager) => `<img src="${photo(id, w)}" alt="" loading="${eager ? "eager" : "lazy"}">`;
 
   /* ---------- Компас: расчёт ---------- */
   const compassDone = () => Object.keys(S.compass).length >= Math.ceil(D.compass.length * 0.6);
@@ -144,13 +177,13 @@
             <span class="small muted" id="toneHint"></span><span class="spacer"></span>
             <button class="btn ghost small" id="postCancel">Отмена</button><button class="btn small" id="postBtn">Опубликовать</button></div></div>`
         : `<div class="composer">${ava(myName())}<button class="fake" id="composeBtn">Что происходит в районе?</button></div>`}</div>
-      <div class="seg" role="tablist">
-        <button data-sort="all" class="${feedSort === "all" ? "active" : ""}" title="Сначала то, что поддерживают все группы">Для всех</button>
-        <button data-sort="new" class="${feedSort === "new" ? "active" : ""}">Новое</button>
-        <button data-sort="blind" class="${feedSort === "blind" ? "active" : ""}">${ic("eye")} Слепое пятно<span class="n">${blindSpot().length}</span></button>
+      <div class="seg" role="group" aria-label="Порядок ленты">
+        <button data-sort="all" class="${feedSort === "all" ? "active" : ""}" aria-pressed="${feedSort === "all"}" title="Сначала то, что поддерживают все группы">Для всех</button>
+        <button data-sort="new" class="${feedSort === "new" ? "active" : ""}" aria-pressed="${feedSort === "new"}">Новое</button>
+        <button data-sort="blind" class="${feedSort === "blind" ? "active" : ""}" aria-pressed="${feedSort === "blind"}">${ic("eye")} Слепое пятно<span class="n">${blindSpot().length}</span></button>
       </div>
       ${feedSort === "blind" ? `<div class="info">${ic("info")}<span>Это обсуждают другие группы, но почти не видит ваша — «${esc(G[g].short)}».${userPos() ? "" : ` Группа уточнится после <a href="#/consensus">Карты согласия</a>.`}</span></div>` : ""}
-      ${list.map(postCard).join("") || `<div class="card empty">Здесь пока пусто</div>`}
+      ${list.map((p, i) => postCard(p, i)).join("") || `<div class="card empty">Здесь пока пусто</div>`}
     </div>
     <aside class="rail">
       ${top ? `<a class="card" href="#/compass" style="color:inherit;text-decoration:none"><div class="small muted">Ближе всего к вам</div>
@@ -158,12 +191,12 @@
         : `<div class="card"><h3>Чьи позиции ближе?</h3><p class="small muted">12 вопросов о жизни района — и видно, с кем из кандидатов вы совпадаете.</p><a class="btn small" href="#/compass">Пройти Компас</a></div>`}
       <div class="card"><h3>Скоро</h3>${upcoming(2)}</div>
       <div class="card"><h3>Собирают подписи</h3>
-        ${D.initiatives.slice(0, 2).map((i) => `<a href="#/initiatives" style="display:block;color:inherit;margin:10px 0">
+        ${D.initiatives.filter((i) => i.support < i.goal).slice(0, 2).map((i) => `<a href="#/initiatives" style="display:block;color:inherit;margin:10px 0">
           <b class="small">${esc(i.title)}</b><div class="bar" style="margin:6px 0"><span style="width:${Math.min(100, i.support / i.goal * 100)}%"></span></div>
           <span class="small muted">${fmt(i.support)} из ${fmt(i.goal)}</span></a>`).join("")}</div>
     </aside></div>`;
   };
-  function postCard(p) {
+  function postCard(p, idx = 9) {
     const c = p.candidate ? cand(p.candidate) : null, t = p.topic ? topic(p.topic) : null, liked = S.likes[p.id];
     const cmCount = p.comments + (S.comments[p.id] || []).length;
     return `<article class="card post fade-in ${p.flagged ? "flagged" : ""}">
@@ -173,7 +206,7 @@
           <div class="meta">${c ? `Кандидат · ${esc(D.parties[c.party].name)}` : p.type === "official" ? "Официальный аккаунт" : "Житель района"} · ${esc(p.time)}</div></div>
         </div>
       </div>
-      ${p.photo ? `<figure class="post-media">${mediaImg(p.photo, 1200)}${t ? `<span class="pm-tag">${t.name}</span>` : ""}${p.support && !p.flagged ? supportPill(p.support) : ""}</figure>` : ""}
+      ${p.photo ? `<figure class="post-media">${mediaImg(p.photo, 1200, idx < 2)}${t ? `<span class="pm-tag">${t.name}</span>` : ""}${p.support && !p.flagged ? supportPill(p.support) : ""}</figure>` : ""}
       <div class="post-body">
         <p class="post-text">${esc(p.text)}</p>
         ${(t && !p.photo) || p.verified ? `<div class="row" style="margin-top:10px">${t && !p.photo ? `<span class="chip">${t.name}</span>` : ""}${p.verified ? `<span class="chip ok">${ic("check")} ${esc(p.verified)}</span>` : ""}</div>` : ""}
@@ -181,11 +214,11 @@
       </div>
       ${p.support && !p.flagged ? `<div class="post-foot">${support(p.support)}</div>` : ""}
       <div class="post-actions">
-        <button data-like="${p.id}" class="${liked ? "on" : ""}">${ic(liked ? "heartOn" : "heart")} ${fmt(p.likes + (liked ? 1 : 0))}</button>
-        <button data-cm="${p.id}">${ic("comment")} ${fmt(cmCount)}</button>
-        <button data-share="${p.id}">${ic("share")} Поделиться</button>
+        <button data-like="${esc(p.id)}" class="${liked ? "on" : ""}" aria-pressed="${!!liked}" aria-label="Нравится: ${fmt(p.likes + (liked ? 1 : 0))}">${ic(liked ? "heartOn" : "heart")} ${fmt(p.likes + (liked ? 1 : 0))}</button>
+        <button data-cm="${esc(p.id)}" aria-label="Комментарии: ${fmt(cmCount)}">${ic("comment")} ${fmt(cmCount)}</button>
+        <button data-share="${esc(p.id)}">${ic("share")} Поделиться</button>
         <span class="spacer"></span>
-        ${!p.flagged ? `<button data-note="${p.id}" title="Добавить контекст с источником">${ic("pen")}</button>` : ""}
+        ${!p.flagged ? `<button data-note="${esc(p.id)}" title="Добавить контекст с источником" aria-label="Добавить контекст с источником">${ic("pen")}</button>` : ""}
       </div>
       ${openThreads[p.id] ? threadHTML(p) : ""}
     </article>`;
@@ -196,9 +229,9 @@
       ${list.map((c, i) => {
         const k = p.id + ":" + i, liked = S.commentLikes[k], cc = c.candidate ? cand(c.candidate) : null;
         return `<div class="comment">${ava(c.author, "sm", cc ? cc.id : c.author)}<div class="bubble"><b>${esc(c.author)}</b>${cc ? ` <span class="muted small">· кандидат</span>` : ""}
-          <div>${esc(c.text)}</div><button class="link-btn ${liked ? "on" : ""}" data-cl="${k}">${ic(liked ? "heartOn" : "heart")} ${c.likes + (liked ? 1 : 0)}</button></div></div>`;
+          <div>${esc(c.text)}</div><button class="link-btn ${liked ? "on" : ""}" data-cl="${esc(k)}" aria-label="Нравится: ${c.likes + (liked ? 1 : 0)}">${ic(liked ? "heartOn" : "heart")} ${c.likes + (liked ? 1 : 0)}</button></div></div>`;
       }).join("")}
-      <div class="comment">${ava(myName(), "sm")}<div style="flex:1;display:flex;gap:8px"><input class="cm-input" data-ci="${p.id}" placeholder="Ответить…" maxlength="300"><button class="btn small" data-cs="${p.id}" aria-label="Отправить">${ic("send")}</button></div></div>
+      <div class="comment">${ava(myName(), "sm")}<div style="flex:1;display:flex;gap:8px"><input class="cm-input" data-ci="${esc(p.id)}" aria-label="Ваш ответ" placeholder="Ответить…" maxlength="300"><button class="btn small" data-cs="${esc(p.id)}" aria-label="Отправить">${ic("send")}</button></div></div>
     </div>`;
   }
   binders.feed = () => {
@@ -222,13 +255,13 @@
       try { await navigator.clipboard.writeText(url); toast("Ссылка скопирована"); } catch (e) { toast(url); }
     }));
     $$("[data-note]").forEach((b) => b.addEventListener("click", () => toast("Контекст появится, когда его одобрят разные группы")));
-    $$("[data-cm]").forEach((b) => b.addEventListener("click", () => { const id = b.dataset.cm; openThreads[id] = !openThreads[id]; render(); const i = $(`[data-ci="${id}"]`); if (i) i.focus(); }));
+    $$("[data-cm]").forEach((b) => b.addEventListener("click", () => { const id = b.dataset.cm; openThreads[id] = !openThreads[id]; render(); const i = $(`[data-ci="${CSS.escape(id)}"]`); if (i) i.focus(); }));
     $$("[data-cl]").forEach((b) => b.addEventListener("click", () => { S.commentLikes[b.dataset.cl] = !S.commentLikes[b.dataset.cl]; save(); render(); }));
     const send = (id) => {
-      const inp = $(`[data-ci="${id}"]`), text = inp.value.trim(); if (text.length < 2) return;
+      const inp = $(`[data-ci="${CSS.escape(id)}"]`), text = inp.value.trim(); if (text.length < 2) return;
       if (isRude(text)) return toast("Похоже на оскорбление — переформулируйте");
       (S.comments[id] = S.comments[id] || []).push({ author: myName(), text, likes: 0 });
-      save(); addXP(2); render(); const n = $(`[data-ci="${id}"]`); if (n) n.focus();
+      save(); addXP(2); render(); const n = $(`[data-ci="${CSS.escape(id)}"]`); if (n) n.focus();
     };
     $$("[data-cs]").forEach((b) => b.addEventListener("click", () => send(b.dataset.cs)));
     $$("[data-ci]").forEach((i) => i.addEventListener("keydown", (e) => { if (e.key === "Enter") send(i.dataset.ci); }));
@@ -238,15 +271,19 @@
   let cq = 0;
   views.compass = (arg) => {
     const n = D.compass.length;
+    if (!S.consents.views) return compassConsent();
+    if (cq >= n && !Object.keys(S.compass).length) return pageHead("Компас взглядов", "Ответов нет") + `
+      <div class="card" style="max-width:640px"><h3>Вы пропустили все вопросы</h3><p class="muted">Без ответов совпадение с кандидатами не посчитать.</p>
+        <a class="btn" href="#/compass/retake" id="retake">Пройти заново</a></div>`;
     if (cq >= n || (cq === 0 && compassDone() && arg !== "retake")) return compassResults();
     const st = D.compass[cq], cur = S.compass[cq];
     return pageHead("Компас взглядов", `Вопрос ${cq + 1} из ${n}`) + `
       <div class="progress"><span style="width:${cq / n * 100}%"></span></div>
       <div class="card q-card fade-in">
         <img class="q-photo" src="${photo(COMPASS_PHOTO[st.topic], 1000)}" alt="">
-        <div class="q-in"><div class="q-step">${topic(st.topic).name}</div>
+        <div class="q-in"><div class="q-step">${topicName(st.topic)}</div>
           <div class="q-text">${esc(st.text)}</div>
-          <div class="answers">${[[2, "Полностью за"], [1, "Скорее за"], [0, "Не знаю"], [-1, "Скорее против"], [-2, "Полностью против"]].map(([v, l]) => `<button data-ans="${v}" class="${cur === v ? "sel" : ""}">${l}</button>`).join("")}</div>
+          <div class="answers">${[[2, "Полностью за"], [1, "Скорее за"], [0, "Не знаю"], [-1, "Скорее против"], [-2, "Полностью против"]].map(([v, l]) => `<button data-ans="${v}" class="${cur === v ? "sel" : ""}" aria-pressed="${cur === v}">${l}</button>`).join("")}</div>
           <div class="row" style="margin-top:14px">
             <label class="row small" style="gap:8px"><input type="checkbox" id="imp" ${S.weights[cq] ? "checked" : ""}> Для меня это важно</label>
             <span class="spacer"></span>${cq > 0 ? `<button class="btn ghost small" id="prevQ">Назад</button>` : ""}<button class="btn ghost small" id="skipQ">Пропустить</button></div>
@@ -254,6 +291,22 @@
       </div>
       <div class="info" style="margin-top:12px;max-width:640px">${ic("lock")}<span>Ответы остаются на вашем устройстве.</span></div>`;
   };
+  // Отдельное согласие: ответы Компаса — политические взгляды, особая категория персональных данных (ст. 10 152-ФЗ).
+  function compassConsent() {
+    return pageHead("Компас взглядов", "12 вопросов о жизни района") + `
+      <div class="card q-card consent-card fade-in" style="max-width:640px"><div class="q-in">
+        <div class="q-step">${ic("lock")} Отдельное согласие</div>
+        <h2 style="margin:6px 0 10px">Сначала — о ваших данных</h2>
+        <p>Ответы Компаса показывают ваши политические взгляды. Закон относит их к особой категории персональных данных, поэтому мы спрашиваем отдельно.</p>
+        <ul class="consent-list">
+          <li>Ответы хранятся и считаются только на этом устройстве — на сервер они не отправляются.</li>
+          <li>Их не видят другие жители, кандидаты и администрация.</li>
+          <li>Согласие можно отозвать в профиле — ответы удалятся сразу.</li>
+        </ul>
+        <div class="row" style="margin-top:16px"><button class="btn" id="cmpAgree">Согласен, начать</button><a class="btn ghost" href="#/feed">Не сейчас</a></div>
+        <p class="small muted" style="margin:12px 0 0">Подробнее — в <a href="privacy.html" target="_blank" rel="noopener">условиях обработки данных</a>.</p>
+      </div></div>`;
+  }
   function compassResults() {
     const m = matches();
     return pageHead("Ваши совпадения", `Учтено ответов: ${Object.keys(S.compass).length} из ${D.compass.length}`, `<a class="btn ghost small" href="#/compass/retake" id="retake">Пройти заново</a>`) + `
@@ -269,9 +322,10 @@
       <a class="btn soft" href="#/promises">Проверить обещания</a><a class="btn soft" href="#/calendar">Сходить на дебаты</a><a class="btn soft" href="#/candidate/${m[0].c.id}">Задать вопрос</a></div></div></aside></div>`;
   }
   binders.compass = () => {
+    const ag = $("#cmpAgree"); if (ag) ag.addEventListener("click", () => { S.consents.views = todayISO; save(); toast("Согласие сохранено на этом устройстве"); render(); });
     const r = $("#retake");
     if (r) r.addEventListener("click", (e) => { e.preventDefault(); cq = 0; S.compass = {}; S.weights = {}; save(); location.hash = "#/compass/retake"; });
-    const next = () => { cq++; if (cq >= D.compass.length) { award("compass"); location.hash = "#/compass"; } render(); };
+    const next = () => { cq++; if (cq >= D.compass.length) { if (compassDone()) award("compass"); location.hash = "#/compass"; } render(); };
     $$("[data-ans]").forEach((b) => b.addEventListener("click", () => { S.compass[cq] = Number(b.dataset.ans); S.weights[cq] = $("#imp").checked; save(); next(); }));
     const skip = $("#skipQ"); if (skip) skip.addEventListener("click", () => { delete S.compass[cq]; save(); next(); });
     const prev = $("#prevQ"); if (prev) prev.addEventListener("click", () => { cq--; render(); });
@@ -279,7 +333,8 @@
 
   /* ================= КАРТА СОГЛАСИЯ ================= */
   function rng(seed) { return () => ((seed = (seed * 16807) % 2147483647) / 2147483647); }
-  let crowd = null, crowdCount = 1847;
+  let crowd = null;
+  const crowdCount = D.admin.active30;   // демо-число; раньше оно «росло» само — это выглядело как настоящая активность
   function makeCrowd() {
     const r = rng(42), pts = [];
     G.forEach((cl, ci) => { for (let i = 0; i < cl.size; i++) { const a = r() * 6.283, d = Math.sqrt(r()) * 0.33; pts.push({ x: cl.center[0] + Math.cos(a) * d, y: cl.center[1] + Math.sin(a) * d * 0.85, c: ci }); } });
@@ -303,14 +358,14 @@
     const common = C.statements.filter((s) => G.every((c) => c.agree[s.id] >= 0.7));
     const divisive = C.statements.map((s) => { const v = G.map((c) => c.agree[s.id]); return { s, gap: Math.max(...v) - Math.min(...v) }; }).filter((x) => x.gap >= 0.6).sort((a, b) => b.gap - a.gap);
     const bars = (s) => `<div class="cluster-bars" title="Доля «за» в каждой группе">${G.map((c, i) => `<span style="height:${Math.max(3, c.agree[s.id] * 32)}px;background:var(--c${i + 1})"></span>`).join("")}</div>`;
-    return pageHead("Карта согласия", esc(C.question), `<span class="live" id="liveCount">${fmt(crowdCount)} участников</span>`) + `
+    return pageHead("Карта согласия", esc(C.question), `<span class="chip" title="Демо-данные: участники вымышлены">${fmt(crowdCount)} участников · демо</span>`) + `
     <div class="layout wide"><div class="stack">
       <div class="card">${cmapSVG()}
         <div class="legend" style="margin-top:12px">${G.map((c, i) => `<span><i style="background:var(--c${i + 1})"></i>${esc(c.label.replace(/[«»]/g, ""))}</span>`).join("")}</div>
         ${up ? `<p class="small" style="margin:10px 0 0">Вы ближе к группе «${esc(G[nearestIdx(up)].short)}».</p>` : ""}</div>
       <div class="card"><h3>Ваше мнение</h3>
         ${C.statements.map((s) => { const v = S.consensus[s.id]; return `<div class="vote-row"><div>${esc(s.text)}</div><div class="vote-btns">
-          <button data-cv="${s.id}:1" class="${v === 1 ? "sel a" : ""}">За</button><button data-cv="${s.id}:-1" class="${v === -1 ? "sel d" : ""}">Против</button><button data-cv="${s.id}:0" class="${v === 0 ? "sel p" : ""}">Пропуск</button></div></div>`; }).join("")}</div>
+          <button data-cv="${s.id}:1" class="${v === 1 ? "sel a" : ""}" aria-pressed="${v === 1}">За</button><button data-cv="${s.id}:-1" class="${v === -1 ? "sel d" : ""}" aria-pressed="${v === -1}">Против</button><button data-cv="${s.id}:0" class="${v === 0 ? "sel p" : ""}" aria-pressed="${v === 0}">Пропуск</button></div></div>`; }).join("")}</div>
     </div>
     <aside class="rail">
       <div class="card" id="commonCard"><h3>С чем согласны все</h3>
@@ -321,40 +376,24 @@
   };
   binders.consensus = () => {
     $$("[data-cv]").forEach((b) => b.addEventListener("click", () => { const [id, v] = b.dataset.cv.split(":"); S.consensus[id] = Number(v); save(); award("consensus"); render(); }));
-    every(() => {
-      const ci = Math.floor(Math.random() * 3), c = G[ci], a = Math.random() * 6.28, d = Math.sqrt(Math.random()) * 0.33;
-      const p = { x: c.center[0] + Math.cos(a) * d, y: c.center[1] + Math.sin(a) * d * 0.85, c: ci }; crowd.push(p); crowdCount++;
-      const g = $("#crowd"); if (!g) return;
-      const el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      el.setAttribute("cx", sx(p.x).toFixed(1)); el.setAttribute("cy", sy(p.y).toFixed(1)); el.setAttribute("r", "4"); el.setAttribute("fill", `var(--c${ci + 1})`); el.setAttribute("opacity", ".8");
-      el.innerHTML = `<animate attributeName="r" values="0;9;4" dur=".8s"/>`; g.appendChild(el);
-      $("#liveCount").textContent = `${fmt(crowdCount)} участников`;
-    }, 2500);
   };
 
   /* ================= ОПРОСЫ ================= */
   const pollVotes = D.polls.map((p) => p.votes.slice());
-  views.polls = () => pageHead("Опросы", "Результаты видны после голосования", `<span class="live">Идёт голосование</span>`) + `
+  views.polls = () => pageHead("Опросы", "Результаты видны после голосования", `<span class="chip">Голосование открыто</span>`) + `
     <div class="grid two">${D.polls.map((p, pi) => {
       const silent = p.election && daysLeft <= 5, mine = silent ? undefined : S.polls[p.id], votes = pollVotes[pi].map((v, i) => v + (mine === i ? 1 : 0)), total = votes.reduce((a, b) => a + b, 0);
       if (silent) return `<div class="card"><h3>${esc(p.text)}</h3><p class="small muted">Результаты скрыты: за 5 дней до голосования их публикация запрещена (ст. 46 67-ФЗ).</p></div>`;
       return `<div class="card" data-poll="${pi}"><h3>${esc(p.text)}</h3>
         ${p.options.map((o, i) => `<button class="poll-opt ${mine === i ? "mine" : ""}" data-pv="${pi}:${i}">
           <span class="fill" style="width:${mine !== undefined ? (votes[i] / total * 100).toFixed(1) : 0}%"></span><span>${esc(o)}</span><span data-pct>${mine !== undefined ? Math.round(votes[i] / total * 100) + "%" : ""}</span></button>`).join("")}
-        <div class="small muted" data-total>${mine !== undefined ? `${fmt(total)} голосов` : "Один человек — один голос"}</div>${p.election ? `<p class="small muted" style="margin:8px 0 0">Опрос VoteConnect, онлайн, участники платформы округа № 7, ${esc(D.events[0].date.slice(0, 7))}. Выборка не репрезентативна, погрешность не оценивается. Заказчик — VoteConnect.</p>` : ""}</div>`;
+        <div class="small muted" data-total>${mine !== undefined ? `${fmt(total)} голосов` : "Один человек — один голос"}</div>${p.election ? `<p class="small muted" style="margin:8px 0 0">Опрос VoteConnect, онлайн, участники платформы округа № 7, ${MONTHS_NOM[TODAY.getMonth()].toLowerCase()} ${TODAY.getFullYear()}, опрошено ${fmt(total)} чел. Вопрос — как в заголовке. Выборка не случайная и не репрезентативна: результаты нельзя переносить на всех избирателей округа, статистическая погрешность для такой выборки не рассчитывается. Заказчик и организатор — VoteConnect.</p>` : ""}</div>`;
     }).join("")}</div>`;
   binders.polls = () => {
     $$("[data-pv]").forEach((b) => b.addEventListener("click", () => {
       const [pi, i] = b.dataset.pv.split(":").map(Number), id = D.polls[pi].id; if (S.polls[id] !== undefined) return;
       S.polls[id] = i; save(); addXP(3); render();
     }));
-    every(() => D.polls.forEach((p, pi) => {
-      pollVotes[pi][Math.floor(Math.random() * p.options.length)] += 1 + Math.floor(Math.random() * 3);
-      const mine = S.polls[p.id], card = $(`[data-poll="${pi}"]`); if (mine === undefined || !card) return;
-      const votes = pollVotes[pi].map((v, k) => v + (mine === k ? 1 : 0)), total = votes.reduce((a, b) => a + b, 0);
-      $$(".poll-opt", card).forEach((el, k) => { $(".fill", el).style.width = (votes[k] / total * 100).toFixed(1) + "%"; $("[data-pct]", el).textContent = Math.round(votes[k] / total * 100) + "%"; });
-      $("[data-total]", card).textContent = `${fmt(total)} голосов`;
-    }), 1800);
   };
 
   /* ================= КАНДИДАТЫ ================= */
@@ -362,7 +401,7 @@
   views.candidates = () => {
     const m = compassDone() ? Object.fromEntries(matches().map((x) => [x.c.id, x.pct])) : null;
     const list = D.candidates.filter((c) => !candTopic || c.focus.includes(candTopic));
-    return pageHead("Кандидаты", esc(D.district)) + `
+    return pageHead("Кандидаты", `${esc(D.election.title)} · ${esc(D.electionDistrict)} · ${D.election.label}, через ${daysLeft} ${plural(daysLeft, "день", "дня", "дней")}`) + `
     <div class="seg" style="margin-bottom:14px"><button data-ct="" class="${!candTopic ? "active" : ""}">Все</button>${D.topics.map((t) => `<button data-ct="${t.id}" class="${candTopic === t.id ? "active" : ""}">${t.name}</button>`).join("")}</div>
     <div class="grid three">${list.map((c) => `<a class="card cand-card" href="#/candidate/${c.id}" style="color:inherit;text-decoration:none">
       <div class="row">${ava(c.name, "lg", c.id)}<div style="flex:1;min-width:0"><b>${esc(c.name)}</b><div class="small muted"><i class="party-dot" style="background:${D.parties[c.party].color}"></i>${esc(D.parties[c.party].name)}</div></div>
@@ -403,6 +442,7 @@
     </aside></div>`;
   };
   binders.candidate = (id) => {
+    if (!cand(id)) return binders.candidates();   // неизвестный кандидат: показан список, нужны его обработчики
     $("#followBtn").addEventListener("click", () => { S.going["f-" + id] = !S.going["f-" + id]; save(); render(); });
     $("#askBtn").addEventListener("click", () => {
       const q = $("#qText").value.trim(); if (q.length < 8) return toast("Сформулируйте вопрос подробнее");
@@ -428,10 +468,12 @@
   };
 
   /* ================= СОБЫТИЯ ================= */
-  const EV_MONTHS = D.events.map((e) => new Date(e.date + "T00:00:00").getMonth()), CAL_MIN = Math.min(...EV_MONTHS), CAL_MAX = Math.max(...EV_MONTHS);
-  let calMonth = Math.min(CAL_MAX, Math.max(CAL_MIN, new Date().getMonth()));
   const TODAY = new Date(), pad = (n) => String(n).padStart(2, "0");
   const todayISO = `${TODAY.getFullYear()}-${pad(TODAY.getMonth() + 1)}-${pad(TODAY.getDate())}`;
+  // Месяц календаря — порядковый номер «год × 12 + месяц»: события демо могут переходить через Новый год.
+  const monthNo = (iso) => { const [y, m] = iso.split("-").map(Number); return y * 12 + m - 1; };
+  const EV_MONTHS = D.events.map((e) => monthNo(e.date)), CAL_MIN = Math.min(...EV_MONTHS), CAL_MAX = Math.max(...EV_MONTHS);
+  let calMonth = Math.min(CAL_MAX, Math.max(CAL_MIN, monthNo(todayISO)));
   function eventRow(e) {
     const d = new Date(e.date + "T00:00:00"), i = D.events.indexOf(e);
     return `<div class="event-item"><div class="event-date"><b>${d.getDate()}</b><small>${MONTHS[d.getMonth()].slice(0, 3)}</small></div>
@@ -445,17 +487,17 @@
     }).join("") + `<a class="small" style="display:inline-block;margin-top:10px;font-weight:600" href="#/calendar">Все события</a>`;
   }
   views.calendar = () => {
-    const y = new Date(D.events[0].date).getFullYear(), first = new Date(y, calMonth, 1), days = new Date(y, calMonth + 1, 0).getDate(), off = (first.getDay() + 6) % 7, cells = [];
+    const y = Math.floor(calMonth / 12), mo = calMonth % 12, first = new Date(y, mo, 1), days = new Date(y, mo + 1, 0).getDate(), off = (first.getDay() + 6) % 7, cells = [];
     for (let i = 0; i < off; i++) cells.push(`<div class="day empty"></div>`);
     for (let d = 1; d <= days; d++) {
-      const iso = `${y}-${pad(calMonth + 1)}-${pad(d)}`, evs = D.events.filter((e) => e.date === iso);
+      const iso = `${y}-${pad(mo + 1)}-${pad(d)}`, evs = D.events.filter((e) => e.date === iso);
       cells.push(`<div class="day ${iso === todayISO ? "today" : ""}"><span class="n">${d}</span>${evs.map((e) => `<button class="ev ev-${e.type}" data-ev="${D.events.indexOf(e)}" title="${esc(e.title)}">${esc(e.title)}</button>`).join("")}</div>`);
     }
-    const monthEvents = D.events.filter((e) => new Date(e.date + "T00:00:00").getMonth() === calMonth);
+    const monthEvents = D.events.filter((e) => monthNo(e.date) === calMonth);
     return pageHead("События", "Встречи, дебаты и важные даты") + `
     <div class="layout wide"><div class="stack">
       <div class="card"><div class="row" style="margin-bottom:12px"><button class="icon-btn" id="calPrev" ${calMonth <= CAL_MIN ? "disabled" : ""} aria-label="Назад" style="transform:scaleX(-1)">${ic("chevron")}</button>
-        <h3 style="margin:0;min-width:120px;text-align:center">${MONTHS_NOM[calMonth]}</h3><button class="icon-btn" id="calNext" ${calMonth >= CAL_MAX ? "disabled" : ""} aria-label="Вперёд">${ic("chevron")}</button>
+        <h3 style="margin:0;min-width:120px;text-align:center">${MONTHS_NOM[mo]}${y !== TODAY.getFullYear() ? " " + y : ""}</h3><button class="icon-btn" id="calNext" ${calMonth >= CAL_MAX ? "disabled" : ""} aria-label="Вперёд">${ic("chevron")}</button>
         <span class="spacer"></span><div class="legend">${["Важно", "Дебаты", "Встреча", "Обучение", "Акция"].map((t) => `<span><i class="ev-${t}"></i>${t}</span>`).join("")}</div></div>
         <div class="cal">${["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => `<div class="dow">${d}</div>`).join("")}${cells.join("")}</div></div>
       <div class="card">${monthEvents.map(eventRow).join("") || `<p class="muted">Нет событий.</p>`}</div>
@@ -464,10 +506,16 @@
       <div class="ask" style="margin:0"><input id="street" placeholder="Улица" value="${esc((S.profile && S.profile.street) || "")}"><button class="btn" id="findBtn">Найти</button></div>
       <div id="station" class="small" style="margin-top:10px"></div></div></aside></div>`;
   };
+  // Участки в демо вымышлены (Новоград не существует). Ответ всегда помечен как демо и ведёт к официальному сервису ЦИК,
+  // чтобы реальный человек, введя свою улицу, не принял выдуманный адрес за настоящий.
+  const CIK_URL = "https://www.cikrf.ru/";
   function stationFor(s) { return { num: 700 + (s.length * 7) % 40, school: (s.length % 20) + 1, house: (s.length * 3) % 50 + 1 }; }
+  // Календарь в формате iCalendar (RFC 5545): DTSTAMP обязателен, запятые и точки с запятой в тексте экранируются.
+  const icsText = (v) => String(v).replace(/[\\;,]/g, (c) => "\\" + c).replace(/\r?\n/g, "\\n");
   function downloadICS(e) {
-    const dt = e.date.replace(/-/g, "") + "T" + e.time.replace(":", "") + "00";
-    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//VoteConnect//RU", "BEGIN:VEVENT", `UID:${dt}-${Math.random().toString(36).slice(2)}@voteconnect`, `DTSTART:${dt}`, `SUMMARY:${e.title}`, `LOCATION:${e.place}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const dt = e.date.replace(/-/g, "") + "T" + e.time.replace(":", "") + "00", stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//VoteConnect//RU", "BEGIN:VEVENT", `UID:${dt}-${Math.random().toString(36).slice(2)}@voteconnect`, `DTSTAMP:${stamp}`,
+      `DTSTART:${dt}`, `SUMMARY:${icsText(e.title)}`, `LOCATION:${icsText(e.place)}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" })); a.download = "voteconnect-event.ics"; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000); award("planner");
   }
@@ -480,7 +528,8 @@
     $("#calNext").addEventListener("click", () => { calMonth = Math.min(CAL_MAX, calMonth + 1); render(); });
     $$("[data-ev]").forEach((b) => b.addEventListener("click", () => { const e = D.events[b.dataset.ev]; toast(`${e.title} · ${e.time}, ${e.place}`); }));
     const find = () => { const s = $("#street").value.trim(); if (!s) return; const st = stationFor(s);
-      $("#station").innerHTML = `<div class="arg"><b>Участок № ${st.num}</b><br>Школа № ${st.school}, ул. ${esc(s)}, ${st.house}<br><span class="muted">9 минут пешком · доступная среда</span></div>`; };
+      $("#station").innerHTML = `<div class="arg"><span class="chip warn">Демо</span><br><b>Участок № ${st.num}</b> · школа № ${st.school}<br>
+        <span class="muted">Город и участки в демо вымышлены. Настоящий участок — в сервисе «Найди свой избирательный участок» на <a href="${CIK_URL}" target="_blank" rel="noopener noreferrer">сайте ЦИК России</a>.</span></div>`; };
     $("#findBtn").addEventListener("click", find); $("#street").addEventListener("keydown", (e) => { if (e.key === "Enter") find(); });
     bindEventButtons();
   };
@@ -507,6 +556,7 @@
       <div class="row"><span class="small muted" id="argHint"></span><span class="spacer"></span><button class="btn" id="argBtn" disabled>Опубликовать</button></div></div></div>`;
   };
   binders.group = (id) => {
+    if (!D.groups.find((x) => x.id === id)) return;
     const und = $("#und"), argt = $("#argt"), btn = $("#argBtn"), hint = $("#argHint");
     const check = () => {
       const rude = isRude(und.value + " " + argt.value), n = und.value.trim().length;
@@ -536,12 +586,12 @@
     <div class="grid three">${all.map((i) => {
       const sup = i.support + (S.supported[i.id] ? 1 : 0), reached = sup >= i.goal;
       return `<div class="card init-card fade-in ${reached ? "reached" : ""}">${i.photo ? `<img src="${photo(i.photo, 700)}" alt="" loading="lazy">` : ""}
-        <div class="in"><div class="row"><span class="chip">${topic(i.topic).name}</span>${reached ? `<span class="chip on">Порог достигнут</span>` : ""}</div>
+        <div class="in"><div class="row"><span class="chip">${topicName(i.topic)}</span>${reached ? `<span class="chip on">Порог достигнут</span>` : ""}</div>
         <h3>${esc(i.title)}</h3>${i.html ? `<div class="body small">${cleanHTML(i.html)}</div>` : `<div class="small">${esc(i.text)}</div>`}
         <div class="small muted">${esc(i.author)} · ответов кандидатов: ${i.responses}</div>
         <span class="spacer"></span><div class="bar"><span style="width:${Math.min(100, sup / i.goal * 100)}%"></span></div>
         <div class="row"><b>${fmt(sup)}</b><span class="small muted">из ${fmt(i.goal)}</span><span class="spacer"></span>
-          <button class="btn small ${S.supported[i.id] ? "ghost" : ""}" data-sup="${i.id}">${S.supported[i.id] ? "Вы поддержали" : "Поддержать"}</button></div></div></div>`;
+          <button class="btn small ${S.supported[i.id] ? "ghost" : ""}" data-sup="${esc(i.id)}">${S.supported[i.id] ? "Вы поддержали" : "Поддержать"}</button></div></div></div>`;
     }).join("")}</div>`;
   };
   binders.initiatives = () => {
@@ -571,7 +621,7 @@
     return pageHead("Академия", `Пройдено ${done} из ${D.academy.length} · уровень ${level()}`) + `
     <div class="grid two">${D.academy.map((m, i) => `<a class="card module" href="#/lesson/${m.id}" style="color:inherit;text-decoration:none">
       <div class="row"><div class="num">${i + 1}</div><span class="spacer"></span>${S.academy[m.id] ? `<span class="chip ok">${ic("check")} Пройдено</span>` : `<span class="chip">3 минуты</span>`}</div>
-      <h3 style="margin:4px 0 0">${esc(m.title)}</h3><div class="small muted">${m.cards.length} карточки и ${m.quiz.length} вопроса</div></a>`).join("")}</div>`;
+      <h3 style="margin:4px 0 0">${esc(m.title)}</h3><div class="small muted">${m.cards.length} ${plural(m.cards.length, "карточка", "карточки", "карточек")} и ${m.quiz.length} ${plural(m.quiz.length, "вопрос", "вопроса", "вопросов")}</div></a>`).join("")}</div>`;
   };
   let lesson = { id: null, step: 0, answered: null, score: 0 };
   views.lesson = (id) => {
@@ -607,32 +657,33 @@
     list.push({ type: "fact", key: "location.district", value: P.district || D.district, conf: 1 });
     const streets = [...(P.street ? [P.street] : []), ...S.memory.filter((m) => m.key === "location.street").map((m) => m.value)];
     if (streets.length) list.push({ type: "fact", key: "location.street", value: streets[streets.length - 1], conf: 0.98, old: streets.length > 1 ? streets[streets.length - 2] : null });
-    (P.interests || []).forEach((t) => list.push({ type: "preference", key: `interest.${t}`, value: topic(t).name, conf: 0.9 }));
+    (P.interests || []).forEach((t) => list.push({ type: "preference", key: `interest.${t}`, value: topicName(t), conf: 0.9 }));
     S.memory.filter((m) => m.key !== "location.street").forEach((m) => list.push(m));
     D.compass.forEach((st, i) => { const v = S.compass[i]; if (v === 2 || v === -2) list.push({ type: "opinion", key: `opinion.${STATEMENT_KEYS[i]}`, value: v > 0 ? "за" : "против", conf: 0.85 }); });
     D.events.forEach((e, i) => { if (S.going["e" + i]) list.push({ type: "event", key: "event.going", value: `${e.title}, ${e.date.split("-").reverse().slice(0, 2).join(".")}`, conf: 0.95 }); });
-    return list;
+    return list.filter((m) => !S.forget[m.key]);   // то, что житель попросил забыть, помощник не видит и не использует
   }
   const TYPE_RU = { fact: "факт", preference: "интерес", opinion: "мнение", event: "событие" };
   function answer(q) {
     const t = q.toLowerCase(), mem = memories(), P = S.profile || {}, used = [];
     const short = mem.some((m) => m.key === "comms.style");
     const street = (mem.find((m) => m.key === "location.street") || {}).value;
-    const ints = P.interests || [];
+    const ints = (P.interests || []).filter((i) => !S.forget["interest." + i]);
     const moved = t.match(/(живу|переехал[аи]?)\s+(на|по)\s+(улиц[еу]\s+)?([а-яё-]+)/i);
     if (moved) {
       const val = moved[4][0].toUpperCase() + moved[4].slice(1);
-      S.memory.push({ type: "fact", key: "location.street", value: val, conf: 0.98 }); save();
+      S.memory.push({ type: "fact", key: "location.street", value: val, conf: 0.98 }); delete S.forget["location.street"]; save();
       return { text: `Запомнил: вы живёте на улице ${val}. Прежний адрес больше не используется — участок и события пересчитаю.`, used: ["location.street"] };
     }
     if (/коротк|проще|без воды/.test(t)) {
-      if (!short) { S.memory.push({ type: "preference", key: "comms.style", value: "коротко и простым языком", conf: 0.9 }); save(); }
+      if (!short) { S.memory.push({ type: "preference", key: "comms.style", value: "коротко и простым языком", conf: 0.9 }); delete S.forget["comms.style"]; save(); }
       return { text: "Хорошо, буду отвечать коротко.", used: ["comms.style"] };
     }
     if (/встреч|событ|когда|дебат/.test(t)) {
       const future = D.events.filter((e) => e.date >= todayISO);
-      const byInterest = future.find((e) => ints.some((i) => e.title.toLowerCase().includes(topic(i).name.toLowerCase().slice(0, 6))));
+      const byInterest = future.find((e) => ints.some((i) => e.title.toLowerCase().includes(topicName(i).toLowerCase().slice(0, 6))));
       const ev = byInterest || future.find((e) => e.type === "Дебаты") || future[0];
+      if (!ev) return { text: "Ближайших событий пока нет — загляните в раздел «События».", used: [] };
       if (byInterest) ints.forEach((i) => used.push(`interest.${i}`));
       const d = new Date(ev.date + "T00:00:00");
       return { text: short ? `${ev.title}: ${d.getDate()} ${MONTHS[d.getMonth()]}, ${ev.time}, ${ev.place}.` : `Вам подойдёт «${ev.title}» — ${d.getDate()} ${MONTHS[d.getMonth()]} в ${ev.time}, ${ev.place}. Отметить «Пойду» можно в разделе «События».`, used };
@@ -640,9 +691,10 @@
     if (/участ|где голос|куда идти/.test(t)) {
       if (!street) return { text: "Подскажите вашу улицу — например, «я живу на Садовой».", used: [] };
       const st = stationFor(street);
-      return { text: `Ваш участок № ${st.num}: школа № ${st.school}, ул. ${street}, ${st.house}. Голосование ${D.election.label} с 8:00 до 20:00.`, used: ["location.street", "location.district"] };
+      return { text: `В демо ваш участок — № ${st.num}, школа № ${st.school} (город и участки вымышлены). Настоящий участок можно найти на сайте ЦИК России: cikrf.ru, сервис «Найди свой избирательный участок». Голосование ${D.election.label} с 8:00 до 20:00.`, used: ["location.street", "location.district"] };
     }
     if (/кандидат|за кого|совпад|голосовать|ближе|позици/.test(t)) {
+      if (Object.keys(S.forget).some((k) => k.startsWith("opinion."))) return { text: "Вы попросили не учитывать ваши взгляды, поэтому совпадения с кандидатами я не называю. Они есть в разделе «Компас».", used: [] };
       if (!compassDone()) return { text: "Сначала пройдите Компас — 12 вопросов. Тогда покажу, чьи позиции ближе к вашим.", used: [] };
       const top = matches()[0]; mem.filter((x) => x.type === "opinion").slice(0, 2).forEach((x) => used.push(x.key));
       return { text: `Ближе всего к вам ${top.c.name} — ${top.pct}%. Это подсказка, а не агитация: сравните обещания в разделе «Обещания».`, used };
@@ -662,7 +714,8 @@
       <div class="sugg" style="margin-top:10px">${["Где мой участок?", "Когда ближайшая встреча?", "Чьи позиции мне ближе?", "Я живу на Мира", "Отвечай короче"].map((s) => `<button class="chip" data-sugg="${esc(s)}">${esc(s)}</button>`).join("")}</div>
       <div class="ask"><input id="askInput" placeholder="Спросите помощника"><button class="btn" id="askSend" aria-label="Отправить">${ic("send")}</button></div></div>
     <aside class="card" id="memList"><h3>Что помнит помощник</h3>
-      ${mem.map((m) => `<div class="mem"><span class="t">${TYPE_RU[m.type]}</span><code>${esc(m.key)}</code><span class="conf">${m.conf.toFixed(2)}</span><div>${esc(m.value)}</div>${m.old ? `<div class="old">было: ${esc(m.old)}</div>` : ""}</div>`).join("")}
+      ${mem.map((m) => `<div class="mem"><button class="mem-x" data-forget="${esc(m.key)}" title="Забыть" aria-label="Забыть: ${esc(m.value)}">${ic("close")}</button><span class="t">${TYPE_RU[m.type]}</span><code>${esc(m.key)}</code><span class="conf">${m.conf.toFixed(2)}</span><div>${esc(m.value)}</div>${m.old ? `<div class="old">было: ${esc(m.old)}</div>` : ""}</div>`).join("") || `<p class="small muted">Помощник ничего о вас не помнит.</p>`}
+      ${Object.keys(S.forget).length ? `<p class="small muted" style="margin:10px 0 0">Скрыто от помощника: ${Object.keys(S.forget).length}. <button class="link-btn" id="memRestore">Вернуть</button></p>` : ""}
       <p class="small muted" style="margin:12px 0 0">Модель памяти — как в открытом <a href="https://github.com/Darginec05/ai-memory-service" target="_blank" rel="noopener noreferrer">ai-memory-service</a>: новое значение заменяет старое, история сохраняется. В демо всё хранится только в браузере.</p>
       <button class="btn ghost small" id="memWipe" style="margin-top:10px">Забыть всё</button></aside></div>`;
   };
@@ -677,10 +730,18 @@
     $("#askSend").addEventListener("click", () => ask($("#askInput").value));
     $("#askInput").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(e.target.value); });
     $$("[data-sugg]").forEach((b) => b.addEventListener("click", () => ask(b.dataset.sugg)));
-    $("#memWipe").addEventListener("click", () => { S.memory = []; S.chat = []; save(); render(); toast("Память помощника очищена"); });
+    const forget = (key) => { S.forget[key] = true; S.memory = S.memory.filter((m) => m.key !== key); };
+    $$("[data-forget]").forEach((b) => b.addEventListener("click", () => { forget(b.dataset.forget); save(); render(); toast("Помощник больше не использует эти данные"); }));
+    $("#memWipe").addEventListener("click", () => {
+      memories().forEach((m) => forget(m.key)); S.memory = []; S.chat = []; save(); render();
+      toast("Помощник всё забыл. Ответы Компаса и профиль остаются в своих разделах");
+    });
+    const restore = $("#memRestore"); if (restore) restore.addEventListener("click", () => { S.forget = {}; save(); render(); });
   };
 
   /* ================= ПРОФИЛЬ ================= */
+  const BADGE_ICO = { compass: "compass", bridge: "bridge", voice: "megaphone", scholar: "book", consensus: "consensus", planner: "calendar" };
+  const dmy = (iso) => iso.split("-").reverse().join(".");
   views.profile = () => {
     const m = compassDone() ? matches().slice(0, 3) : null, P = S.profile || {};
     const opt = (k, v, l) => `<option value="${v}" ${S.privacy[k] === v ? "selected" : ""}>${l}</option>`;
@@ -688,24 +749,41 @@
     return `<div class="layout"><div class="stack">
       <div class="card"><div class="row">${ava(myName(), "xl")}<div style="flex:1"><h1 style="margin:0">${esc(myName())}</h1>
         <div class="muted">${esc(D.city)} · ${esc(P.district || D.district)}${P.street ? ` · ул. ${esc(P.street)}` : ""}</div>
-        <div class="row" style="margin-top:8px">${(P.interests || []).map((t) => `<span class="chip">${topic(t).name}</span>`).join("")}</div></div></div>
+        <div class="row" style="margin-top:8px">${(P.interests || []).map((t) => `<span class="chip">${topicName(t)}</span>`).join("")}</div></div></div>
         <div class="row" style="margin-top:16px"><b>Уровень ${level()}</b><span class="small muted">${S.xp} очков</span></div>
         <div class="bar" style="margin-top:6px"><span style="width:${S.xp % 100}%"></span></div></div>
-      <div class="card"><h3>Значки</h3><div class="grid two" style="gap:0 14px">${D.badges.map((b) => `<div class="badge ${S.badges[b.id] ? "got" : ""}"><span class="b-ico">${b.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}</span><div><b class="small">${b.name}</b><div class="small muted">${b.desc}</div></div></div>`).join("")}</div></div>
+      <div class="card"><h3>Значки</h3><div class="grid two" style="gap:0 14px">${D.badges.map((b) => `<div class="badge ${S.badges[b.id] ? "got" : ""}"><span class="b-ico">${ic(BADGE_ICO[b.id] || "check")}</span><div><b class="small">${b.name}</b><div class="small muted">${b.desc}</div></div></div>`).join("")}</div></div>
       <div class="card"><h3>Совпадения по Компасу</h3>${m ? m.map((x) => `<div class="row" style="padding:6px 0">${ava(x.c.name, "sm", x.c.id)}<span>${esc(x.c.name)}</span><span class="spacer"></span><b>${x.pct}%</b></div>`).join("") : `<a class="btn small" href="#/compass">Пройти Компас</a>`}</div>
     </div>
     <aside class="rail"><div class="card" id="privacyCard"><h3>Кто видит</h3>
       <div class="switch"><span class="small">Мои взгляды</span>${sel("views")}</div>
       <div class="switch"><span class="small">Результаты Компаса</span>${sel("matches")}</div>
       <div class="switch"><span class="small">Активность</span>${sel("activity")}</div>
-      <p class="small muted" style="margin:10px 0">Мы не продаём данные и не показываем политическую рекламу.</p>
+      <div class="switch"><span class="small">Согласие на обработку взглядов</span>${S.consents.views
+        ? `<span class="small nowrap">дано ${dmy(S.consents.views)} · <button class="link-btn" id="revokeViews">Отозвать</button></span>` : `<span class="small muted nowrap">не дано</span>`}</div>
+      <p class="small muted" style="margin:10px 0">Мы не продаём данные и не показываем политическую рекламу. <a href="privacy.html" target="_blank" rel="noopener">Как мы обращаемся с данными</a></p>
       <div class="row"><button class="btn ghost small" id="exportBtn">${ic("download")} Мои данные</button><button class="btn ghost small" id="wipeBtn" style="color:var(--bad)">Удалить всё</button></div></div>
-      <button class="btn ghost" data-theme-toggle>${ic("theme")} Сменить тему</button></aside></div>`;
+      <div class="card"><h3>Удобство</h3>
+        <div class="switch"><span class="small">Крупный шрифт</span><button class="btn ghost small" data-font-toggle aria-pressed="${bigFont()}">${bigFont() ? "Включён" : "Выключен"}</button></div>
+        <div class="switch"><span class="small">Тема</span><button class="btn ghost small" data-theme-toggle>${ic("theme")} Сменить</button></div></div></aside></div>`;
   };
   binders.profile = () => {
     $$("[data-priv]").forEach((s) => s.addEventListener("change", () => { S.privacy[s.dataset.priv] = s.value; save(); toast("Сохранено"); }));
     $("#exportBtn").addEventListener("click", () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], { type: "application/json" })); a.download = "voteconnect-my-data.json"; a.click(); });
-    $("#wipeBtn").addEventListener("click", () => { if (!confirm("Удалить все данные на этом устройстве?")) return; S = defaults(); save(); cq = 0; ob = { step: 0, interests: [] }; location.hash = "#/feed"; render(); });
+    const rv = $("#revokeViews");
+    if (rv) rv.addEventListener("click", () => {
+      if (!confirm("Отозвать согласие? Ответы Компаса будут удалены с этого устройства.")) return;
+      S.compass = {}; S.weights = {}; delete S.consents.views; cq = 0; save(); render(); toast("Согласие отозвано, ответы Компаса удалены");
+    });
+    // «Удалить всё» стирает и состояние, и настройки, и кэш service worker (там могла остаться страница с адресом).
+    $("#wipeBtn").addEventListener("click", () => {
+      if (!confirm("Удалить все данные на этом устройстве?")) return;
+      S = defaults(); save(); cq = 0; ob = { step: 0, interests: [] };
+      try { localStorage.removeItem("vc-theme"); localStorage.removeItem("vc-font"); sessionStorage.clear(); } catch (e) { /* ignore */ }
+      delete document.documentElement.dataset.theme; delete document.documentElement.dataset.size;
+      if (window.caches) caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k)))).catch(() => {});
+      location.hash = "#/feed"; render();
+    });
   };
 
   /* ================= КАБИНЕТ КАНДИДАТА ================= */
@@ -721,7 +799,7 @@
     const x = (i) => PL + i * (CW - PL - PR) / last, y = (v) => PT + (1 - v / max) * (CH - PT - PB);
     const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
     return `<div class="chart" data-chart='${JSON.stringify({ labels, values, unit })}'><svg viewBox="0 0 ${CW} ${CH}" role="img" aria-label="${unit} по неделям: с ${fmt(values[0])} до ${fmt(values[last])}">
-      ${[0, max / 2, max].map((t) => `<line x1="${PL}" x2="${CW - PR}" y1="${y(t)}" y2="${y(t)}" stroke="var(--border)"/><text x="${PL - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t)}</text>`).join("")}
+      ${[0, max / 2, max].map((t) => `<line x1="${PL}" x2="${CW - PR}" y1="${y(t)}" y2="${y(t)}" stroke="var(--border)"/><text class="ya" x="${PL - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${fmt(t)}</text>`).join("")}
       ${labels.map((l, i) => (i % 2 === 1 || i === last) ? `<text x="${x(i)}" y="${CH - 8}" text-anchor="middle" font-size="11" fill="var(--muted)">${l}</text>` : "").join("")}
       <path d="M${pts.join("L")}L${x(last)},${y(0)}L${x(0)},${y(0)}Z" fill="var(--primary)" opacity=".1"/>
       <polyline points="${pts.join(" ")}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
@@ -759,7 +837,7 @@
       <div class="card"><div class="row"><h3 style="margin:0">Подписчики</h3><span class="spacer"></span><span class="small muted">по неделям</span></div>${lineChart(K.weeks, K.followersByWeek)}</div>
       <div class="card" id="qqueue"><h3>Вопросы жителей</h3>
         ${open.map((q) => `<div class="q-item"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="q-sup">${ic("thumb")}<b>${q.support}</b></div>
-          <div style="flex:1"><b>${esc(q.text)}</b><div class="small muted">${esc(q.author)} · ${topic(q.topic).name}</div>
+          <div style="flex:1"><b>${esc(q.text)}</b><div class="small muted">${esc(q.author)} · ${topicName(q.topic)}</div>
           <textarea class="q-ans" data-qa-text="${q.id}" placeholder="Ваш публичный ответ"></textarea>
           <div class="row" style="margin-top:8px"><button class="btn ghost small" data-draft="${q.id}">${ic("spark")} Черновик ИИ</button><span class="spacer"></span><button class="btn small" data-answer="${q.id}">Ответить</button></div></div></div></div>`).join("") || `<p class="muted">Все вопросы отвечены.</p>`}
         ${done.length ? `<details style="margin-top:10px"><summary class="small" style="cursor:pointer;font-weight:600">Отвечено: ${done.length}</summary>${done.map((q) => `<div class="arg" style="margin-top:8px"><b>${esc(q.text)}</b><div class="small" style="margin-top:6px">${esc(S.answered[q.id])}</div></div>`).join("")}</details>` : ""}</div>
@@ -786,6 +864,16 @@
   };
 
   /* ================= БЮДЖЕТ РАЙОНА (инициативное бюджетирование) ================= */
+  // Квитанция голоса: SHA-256 от случайной соли и выбора. Соль не сохраняется, поэтому по квитанции нельзя
+  // восстановить, за что голосовал житель, но можно проверить, что голос есть в журнале.
+  async function makeReceipt(picks) {
+    const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+    const msg = salt + ":" + [...picks].sort().join(",");
+    let hex;
+    try { hex = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg))), (b) => b.toString(16).padStart(2, "0")).join(""); }
+    catch (e) { hex = [hash(msg), hash(msg + "1"), hash(msg + "2")].map((n) => n.toString(16).padStart(8, "0")).join(""); }   // без HTTPS crypto.subtle недоступен
+    return hex.slice(0, 12).toUpperCase().replace(/(.{4})(?!$)/g, "$1-");
+  }
   const B = D.budget, A = D.admin;
   const rub = (n) => (n / 1e6).toLocaleString("ru-RU", { maximumFractionDigits: 1 }) + " млн ₽";
   const dShort = (iso) => { const d = new Date(iso + "T00:00:00"); return `${d.getDate()} ${MONTHS[d.getMonth()]}`; };
@@ -811,7 +899,9 @@
     let body = "";
     if (pbTab === "vote") {
       body = `<div class="card pb-meter" id="pbMeter">
-        ${S.pb.submitted ? `<div class="row"><span class="chip ok">${ic("check")} Ваш голос учтён</span><span class="small muted">Выбрано проектов: ${picks.length} на ${rub(spent)}</span></div>`
+        ${S.pb.submitted ? `<div class="row"><span class="chip ok">${ic("check")} Ваш голос учтён</span><span class="small muted">Выбрано проектов: ${picks.length} на ${rub(spent)}</span></div>
+          ${S.pb.receipt ? `<div class="receipt"><span class="small muted">Квитанция</span><code id="receiptCode">${esc(S.pb.receipt)}</code><button class="btn ghost small" id="receiptCopy">Скопировать</button></div>
+          <div class="small muted">По квитанции можно проверить, что голос попал в журнал, — она не раскрывает, за что вы голосовали.</div>` : ""}`
         : `<div class="row"><div style="flex:1;min-width:200px"><div class="row" style="justify-content:space-between"><b>Ваша корзина: ${rub(spent)}</b><span class="small muted">из ${rub(B.total)}</span></div>
             <div class="bar" style="margin-top:8px;height:8px"><span style="width:${spent / B.total * 100}%"></span></div></div>
             <button class="btn" id="pbSubmit" ${picks.length ? "" : "disabled"}>Отдать голос</button></div>
@@ -820,7 +910,7 @@
       <div class="grid three" style="margin-top:14px">${B.projects.map((p) => {
         const on = picks.includes(p.id), tooMuch = !on && spent + p.cost > B.total;
         return `<div class="card init-card pb-card ${on ? "picked" : ""}"><div class="pb-media">${p.photo ? mediaImg(p.photo, 700) : `<div class="pb-noimg">${ic("pin")}</div>`}
-            <span class="pm-tag">${topic(p.topic).name}</span><span class="pb-price">${rub(p.cost)}</span>${on ? `<span class="pb-on" aria-hidden="true">${ic("check")}</span>` : ""}</div>
+            <span class="pm-tag">${topicName(p.topic)}</span><span class="pb-price">${rub(p.cost)}</span>${on ? `<span class="pb-on" aria-hidden="true">${ic("check")}</span>` : ""}</div>
           <div class="in"><h3>${esc(p.title)}</h3><div class="small muted">${esc(p.author)}</div><span class="spacer"></span>
           ${S.pb.submitted ? `<div class="small muted">${fmt(pbVotes(p))} голосов</div>` : `<button class="btn small ${on ? "" : "ghost"}" data-pick-pb="${p.id}" ${tooMuch ? "disabled title=\"Не помещается в остаток бюджета\"" : ""}>${on ? `${ic("check")} В корзине` : tooMuch ? "Не помещается" : `${ic("plus")} В корзину`}</button>`}</div></div>`;
       }).join("")}</div>`;
@@ -830,7 +920,12 @@
         <div class="bar" style="margin-top:6px"><span style="width:${pbVotes(p) / maxV * 100}%"></span></div>
         <div class="row small muted" style="margin-top:4px"><span>${fmt(pbVotes(p))} голосов</span><span class="spacer"></span>${win.includes(p.id) ? `<span class="chip on">Проходит</span>` : `<span class="chip">Не помещается в бюджет</span>`}</div></div></div>`).join("")}
         <div class="rank-row"><span class="small muted">Остаток бюджета: <b>${rub(left)}</b> · проголосовали ${fmt(pbVoters())} человек</span></div></div>
-        <div class="info" style="margin-top:12px">${ic("info")}<span>Правило отбора: проекты идут по числу голосов и проходят, пока хватает бюджета.</span></div>`;
+        <div class="info" style="margin-top:12px">${ic("info")}<span>Правило отбора: проекты идут по числу голосов и проходят, пока хватает бюджета.</span></div>
+        <div class="card" style="margin-top:14px" id="verifyCard"><h3>Проверить свой голос</h3>
+          <p class="small muted" style="margin-top:-4px">Каждый голос записан в открытый журнал под номером квитанции. Записи связаны цепочкой хешей: подменить или удалить голос незаметно нельзя. В журнале нет имён и выбора — только квитанции.</p>
+          <div class="ask" style="margin:0"><input id="receiptIn" placeholder="Например, 3F9A-21C7-0B4E" value="${esc(S.pb.receipt)}" aria-label="Номер квитанции"><button class="btn" id="receiptCheck">Проверить</button></div>
+          <div id="receiptOut" class="small" style="margin-top:10px" aria-live="polite"></div>
+          <div class="small muted" style="margin-top:10px">Журнал: ${fmt(pbVoters())} записей · последняя проверка цепочки — сегодня, расхождений нет · демо</div></div>`;
     } else {
       body = `<div class="card">${B.lastYear.map((p) => `<div class="promise"><div><b>${esc(p.title)}</b><div class="small muted">${rub(p.cost)}</div></div>
         <span class="chip ${LAST_ST[p.status][1]}">${LAST_ST[p.status][0]}</span><div class="bar" style="grid-column:1/-1"><span style="width:${p.progress}%"></span></div></div>`).join("")}</div>`;
@@ -845,7 +940,23 @@
       save(); const y = scrollY; render(); scrollTo(0, y);
     }));
     const sub = $("#pbSubmit");
-    if (sub) sub.addEventListener("click", () => { S.pb.submitted = true; save(); addXP(10); award("voice"); pbTab = "results"; render(); toast("Голос учтён. Итоги обновлены"); });
+    if (sub) sub.addEventListener("click", async () => {
+      sub.disabled = true; S.pb.receipt = await makeReceipt(S.pb.picks);
+      S.pb.submitted = true; save(); addXP(10); award("voice"); pbTab = "vote"; render(); toast("Голос учтён. Сохраните квитанцию");
+    });
+    const cp = $("#receiptCopy");
+    if (cp) cp.addEventListener("click", async () => { try { await navigator.clipboard.writeText(S.pb.receipt); toast("Квитанция скопирована"); } catch (e) { toast(S.pb.receipt); } });
+    const chk = $("#receiptCheck");
+    if (chk) {
+      const run = () => {
+        const v = $("#receiptIn").value.trim().toUpperCase(), out = $("#receiptOut");
+        if (!/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(v)) { out.textContent = "Квитанция — 12 символов вида 3F9A-21C7-0B4E."; return; }
+        out.innerHTML = v === S.pb.receipt && S.pb.submitted
+          ? `<span class="chip ok">${ic("check")} Найдена</span> Запись № ${fmt(pbVoters())} из ${fmt(pbVoters())}: голос учтён в итогах.`
+          : `<span class="chip warn">Не найдена</span> Такой квитанции нет в журнале этого устройства. В демо журнал хранится только в браузере.`;
+      };
+      chk.addEventListener("click", run); $("#receiptIn").addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+    }
   };
 
   /* ================= КАБИНЕТ АДМИНИСТРАЦИИ ================= */
@@ -856,6 +967,17 @@
     return { common, divisive };
   }
   const agreeCells = (s) => G.map((c, i) => `<span class="pct-cell" style="--c:var(--c${i + 1})">${Math.round(c.agree[s.id] * 100)}%</span>`).join("");
+  // Социальный эффект цикла: то, что спрашивают грантовые фонды в отчёте (охват, инклюзивность, новые участники).
+  const impactRows = () => {
+    const I = A.impact, done = B.lastYear.filter((p) => p.status === "done").length;
+    return [
+      [`${I.youth}%`, "участников — молодёжь 18–35 лет"],
+      [`${I.older}%`, "участников — старше 60 лет"],
+      [`${I.firstTime}%`, "впервые участвуют в решениях района"],
+      [fmt(I.offline), `бумажных анкет из ${I.offlinePoints} офлайн-пунктов: библиотека, поликлиника, ДК`],
+      [`${done} из ${B.lastYear.length}`, "проектов прошлого цикла уже реализованы"]
+    ];
+  };
   views.admin = () => {
     const { win } = pbWinners(), { common } = consensusSplit(), winners = B.projects.filter((p) => win.includes(p.id));
     const skew = Math.max(...B.turnout.map((t, i) => Math.abs(t - B.population[i])));
@@ -864,15 +986,15 @@
     return pageHead("Кабинет администрации", `${esc(A.org)} · текущий цикл`, `<a class="btn" href="#/report">${ic("print")} Отчёт для совета</a><button class="btn ghost" id="csvBtn">${ic("download")} CSV</button>`) + `
     <div class="grid kpis" id="adminKpis">
       ${kpi("Активны за 30 дней", fmt(A.active30), `${(A.active30 / A.adults * 100).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}% взрослых жителей`)}
-      ${kpi("Проголосовали за бюджет", fmt(pbVoters()), `${(pbVoters() / A.adults * 100).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}% взрослых жителей`)}
+      ${kpi("Проголосовали за бюджет", fmt(pbVoters()), `${(pbVoters() / A.adults * 100).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}% взрослых · ${fmt(A.impact.offline)} на бумаге`)}
       ${kpi("Идей от жителей", fmt(B.ideas), `${B.checked} прошли проверку смет`)}
-      ${kpi("Согласны все группы", common.length, "утверждений на Карте согласия")}
+      ${kpi("Согласны все группы", common.length, `${plural(common.length, "утверждение", "утверждения", "утверждений")} на Карте согласия`)}
     </div>
     <div class="layout wide" style="margin-top:14px"><div class="stack">
       <div class="card"><div class="row"><h3 style="margin:0">Участники</h3><span class="spacer"></span><span class="small muted">по неделям</span></div>${lineChart(D.cabinet.weeks, A.participantsByWeek, "участников")}</div>
       <div class="card"><h3>С чем согласны все группы</h3><p class="small muted" style="margin-top:-4px">Можно включать в план — поддержка не менее 70% в каждой группе</p>
-        <div style="overflow-x:auto"><table class="diff-table"><thead><tr><th>Утверждение</th>${G.map((c) => `<th>${c.short}</th>`).join("")}</tr></thead><tbody>
-        ${common.map((s) => `<tr><td>${esc(s.text)}</td>${G.map((c) => `<td><b>${Math.round(c.agree[s.id] * 100)}%</b></td>`).join("")}</tr>`).join("")}</tbody></table></div></div>
+        <div class="legend" style="margin-bottom:4px">${G.map((c, i) => `<span><i style="background:var(--c${i + 1})"></i>${c.short}</span>`).join("")}</div>
+        <table class="diff-table"><tbody>${common.map((s) => `<tr><td>${esc(s.text)}</td><td class="nowrap">${agreeCells(s)}</td></tr>`).join("")}</tbody></table></div>
       <div class="card"><h3>Бюджет: проходят по итогам голосования</h3>
         ${winners.map((p) => `<div class="promise"><div><b>${esc(p.title)}</b><div class="small muted">${fmt(pbVotes(p))} голосов</div></div><b>${rub(p.cost)}</b></div>`).join("")}</div>
     </div>
@@ -881,6 +1003,13 @@
       <div class="card"><h3>Кто голосует</h3><p class="small muted" style="margin-top:-4px">Доля групп среди голосующих и среди жителей</p>
         ${G.map((c, i) => `<div class="hbar"><div class="row" style="justify-content:space-between"><span class="small"><i class="party-dot" style="background:var(--c${i + 1})"></i>${c.short}</span><span class="small">${B.turnout[i]}% / ${B.population[i]}%</span></div><div class="bar"><span style="width:${B.turnout[i] * 2}%;background:var(--c${i + 1})"></span></div></div>`).join("")}
         <span class="chip ${skew <= 5 ? "ok" : "warn"}">${skew <= 5 ? "Представлены все группы" : `Перекос до ${skew} п.п.`}</span></div>
+      <div class="card" id="impactCard"><h3>Социальный эффект</h3><p class="small muted" style="margin-top:-4px">Показатели для отчёта перед жителями и грантодателем</p>
+        ${impactRows().map(([v, l]) => `<div class="impact"><b>${v}</b><span class="small">${l}</span></div>`).join("")}
+        <span class="chip">демо-данные</span></div>
+      <div class="card"><h3>Честность голосования</h3>
+        <div class="impact"><b>${fmt(pbVoters())}</b><span class="small">записей в журнале голосов, цепочка хешей проверена</span></div>
+        <div class="impact"><b>${fmt(B.duplicatesBlocked)}</b><span class="small">повторных голосов отсеяно: один номер — один голос</span></div>
+        <div class="impact"><b>0</b><span class="small">аномальных всплесков за цикл</span></div></div>
       <div class="card"><h3>Прошлый цикл</h3>${B.lastYear.map((p) => `<div class="row" style="padding:6px 0;flex-wrap:nowrap"><span class="small" style="flex:1">${esc(p.title)}</span><span class="chip ${LAST_ST[p.status][1]}">${LAST_ST[p.status][0]}</span></div>`).join("")}</div>
     </aside></div>`;
   };
@@ -889,7 +1018,7 @@
     $("#csvBtn").addEventListener("click", () => {
       const rows = [["Проект", "Тема", "Стоимость, руб.", "Голосов", "Проходит"]];
       const { win } = pbWinners();
-      B.projects.forEach((p) => rows.push([p.title, topic(p.topic).name, p.cost, pbVotes(p), win.includes(p.id) ? "да" : "нет"]));
+      B.projects.forEach((p) => rows.push([p.title, topicName(p.topic), p.cost, pbVotes(p), win.includes(p.id) ? "да" : "нет"]));
       const csv = "\ufeff" + rows.map((r) => r.map(csvCell).join(";")).join("\r\n");
       const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "voteconnect-budget.csv"; a.click();
     });
@@ -908,7 +1037,7 @@
         <div><b>${fmt(A.active30)}</b><span>активных жителей за 30 дней</span></div>
         <div><b>${fmt(pbVoters())}</b><span>проголосовали за бюджет</span></div>
         <div><b>${B.ideas}</b><span>идей от жителей</span></div>
-        <div><b>${common.length}</b><span>решений, которые поддерживают все группы</span></div>
+        <div><b>${common.length}</b><span>${plural(common.length, "решение", "решения", "решений")}, которые поддерживают все группы</span></div>
       </div>
       <h2>1. С чем согласны все группы жителей</h2>
       <p class="small muted">Поддержка в каждой из трёх групп мнений: ${G.map((c) => c.short).join(", ")}.</p>
@@ -922,28 +1051,41 @@
         <tr><td><b>Итого</b></td><td></td><td class="nowrap"><b>${rub(B.total - left)}</b> из ${rub(B.total)}</td></tr></tbody></table>
       <h2>4. Инициативы, набравшие порог подписей</h2>
       ${reached.map((i) => `<p><b>${esc(i.title)}</b> — ${fmt(i.support)} подписей. ${esc(i.text)}</p>`).join("") || `<p class="muted">Нет.</p>`}
-      <h2>5. Рекомендации</h2>
+      <h2>5. Социальный эффект цикла</h2>
+      <table class="diff-table"><tbody>${impactRows().map(([v, l]) => `<tr><td class="nowrap"><b>${v}</b></td><td>${l}</td></tr>`).join("")}</tbody></table>
+      <h2>6. Рекомендации</h2>
       <ol class="report-list">
         <li>Включить в план работ: ${common.slice(0, 2).map((s) => `«${esc(s.text.replace(/\.$/, ""))}»`).join(" и ")}.</li>
-        <li>Утвердить ${winners.length} проектов-победителей бюджета на ${rub(B.total - left)}.</li>
+        <li>Утвердить ${winners.length} ${plural(winners.length, "проект-победитель", "проекта-победителя", "проектов-победителей")} бюджета на ${rub(B.total - left)}.</li>
         <li>Провести публичное обсуждение: «${esc(divisive[0].text.replace(/\.$/, ""))}».</li>
         ${reached.length ? `<li>Дать публичный ответ на инициативу «${esc(reached[0].title)}» в течение 14 дней.</li>` : ""}
       </ol>
-      <p class="small muted report-foot">Методика: голоса анонимны и не связаны с личностью. Группы мнений определены алгоритмом по ответам жителей на Карте согласия. Демо-данные: город и участники вымышлены.</p>
+      <p class="small muted report-foot">Методика: голоса анонимны и не связаны с личностью; каждый голос записан в журнал под квитанцией, которую житель может проверить. Группы мнений определены алгоритмом по ответам жителей на Карте согласия. Демо-данные: город и участники вымышлены.</p>
     </article>`;
   };
   binders.report = () => $("#printBtn").addEventListener("click", () => window.print());
 
   /* ================= РЕГИСТРАЦИЯ ================= */
   let ob = { step: 0, interests: [] };
-  const addrParam = (location.search.match(/[?&]addr=([^&]+)/) || [])[1];
-  if (addrParam) ob.street = decodeURIComponent(addrParam.replace(/\+/g, " "));
+  const DEMO_PROFILE = () => ({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"], demo: true });
+  const isDemoProfile = (P) => !!P && (P.demo || P.name === "Алина Демо");
+  // Адрес с главной страницы приходит через sessionStorage (так он не попадает в адрес запроса и логи сервера),
+  // а без JavaScript — через ?addr=. Испорченный ?addr= не должен ронять приложение.
+  let addrIn = (location.search.match(/[?&]addr=([^&]+)/) || [])[1] || "";
+  try { addrIn = decodeURIComponent(addrIn.replace(/\+/g, " ")); } catch (e) { addrIn = ""; }
+  try { const s = sessionStorage.getItem("vc-addr"); if (s) { addrIn = s; sessionStorage.removeItem("vc-addr"); } } catch (e) { /* ignore */ }
+  addrIn = addrIn.trim().slice(0, 80);
+  if (addrIn) {
+    if (isDemoProfile(S.profile)) { S = defaults(); save(); }   // после демо-тура адрес с главной начинает настоящую регистрацию
+    if (!S.profile) ob.street = addrIn;
+    else { S.profile.street = addrIn.replace(/^ул(\.|ица)?\s*/i, "").split(",")[0]; save(); setTimeout(() => toast("Адрес обновлён"), 300); }
+  }
   function renderOnboarding() {
     clearTimers(); document.body.classList.add("ob-mode");
     const box = $("#onboard"); box.hidden = false; const s = ob.step;
     let body = "";
     if (s === 0) body = `<div class="logo">${LOGO}</div><h1 class="ob-title">Что решают в вашем районе</h1>
-      <p class="muted">Кандидаты, их обещания и то, о чём договорились соседи.</p>
+      <p class="muted">Бюджет района, идеи соседей и то, что поддерживают все.</p>
       <label class="field">Ваш адрес<input id="obStreet" placeholder="Например, Садовая, 14" value="${esc(ob.street || "")}" autocomplete="street-address"></label>
       <button class="btn block" data-ob="addr">Продолжить</button><button class="btn ghost block" data-ob="demo">Демо без регистрации</button>`;
     else if (s === 1) body = `<h2>Подтвердите номер</h2><p class="muted small">Один человек — один голос. Номер нигде не показывается.</p>
@@ -961,7 +1103,7 @@
       <div class="ob-rule">${ic("lock")}<div><b>Ваши взгляды видны только вам</b></div></div>
       <div class="ob-rule">${ic("shield")}<div><b>Никакой политической рекламы</b></div></div>
       <div class="ob-rule">${ic("bridge")}<div><b>Спорим об идеях, а не о людях</b></div></div>
-      <label class="row small" style="margin:10px 0;gap:10px;flex-wrap:nowrap"><input type="checkbox" id="obAgree" ${ob.agree ? "checked" : ""}> Согласен с правилами</label>
+      <label class="row small" style="margin:10px 0;gap:10px;flex-wrap:nowrap"><input type="checkbox" id="obAgree" ${ob.agree ? "checked" : ""}> <span>Согласен с правилами и <a href="privacy.html" target="_blank" rel="noopener">условиями обработки данных</a></span></label>
       <button class="btn block" data-ob="finish" ${ob.agree ? "" : "disabled"}>Готово</button>`;
     else body = `<div style="text-align:center"><div class="ob-done">${ic("check")}</div><h2>Добро пожаловать, ${esc((ob.name || "").split(" ")[0])}!</h2><p class="muted">Начните с Компаса — 3 минуты.</p></div>
       <a class="btn block" href="#/compass" data-ob="enter">Пройти Компас</a><a class="btn ghost block" href="#/feed" data-ob="enter">В ленту района</a>`;
@@ -976,7 +1118,7 @@
       const a = b.dataset.ob;
       if (a === "addr") { ob.street = $("#obStreet").value.trim().replace(/^ул(\.|ица)?\s*/i, ""); if (ob.street.length < 3) return toast("Введите улицу"); go(1); }
       else if (a === "back") go(ob.step - 1);
-      else if (a === "demo") { finishOnboarding({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"] }); render(); }
+      else if (a === "demo") { finishOnboarding(DEMO_PROFILE()); render(); }
       else if (a === "sendcode") { ob.phone = $("#obPhone").value; if (ob.phone.replace(/\D/g, "").length < 10) return toast("Введите номер полностью"); ob.codeSent = true; renderOnboarding(); $("[data-code='0']").focus(); }
       else if (a === "verify") { if ($$("[data-code]").some((i) => !i.value)) return toast("Введите 4 цифры"); ob.phone = ""; go(2); }
       else if (a === "profile") { ob.name = $("#obName").value.trim(); if (ob.name.length < 2) return toast("Как к вам обращаться?"); go(3); }
@@ -1015,7 +1157,7 @@
       ...D.academy.map((m) => ({ g: "Академия", t: m.title, s: m.cards[0], l: "#/lesson/" + m.id, i: "А" }))
     ];
     const m = document.createElement("div"); m.className = "layer modal-bg";
-    m.innerHTML = `<div class="modal card fade-in" role="dialog" aria-label="Поиск"><div class="search-box">${ic("search")}<input id="q" placeholder="Кандидаты, события, инициативы" autocomplete="off"><kbd>Esc</kbd></div><div class="results" id="results"></div></div>`;
+    m.innerHTML = `<div class="modal card fade-in" role="dialog" aria-modal="true" aria-label="Поиск"><div class="search-box">${ic("search")}<input id="q" placeholder="Кандидаты, события, инициативы" autocomplete="off"><kbd>Esc</kbd></div><div class="results" id="results"></div></div>`;
     document.body.appendChild(m);
     const q = $("#q", m), out = $("#results", m);
     const draw = () => {
@@ -1033,7 +1175,7 @@
     closeLayers();
     const url = /^(localhost|127\.)/.test(location.hostname) || location.protocol === "file:" ? PUBLIC_URL : location.href.split("#")[0].split("?")[0];
     const m = document.createElement("div"); m.className = "layer modal-bg";
-    m.innerHTML = `<div class="modal card fade-in" style="max-width:360px;text-align:center"><h3>Откройте на телефоне</h3><p class="small muted">Наведите камеру на код.</p><div id="qr" class="qr">загрузка…</div><button class="btn ghost small" data-close>Закрыть</button></div>`;
+    m.innerHTML = `<div class="modal card fade-in" role="dialog" aria-modal="true" aria-label="Открыть на телефоне" style="max-width:360px;text-align:center"><h3>Откройте на телефоне</h3><p class="small muted">Наведите камеру на код.</p><div id="qr" class="qr">загрузка…</div><button class="btn ghost small" data-close>Закрыть</button></div>`;
     document.body.appendChild(m);
     m.addEventListener("click", (e) => { if (e.target === m || e.target.hasAttribute("data-close")) closeLayers(); });
     const draw = () => { const qr = window.qrcode(0, "M"); qr.addData(url); qr.make(); $("#qr", m).innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); };
@@ -1047,17 +1189,17 @@
     { r: "#/feed", sel: ".seg", t: "Лента района", x: "Наверху — то, что поддерживают все группы жителей, а не самое громкое." },
     { r: "#/feed", sel: ".post .support", t: "Кто поддерживает", x: "Полоска показывает одобрение в каждой группе мнений. Спорные темы видны сразу." },
     { r: "#/feed", sel: "[data-sort=blind]", t: "Слепое пятно", x: "То, что обсуждают другие группы, но почти не видит ваша. Лекарство от эхо-камер." },
-    { r: "#/budget", sel: "#pbMeter", t: "Бюджет района", x: "Жители сами распределяют 15 млн ₽: собирают корзину проектов в пределах бюджета. Так работает инициативное бюджетирование — 67 млрд ₽ в год по стране." },
+    { r: "#/budget", sel: "#pbMeter", t: "Бюджет района", x: "Жители сами распределяют 15 млн ₽: собирают корзину проектов в пределах бюджета. Так работает инициативное бюджетирование: по данным Минфина, в 81 регионе реализовано более 200 тыс. таких проектов." },
     { r: "#/consensus", sel: ".cmap", t: "Карта согласия", x: "Жители голосуют по коротким утверждениям, алгоритм находит группы мнений и то, что их объединяет." },
-    { r: "#/compass", sel: ".q-card, .match-row", t: "Компас взглядов", x: "В период выборов — 12 вопросов и совпадение с кандидатами. Ответы не покидают телефон." },
+    { r: "#/compass", sel: ".q-card, .match-row", t: "Компас взглядов", x: "Сезонный режим выборов: 12 вопросов и совпадение с кандидатами. Сначала — отдельное согласие: взгляды — особая категория данных, ответы не покидают телефон." },
     { r: "#/assistant", sel: "#memList", t: "Помощник с памятью", x: "Помнит район, интересы и мнения жителя — по модели открытого ai-memory-service." },
-    { r: "#/admin", sel: "#adminKpis", t: "Кабинет администрации", x: "Платящий клиент — администрация: участие, воронка бюджета и представленность всех групп." },
+    { r: "#/admin", sel: "#adminKpis", t: "Кабинет администрации", x: "Платящий клиент — администрация: участие, воронка бюджета, представленность групп и социальный эффект для отчёта." },
     { r: "#/report", sel: ".report-kpis", t: "Отчёт для совета", x: "Готовый документ: с чем согласны все, что прошло по бюджету и рекомендации. Скачивается в PDF." },
     { r: "#/cabinet", sel: "#kpis", t: "Кабинет кандидата", x: "Депутаты и кандидаты видят вопросы жителей по важности и отвечают публично." },
-    { r: "#/profile", sel: "#privacyCard", t: "Приватность", x: "Взгляды видны только владельцу, голоса анонимны. Данные можно скачать или удалить." }
+    { r: "#/profile", sel: "#privacyCard", t: "Приватность", x: "Взгляды видны только владельцу, голоса анонимны. Согласие на обработку взглядов можно отозвать, данные — скачать или удалить." }
   ];
   let tourStep = -1;
-  function startTour() { if (!S.profile) finishOnboarding({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"] }); tourStep = 0; showTour(); }
+  function startTour() { if (!S.profile) finishOnboarding(DEMO_PROFILE()); tourStep = 0; showTour(); }
   function endTour() { tourStep = -1; $$(".tour").forEach((e) => e.remove()); }
   function showTour() {
     const st = TOUR[tourStep];
@@ -1097,10 +1239,15 @@
     const bell = e.target.closest("[data-bell]"); if (bell) return openNotifs(bell);
     if (e.target.closest("[data-qr]")) return openQR();
     if (e.target.closest("[data-tour-start]")) { $("#sidebar").classList.remove("open"); return startTour(); }
+    if (e.target.closest("[data-font-toggle]")) {
+      const on = !bigFont(); if (on) document.documentElement.dataset.size = "lg"; else delete document.documentElement.dataset.size;
+      try { localStorage.setItem("vc-font", on ? "lg" : ""); } catch (err) { /* ignore */ } render(); return;
+    }
     if (e.target.closest("[data-theme-toggle]")) {
       const next = getComputedStyle(document.documentElement).colorScheme === "dark" ? "light" : "dark";
       applyTheme(next); try { localStorage.setItem("vc-theme", next); } catch (err) { /* ignore */ } return;
     }
+    if (e.target.closest("[data-skip]")) { $("#main").focus(); return; }
     const go = e.target.closest("[data-go]"); if (go) { location.hash = go.dataset.go; return; }
     if (!e.target.closest(".notif-panel")) $$(".notif-panel").forEach((p) => p.remove());
     if (!e.target.closest("#sidebar") && !e.target.closest("#menuBtn")) $("#sidebar").classList.remove("open");
@@ -1108,6 +1255,14 @@
   document.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openSearch(); }
     if (e.key === "Escape") { closeLayers(); if (tourStep >= 0) endTour(); }
+    const modal = $(".modal-bg .modal");   // фокус не уходит из открытого окна за его пределы
+    if (modal && e.key === "Tab") {
+      const f = $$("a[href], button, input, select, textarea", modal).filter((x) => !x.disabled);
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && (i === -1 || i === f.length - 1)) { e.preventDefault(); f[0].focus(); }
+    }
     if (tourStep >= 0 && e.key === "ArrowRight") { const b = $("[data-tour='next']"); if (b) b.click(); }
     if (tourStep >= 0 && e.key === "ArrowLeft") { const b = $("[data-tour='prev']"); if (b) b.click(); }
   });
@@ -1120,17 +1275,20 @@
     if (!S.profile) return renderOnboarding();
     $("#onboard").hidden = true; document.body.classList.remove("ob-mode"); closeLayers(); refreshShell();
     let [route, arg] = (location.hash.replace(/^#\/?/, "") || "feed").split("/");
-    if (!views[route]) route = "feed";
+    if (!Object.prototype.hasOwnProperty.call(views, route)) route = "feed";   // не пускаем «toString», «__proto__» и т. п.
     if (route === "compass" && arg === "retake" && lastRoute.indexOf("compass") !== 0) cq = 0;
     if (route !== "initiatives" && editorHandle) { editorHandle.destroy(); editorHandle = null; initForm = false; }
     $("#main").innerHTML = views[route](arg);
     if (binders[route]) binders[route](arg);
     $$("#nav a, #tabbar a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#/" + (navOf[route] || route)));
-    if (lastRoute !== route + (arg || "")) { window.scrollTo(0, 0); $("#sidebar").classList.remove("open"); }
+    if (lastRoute !== route + (arg || "")) {
+      window.scrollTo(0, 0); $("#sidebar").classList.remove("open");
+      if (lastRoute && tourStep < 0) $("#main").focus({ preventScroll: true });   // скринридер услышит новый экран
+    }
     lastRoute = route + (arg || "");
   }
   window.addEventListener("hashchange", render);
-  if (/[?&]demo=1/.test(location.search) && !S.profile) finishOnboarding({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"] });
+  if (/[?&]demo=1/.test(location.search) && !S.profile) finishOnboarding(DEMO_PROFILE());
   render();
   if (/[?&]tour=1/.test(location.search)) setTimeout(startTour, 400);
   if (location.search) history.replaceState(null, "", location.pathname + location.hash);

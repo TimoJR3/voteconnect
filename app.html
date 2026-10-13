@@ -18,6 +18,7 @@
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
+  <button class="skip" data-skip>К содержимому</button>
   <header class="hdr">
     <button class="icon-btn mobile-only" id="menuBtn" aria-label="Меню"><i data-i="menu"></i></button>
     <a class="logo" href="index.html" data-logo></a>
@@ -35,15 +36,16 @@
       <nav class="nav" id="nav">
         <a href="#/feed"><i class="ico" data-i="home"></i>Лента района</a>
         <a href="#/budget"><i class="ico" data-i="polls"></i>Бюджет района</a>
-        <a href="#/compass"><i class="ico" data-i="compass"></i>Компас взглядов</a>
         <a href="#/consensus"><i class="ico" data-i="consensus"></i>Карта согласия</a>
-        <a href="#/candidates"><i class="ico" data-i="people"></i>Кандидаты</a>
         <a href="#/initiatives"><i class="ico" data-i="megaphone"></i>Инициативы</a>
         <a href="#/calendar"><i class="ico" data-i="calendar"></i>События</a>
         <a href="#/assistant"><i class="ico" data-i="spark"></i>Помощник</a>
-        <div class="nav-sec">Ещё</div>
+        <div class="nav-sec">Выборы · сезонный режим</div>
+        <a href="#/compass"><i class="ico" data-i="compass"></i>Компас взглядов</a>
+        <a href="#/candidates"><i class="ico" data-i="people"></i>Кандидаты</a>
         <a href="#/promises"><i class="ico" data-i="promise"></i>Обещания</a>
         <a href="#/polls"><i class="ico" data-i="comment"></i>Опросы</a>
+        <div class="nav-sec">Ещё</div>
         <a href="#/groups"><i class="ico" data-i="groups"></i>Группы и дебаты</a>
         <a href="#/academy"><i class="ico" data-i="book"></i>Академия</a>
         <a href="#/profile"><i class="ico" data-i="profile"></i>Профиль</a>
@@ -53,8 +55,8 @@
       </nav>
       <div class="side-foot">
         <div class="countdown" id="countdown"></div>
-        <button class="btn block" data-tour-start><i data-i="play"></i>Демо-тур</button>
-        <button class="btn ghost block small" data-qr><i data-i="phone"></i>Открыть на телефоне</button>
+        <div class="side-actions"><button class="btn" data-tour-start><i data-i="play"></i>Демо-тур</button>
+          <button class="btn ghost" data-qr title="Открыть на телефоне" aria-label="Открыть на телефоне"><i data-i="phone"></i></button></div>
       </div>
     </aside>
     <main class="main" id="main" tabindex="-1"></main>

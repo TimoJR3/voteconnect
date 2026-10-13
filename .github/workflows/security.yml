@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Зависимости тестов
         run: npm ci
       - name: Браузер Chromium
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Редактор (Yoopta)
         working-directory: editor
         run: npm audit --omit=dev --audit-level=high

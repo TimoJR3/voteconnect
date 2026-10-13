@@ -3,7 +3,8 @@
 
 window.VC_DATA = {
   city: "Новоград",
-  district: "Северный избирательный округ № 7",
+  district: "Северный округ",
+  electionDistrict: "избирательный округ № 7",
   election: { title: "Выборы в городской совет Новограда", date: "2026-11-08" },
 
   topics: [
@@ -324,7 +325,7 @@ window.VC_DATA = {
   budget: {
     title: "Бюджет Северного округа на 2027 год",
     total: 15000000,
-    ideas: 126, checked: 18, voters: 2318,
+    ideas: 126, checked: 18, voters: 2318, duplicatesBlocked: 37,
     stages: [
       { id: "ideas", name: "Сбор идей", from: "2026-08-01", to: "2026-08-24" },
       { id: "review", name: "Проверка смет", from: "2026-08-25", to: "2026-09-09" },
@@ -354,6 +355,8 @@ window.VC_DATA = {
   admin: {
     org: "Администрация Северного округа",
     adults: 48200, registered: 3120, active30: 1847,
+    // социальный эффект цикла (демо): доли участников и офлайн-голосование для тех, у кого нет смартфона
+    impact: { youth: 41, older: 17, firstTime: 63, offline: 214, offlinePoints: 3 },
     participantsByWeek: [120, 260, 410, 690, 980, 1320, 1610, 1847]
   },
 

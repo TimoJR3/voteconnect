@@ -4,7 +4,7 @@ const fs = require("fs"), path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
-const PAGES = ["index.html", "app.html", "investors.html"];
+const PAGES = ["index.html", "app.html", "investors.html", "privacy.html"];
 const OWN_JS = ["assets/js/app.js", "assets/js/data.js", "assets/js/icons.js", "assets/js/sanitize.js", "assets/js/landing.js", "sw.js"];
 
 function repoFiles(dir = ROOT, out = []) {
@@ -51,6 +51,7 @@ test("SEC-24 Service worker кэширует только свои GET-запр�
   const sw = read("sw.js");
   expect(sw).toMatch(/request\.method\s*!==\s*"GET"\)\s*return/);
   expect(sw).toMatch(/startsWith\(self\.location\.origin\)/);
+  expect(sw, "ключ кэша — адрес без параметров (?addr=…)").toMatch(/\.search\s*=\s*""/);
 });
 
 test("SEC-25 В репозитории нет ключей, токенов и паролей", () => {

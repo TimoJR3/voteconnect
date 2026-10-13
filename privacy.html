@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoteConnect — как мы обращаемся с данными</title>
+  <meta name="description" content="Какие данные собирает VoteConnect, где они хранятся и как их удалить. Политические взгляды обрабатываются только с отдельного согласия.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%23178a4f'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/fonts.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="inv">
+  <header class="inv-top lp-wrap">
+    <a class="logo" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
+    <nav><a href="app.html">Приложение</a><a href="investors.html">Инвесторам</a></nav>
+  </header>
+
+  <main class="lp-wrap">
+    <section class="inv-hero">
+      <div class="small muted" style="font-weight:600">Условия обработки данных</div>
+      <h1>Как мы обращаемся с вашими данными</h1>
+      <p class="lead">Коротко: в демо данные не покидают ваше устройство. Политические взгляды мы обрабатываем только с отдельного согласия, и его можно отозвать в один клик.</p>
+    </section>
+
+    <section class="lp-sec inv-sec">
+      <h2>Что мы знаем о вас и где это хранится</h2>
+      <div class="card table-wrap"><table class="diff-table">
+        <thead><tr><th>Данные</th><th>Зачем</th><th>Где хранятся</th></tr></thead>
+        <tbody>
+          <tr><td>Имя и улица</td><td>Обращаться к вам и показывать ваш район</td><td>Только в браузере на этом устройстве</td></tr>
+          <tr><td>Номер телефона</td><td>Подтвердить, что один человек голосует один раз</td><td>Не сохраняется: нужен только для кода</td></tr>
+          <tr><td>Интересы, голоса за проекты бюджета, голоса на Карте согласия</td><td>Подбор событий и подсчёт итогов</td><td>Только в браузере на этом устройстве</td></tr>
+          <tr><td>Ответы Компаса взглядов</td><td>Посчитать совпадение с кандидатами</td><td>Только на устройстве, расчёт тоже на устройстве. Особая категория данных — только с отдельного согласия</td></tr>
+          <tr><td>Посты, вопросы, переписка с помощником</td><td>Показывать их вам и соседям</td><td>Только в браузере на этом устройстве</td></tr>
+        </tbody></table></div>
+      <p class="small muted" style="margin-top:12px">Сайт не подключает счётчики, рекламу, сторонние шрифты и картинки. Это проверяют автотесты при каждом изменении кода.</p>
+    </section>
+
+    <section class="lp-sec inv-sec">
+      <h2>Ваши права и как ими пользоваться</h2>
+      <ul class="inv-list">
+        <li><b>Посмотреть и забрать данные</b> — Профиль → «Мои данные»: файл со всем, что хранится на устройстве.</li>
+        <li><b>Отозвать согласие на обработку взглядов</b> — Профиль → «Отозвать». Ответы Компаса удаляются сразу.</li>
+        <li><b>Запретить помощнику использовать сведения о вас</b> — Помощник → «Забыть» у любой записи или «Забыть всё».</li>
+        <li><b>Удалить всё</b> — Профиль → «Удалить всё»: стираются данные, настройки и кэш приложения на устройстве.</li>
+      </ul>
+    </section>
+
+    <section class="lp-sec inv-sec">
+      <h2>Что изменится в пилоте</h2>
+      <p class="lead">Для пилота с реальными жителями нужен сервер. Тогда будут действовать правила 152-ФЗ «О персональных данных»:</p>
+      <ul class="inv-list">
+        <li>Данные хранятся на серверах в России. Оператор — юридическое лицо проекта; его название и контакты будут указаны здесь до запуска.</li>
+        <li>Для ответов Компаса — отдельное письменное согласие (ст. 10 152-ФЗ). Расчёт совпадений по-прежнему на устройстве.</li>
+        <li>Голоса хранятся отдельно от личности. Житель получает квитанцию и может проверить, что его голос учтён, — сам выбор не раскрывается.</li>
+        <li>Сроки хранения, порядок ответа на запросы жителей и уведомление Роскомнадзора — до начала обработки.</li>
+      </ul>
+      <p class="small muted">Это проект условий для демо и пилота, а не юридическое заключение. Перед запуском текст проверит юрист.</p>
+    </section>
+
+    <footer class="lp-foot" style="margin-bottom:40px"><span>© 2026 VoteConnect · <a href="index.html">главная</a> · <a href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener noreferrer">открытый код</a></span></footer>
+  </main>
+</body>
+</html>
