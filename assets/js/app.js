@@ -170,6 +170,7 @@
     const top = compassDone() ? matches()[0] : null, g = myGroup();
     return pageHead("Лента района", `${esc(D.city)} · ${esc((S.profile && S.profile.district) || D.district)}`) + `
     <div class="layout"><div class="stack">
+      ${feed3dCard()}
       <div class="card">${composerOpen ? `<div class="composer-open">
           <div class="row">${ava(myName())}<b>${esc(myName())}</b></div>
           <textarea id="postText" placeholder="Что происходит в районе? Идея, проблема, вопрос кандидатам" maxlength="500"></textarea>
@@ -235,6 +236,7 @@
     </div>`;
   }
   binders.feed = () => {
+    pb3dMount();
     const cb = $("#composeBtn"); if (cb) cb.addEventListener("click", () => { composerOpen = true; render(); $("#postText").focus(); });
     const ta = $("#postText");
     if (ta) {
@@ -937,7 +939,9 @@
      Библиотека 3D (scene.bundle.js) загружается только при первом открытии бюджета. */
   const PB3D_SHORT = { b1: "Светофор у школы", b2: "Автобус 14 до 23:30", b3: "Свет на набережной", b4: "Навесы на остановках", b5: "Площадка для собак", b7: "Двор на Садовой", b8: "Велодорожка" };
   let pb3d = null, pb3dEl = null, pb3dLoading = false;
+  const pb3dPhone = () => matchMedia("(max-width: 860px)").matches;
   function pb3dToggle(id) {
+    if (!/^#\/budget/.test(location.hash)) { location.hash = "#/budget"; return; }   // в ленте метка ведёт в бюджет
     if (S.pb.submitted) return toast("Голос уже учтён — корзину не изменить");
     const b = $(`[data-pick-pb="${CSS.escape(id)}"]`);
     if (!b) return;
@@ -953,7 +957,10 @@
       pb3d = window.VC3D.maquette(pb3dEl, {
         label: "3D-макет Северного округа. Проекты из вашей корзины показаны зелёным.",
         projects: B.projects.filter((p) => PB3D_SHORT[p.id]).map((p) => ({ id: p.id, price: rub(p.cost).replace(" ₽", ""), short: PB3D_SHORT[p.id] })),
-        selected: S.pb.picks, onToggle: pb3dToggle, fitScale: (w, h) => (w / h > 1.6 ? 0.8 : w < 560 ? 1.3 : 1.14)
+        selected: S.pb.picks, onToggle: pb3dToggle,
+        // На телефоне макет повёрнут так, что река идёт сверху вниз, — так он крупнее на вертикальном экране
+        yaw: pb3dPhone() ? 1.25 : undefined, pitch: pb3dPhone() ? 0.78 : undefined,
+        fitScale: (w, h) => (w / h > 1.6 ? 0.8 : h > w * 1.05 ? 0.94 : w < 560 ? 1.12 : 1.14)
       });
       if (!pb3d) { pb3dEl = null; return; }
       const eve = $(".m3d-eve", pb3dEl);
@@ -973,6 +980,17 @@
     if (!pb3dEl) { slot.remove(); return; }
     slot.appendChild(pb3dEl);
     pb3d.setSelected(S.pb.picks);
+    $(".m3d-hint", pb3dEl).textContent = /^#\/budget/.test(location.hash) ? "Нажмите на цену, чтобы добавить проект в корзину" : "Нажмите на цену, чтобы открыть бюджет";
+  }
+  // Карточка с макетом в ленте — только на телефоне: на компьютере бюджет всегда рядом, в боковом меню
+  function feed3dCard() {
+    if (!pb3dPhone()) return "";
+    const spent = B.projects.filter((p) => S.pb.picks.includes(p.id)).reduce((a, p) => a + p.cost, 0);
+    const line = S.pb.submitted ? "Ваш голос учтён" : spent ? `Ваша корзина: ${rub(spent)} из ${rub(B.total)}` : `${rub(B.total)} решают жители`;
+    return `<div class="card feed-3d"><div class="row" style="justify-content:space-between;align-items:baseline"><b>Бюджет района</b><span class="small muted">голосование до ${dShort(B.stages[2].to)}</span></div>
+      <div class="small muted">${line}</div>
+      <div id="pb3d" class="pb-3d-slot"></div>
+      <button class="btn block" data-go="#/budget">${S.pb.submitted ? "Итоги голосования" : "Собрать корзину"}</button></div>`;
   }
 
   binders.budget = () => {

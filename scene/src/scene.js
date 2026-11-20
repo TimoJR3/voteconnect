@@ -189,7 +189,7 @@ export function maquette(host, opts = {}) {
   const projects = opts.projects || [];
   const stage = createStage(host, {
     label: opts.label || "3D-макет Северного округа",
-    fov: 28, radius: 13.2, fitScale: opts.fitScale || ((w) => (w < 560 ? 1.32 : 1.14)), yaw: 0.62, pitch: 0.7, targetY: -0.9, minPitch: 0.42, maxPitch: 1.1,
+    fov: 28, radius: 13.2, fitScale: opts.fitScale || ((w) => (w < 560 ? 1.32 : 1.14)), yaw: opts.yaw || 0.62, pitch: opts.pitch || 0.7, targetY: -0.9, minPitch: 0.42, maxPitch: 1.1,
     sway: opts.sway, onInteract: () => { host.classList.add("m3d-touched"); },
     onFrame
   });

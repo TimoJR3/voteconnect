@@ -62,7 +62,7 @@ npx serve .
 
 ## Безопасность
 
-48 автотестов в браузере проверяют утечки данных, внедрение кода, политику безопасности, выгрузки и ошибки, найденные аудитом, — см. [docs/SECURITY_TESTS.md](docs/SECURITY_TESTS.md). Запускаются при каждом изменении в GitHub Actions. Как обращаемся с данными — [privacy.html](https://timojr3.github.io/voteconnect/privacy.html).
+49 автотестов в браузере проверяют утечки данных, внедрение кода, политику безопасности, выгрузки и ошибки, найденные аудитом, — см. [docs/SECURITY_TESTS.md](docs/SECURITY_TESTS.md). Запускаются при каждом изменении в GitHub Actions. Как обращаемся с данными — [privacy.html](https://timojr3.github.io/voteconnect/privacy.html).
 
 ```bash
 cd tests && npm ci && npx playwright test

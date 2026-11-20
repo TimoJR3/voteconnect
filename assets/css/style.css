@@ -627,4 +627,8 @@ html[data-size="lg"] body { zoom: 1.15; }   /* «Крупный шрифт» в 
 /* 3D-макет района над проектами бюджета */
 .pb-3d-slot:empty { display: none; }
 .pb-3d { width: 100%; height: clamp(300px, 34vw, 440px); margin: 2px 0 14px; --m3d-r: 22px; --m3d-bg: var(--primary-soft); }
-@media (max-width: 860px) { .pb-3d { height: auto; aspect-ratio: 1 / 1; } }
+@media (max-width: 860px) {
+  .pb-3d { height: auto; aspect-ratio: 4 / 5; max-height: 72vh; }
+  .feed-3d .pb-3d { aspect-ratio: 1 / 1; margin: 12px 0 2px; --m3d-r: 16px; }
+  .feed-3d .m3d-ui { top: 10px; right: 10px; }
+}

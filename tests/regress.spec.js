@@ -132,4 +132,16 @@ test.describe("Регрессии", () => {
     await expect(page.locator("#pbMeter")).toBeVisible();
     expect(errors).toEqual([]);
   });
+  test("REG-11 На телефоне макет есть в ленте и в бюджете, метки работают", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await demo(page, "#/feed");
+    await expect(page.locator(".feed-3d .m3d-pin")).toHaveCount(7, { timeout: 10000 });
+    await page.locator('.feed-3d .m3d-pin[data-id="b1"] .m3d-pin-in').click();   // в ленте метка открывает бюджет
+    await expect(page).toHaveURL(/budget/);
+    await page.locator('.pb-3d .m3d-pin[data-id="b1"] .m3d-pin-in').click();     // в бюджете — кладёт проект в корзину
+    await expect(page.locator("#pbMeter")).toContainText("1,8 млн");
+    await expect(page.locator('.pb-3d .m3d-pin[data-id="b1"]')).toHaveClass(/on/);
+    expect(errors).toEqual([]);
+  });
 });
