@@ -1,17 +1,18 @@
-/* VoteConnect — дизайн-система «Фото района».
-   Главное — живые фотографии мест, о которых идёт речь: на всю ширину, текст поверх, минимум интерфейса.
-   Белый фон, чёрные кнопки, зелёный только для поддержки и прогресса. Полоски поддержки по группам мнений сохраняются. */
+/* VoteConnect — дизайн-система «Макет района» (приложение).
+   Спокойная основа: белый фон, графитовый текст и кнопки, бетонно-серые подложки.
+   Зелёный — только для решений жителей, поддержки и прогресса. Полоски поддержки по группам мнений сохраняются.
+   Сайт и страница инвесторов — assets/css/site.css, 3D-макет — assets/css/maquette.css. */
 
 :root {
   --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f3f3f1;
-  --border: #e9e9e7;
-  --text: #161616;
-  --muted: #676767;
-  --primary: #161616;
-  --primary-2: #3a3a3a;
-  --primary-soft: #f1f1ef;
+  --surface-2: #f0f2f1;
+  --border: #e3e7e4;
+  --text: #1c2321;
+  --muted: #616b66;
+  --primary: #1c2321;
+  --primary-2: #3a4540;
+  --primary-soft: #eef1ef;
   --on-primary: #ffffff;
   --brand: #178a4f;
   --brand-soft: #e5f3eb;
@@ -27,23 +28,23 @@
   --bad-soft: #fbe5e2;
   --c1: #c07a12; --c2: #2f6db5; --c3: #a0428c;   /* группы мнений, проверено на дальтонизм */
   --shadow: none;
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, .16);
-  --r: 20px;
+  --shadow-lg: 0 18px 44px -18px rgba(20, 35, 28, .28);
+  --r: 18px;
   --font: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f0f0f; --surface: #181818; --surface-2: #242424; --border: #2c2c2c; --text: #f1f1f1; --muted: #a3a3a3;
-    --primary: #f1f1f1; --primary-2: #ffffff; --primary-soft: #262626; --on-primary: #111111; --brand: #3fbf7a; --brand-soft: #1b2e23; --brand-ink: #3fbf7a; --on-brand: #111111; --on-color: #111111; --accent: #ff7a55;
+    --bg: #111614; --surface: #171d1a; --surface-2: #212925; --border: #29312d; --text: #edf1ee; --muted: #9aa59f;
+    --primary: #edf1ee; --primary-2: #ffffff; --primary-soft: #212925; --on-primary: #111111; --brand: #3fbf7a; --brand-soft: #1b2e23; --brand-ink: #3fbf7a; --on-brand: #111111; --on-color: #111111; --accent: #ff7a55;
     --ok: #3fbf7a; --ok-soft: #1b2e23; --warn: #e0a64a; --warn-soft: #33291a; --bad: #ef6b5b; --bad-soft: #3a211e;
     --c1: #c47d1c; --c2: #5b8ee0; --c3: #c263ad; --shadow: none; --shadow-lg: 0 16px 40px rgba(0,0,0,.55);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f0f0f; --surface: #181818; --surface-2: #242424; --border: #2c2c2c; --text: #f1f1f1; --muted: #a3a3a3;
-  --primary: #f1f1f1; --primary-2: #ffffff; --primary-soft: #262626; --on-primary: #111111; --brand: #3fbf7a; --brand-soft: #1b2e23; --brand-ink: #3fbf7a; --on-brand: #111111; --on-color: #111111; --accent: #ff7a55;
+  --bg: #111614; --surface: #171d1a; --surface-2: #212925; --border: #29312d; --text: #edf1ee; --muted: #9aa59f;
+  --primary: #edf1ee; --primary-2: #ffffff; --primary-soft: #212925; --on-primary: #111111; --brand: #3fbf7a; --brand-soft: #1b2e23; --brand-ink: #3fbf7a; --on-brand: #111111; --on-color: #111111; --accent: #ff7a55;
   --ok: #3fbf7a; --ok-soft: #1b2e23; --warn: #e0a64a; --warn-soft: #33291a; --bad: #ef6b5b; --bad-soft: #3a211e;
   --c1: #c47d1c; --c2: #5b8ee0; --c3: #c263ad; --shadow: none; --shadow-lg: 0 16px 40px rgba(0,0,0,.55);
   color-scheme: dark;
@@ -423,53 +424,17 @@ body.ob-mode .hdr, body.ob-mode .shell, body.ob-mode .tabbar { display: none !im
 }
 
 /* ==========================================================
-   ЛЕНДИНГ
+   ДОКУМЕНТЫ: страница инвесторов и политика данных (шапка и подвал — в site.css)
    ========================================================== */
-.lp-top { position: absolute; z-index: 5; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 18px; padding: 18px 28px; color: #fff; }
-.lp-top .logo { color: #fff; }
-.lp-top nav { margin-left: auto; display: flex; gap: 22px; font-weight: 500; font-size: 14.5px; }
-.lp-top nav a { color: #fff; }
-.lp-hero { position: relative; min-height: 620px; display: grid; place-items: center; padding: 100px 16px 60px; }
-.lp-hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.lp-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.05) 40%, rgba(0,0,0,.25)); }
-.lp-find { position: relative; z-index: 2; width: 100%; max-width: 470px; background: var(--surface); border-radius: 22px; padding: 30px 28px 24px; text-align: center; box-shadow: var(--shadow-lg); }
-.lp-find h1 { font-size: 32px; letter-spacing: -.03em; line-height: 1.12; margin-bottom: 10px; }
-.lp-find p { color: var(--muted); margin-bottom: 18px; }
-.lp-find form { display: flex; flex-direction: column; gap: 10px; }
-.lp-find input { border: 1.5px solid var(--border); border-radius: 12px; padding: 13px 14px; font-size: 16px; background: var(--surface); }
-.lp-find input:focus { outline: none; border-color: var(--primary); }
-.lp-find .btn { padding: 13px; font-size: 16px; }
-.lp-find .alt { margin-top: 12px; font-size: 14px; }
-.lp-strip { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 18px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 14.5px; color: var(--muted); }
-.lp-strip b { color: var(--text); }
 .lp-wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-.lp-sec { padding: 72px 0; }
-.lp-sec h2 { font-size: 34px; letter-spacing: -.03em; line-height: 1.15; max-width: 640px; margin-bottom: 10px; }
-.lp-sec .lead { font-size: 17px; color: var(--muted); max-width: 560px; margin-bottom: 36px; }
-.lp-split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-.lp-split.rev > :first-child { order: 2; }
-.lp-shot { background: var(--primary-soft); border-radius: 24px; padding: 28px; display: grid; place-items: center; }
-.lp-shot .card { width: 100%; max-width: 420px; }
-.lp-point h3 { font-size: 24px; letter-spacing: -.02em; margin-bottom: 8px; }
-.lp-point p { font-size: 16px; color: var(--muted); max-width: 440px; }
-.lp-point .num { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
-.lp-cta { background: var(--primary); color: #fff; border-radius: 24px; padding: 48px 32px; text-align: center; }
-.lp-cta h2 { color: #fff; margin: 0 auto 10px; }
-.lp-cta p { opacity: .85; margin-bottom: 22px; }
-.lp-cta .btn { background: #fff; color: var(--primary); border-color: #fff; }
-.lp-cta .btn.ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
+.lp-sec { padding: 56px 0; }
+.lp-sec h2 { font-size: 32px; letter-spacing: -.035em; line-height: 1.12; max-width: 640px; margin-bottom: 10px; }
+.lp-sec .lead { font-size: 17px; color: var(--muted); max-width: 560px; margin-bottom: 28px; }
 .lp-foot { display: flex; gap: 16px; justify-content: space-between; flex-wrap: wrap; padding: 28px 0 40px; color: var(--muted); font-size: 13.5px; }
+.lp-foot a { color: inherit; }
 @media (max-width: 860px) {
-  .lp-top nav { display: none; }
-  .lp-top { padding: 14px 16px; }
-  .lp-hero { min-height: 560px; }
-  .lp-find { padding: 24px 18px 20px; }
-  .lp-find h1 { font-size: 26px; }
-  .lp-split { grid-template-columns: 1fr; gap: 24px; }
-  .lp-split.rev > :first-child { order: 0; }
-  .lp-sec { padding: 48px 0; }
-  .lp-sec h2 { font-size: 27px; }
-  .lp-strip { gap: 14px 24px; }
+  .lp-sec { padding: 40px 0; }
+  .lp-sec h2 { font-size: 25px; }
 }
 
 /* Правки узких колонок */
@@ -527,9 +492,6 @@ body.ob-mode .hdr, body.ob-mode .shell, body.ob-mode .tabbar { display: none !im
 
 /* ---------- Страница для инвесторов ---------- */
 body.inv { background: var(--surface); }
-.inv-top { display: flex; align-items: center; gap: 18px; padding-top: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-.inv-top nav { margin-left: auto; display: flex; gap: 20px; font-weight: 500; font-size: 14.5px; }
-.inv-top nav a { color: var(--text); }
 .inv-hero { padding: 64px 0 24px; max-width: 760px; }
 .inv-hero h1 { font-size: 40px; letter-spacing: -.035em; line-height: 1.1; margin: 10px 0 14px; }
 .inv-hero .lead { font-size: 18px; color: var(--muted); margin-bottom: 22px; }
@@ -549,7 +511,6 @@ body.inv { background: var(--surface); }
 .timeline-grid h3 { margin: 8px 0 4px; }
 .table-wrap { overflow-x: auto; }
 @media (max-width: 860px) {
-  .inv-top nav { display: none; }
   .inv-hero { padding: 36px 0 12px; }
   .inv-hero h1 { font-size: 28px; }
   .stat-tiles, .timeline-grid { grid-template-columns: 1fr 1fr; }
@@ -616,49 +577,8 @@ a { color: var(--text); }
 .cover { height: 220px; }
 .q-card .q-photo { aspect-ratio: 2; }
 
-/* ---------- Лендинг ---------- */
-.lp-hero { min-height: 680px; grid-template-columns: minmax(0, 1fr); place-items: end start; padding: 120px 40px 56px; }
-.lp-hero::after { background: linear-gradient(180deg, rgba(0,0,0,.35), transparent 30%, transparent 45%, rgba(0,0,0,.65)); }
-.lp-hero-in { position: relative; z-index: 2; width: 100%; max-width: 640px; color: #fff; }
-.lp-kicker { display: inline-block; background: rgba(0,0,0,.45); backdrop-filter: blur(6px); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
-.lp-hero h1 { font-size: 64px; line-height: 1.02; letter-spacing: -.04em; margin: 0 0 14px; }
-.lp-hero p { font-size: 19px; opacity: .92; margin: 0 0 24px; max-width: 480px; }
-.lp-find { display: flex; flex-direction: row; align-items: center; gap: 6px; background: #fff; border-radius: 999px; padding: 6px 6px 6px 22px; max-width: 520px; box-shadow: 0 10px 40px rgba(0,0,0,.25); text-align: left; }
-.lp-find input { flex: 1; min-width: 0; border: none; background: none; font-size: 16px; padding: 12px 0; color: #161616; outline: none; }
-.lp-find .btn { padding: 13px 22px; font-size: 15.5px; background: #161616; border-color: #161616; color: #fff; }
-.lp-demo { display: inline-block; margin-top: 16px; color: #fff !important; font-weight: 600; text-decoration: none; }
-.lp-demo:hover { text-decoration: underline; }
-.lp-top a { color: #fff; text-decoration: none; }
-.lp-strip { border-bottom: none; padding: 22px 16px 0; }
-.lp-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
-.lp-head h2 { margin: 0; }
-.lp-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
-.lp-card { color: inherit; display: block; text-decoration: none !important; }
-.lp-card .pb-media { aspect-ratio: 1; }
-.lp-card b { display: block; margin-top: 10px; font-size: 15.5px; line-height: 1.3; }
-.lp-card > span { color: var(--muted); font-size: 14px; }
-.lp-photo { position: relative; border-radius: 28px; overflow: hidden; min-height: 480px; display: grid; place-items: end center; padding: 140px 24px 24px; }
-.lp-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.lp-photo > .card { position: relative; z-index: 1; width: 100%; max-width: 380px; border: none; box-shadow: var(--shadow-lg); border-radius: 22px; }
-.lp-point .num { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
-.lp-point h3 { font-size: 30px; letter-spacing: -.03em; line-height: 1.12; }
-.lp-cta { position: relative; overflow: hidden; border-radius: 28px; padding: 90px 32px; background: #111; }
-.lp-cta > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5; }
-.lp-cta > *:not(img) { position: relative; }
-.lp-cta .btn { background: #fff; color: #161616; border-color: #fff; }
-.lp-cta .btn.ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.6); }
-.lp-foot a { color: inherit; }
-@media (max-width: 960px) { .lp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
-  .lp-hero { min-height: 600px; padding: 100px 16px 32px; }
-  .lp-hero h1 { font-size: 40px; }
-  .lp-hero p { font-size: 17px; }
-  .lp-find { padding-left: 16px; }
-  .lp-find .btn { padding: 12px 16px; }
-  .lp-point h3 { font-size: 24px; }
-  .lp-photo { padding: 120px 14px 14px; min-height: 400px; }
   .post-media { border-radius: 18px; }
-  .lp-cards { gap: 14px; }
 }
 
 /* ---------- Контрольный аудит, октябрь 2026: доступность, телефон, новые блоки ---------- */
@@ -693,3 +613,18 @@ html[data-size="lg"] body { zoom: 1.15; }   /* «Крупный шрифт» в 
 }
 .side-actions { display: flex; gap: 8px; }
 .side-actions [data-tour-start] { flex: 1; }
+
+/* ==========================================================
+   «МАКЕТ РАЙОНА», ноябрь 2026: тише и чище
+   ========================================================== */
+.hdr { background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); }
+.post-media::after { display: none; }                 /* фото без затемняющих градиентов */
+.nav a.active { background: var(--primary-soft); }
+.countdown { border: none; background: var(--primary-soft); }
+.pb-meter { box-shadow: none; border: 1px solid var(--border); }
+.toast { border-radius: 14px; }
+
+/* 3D-макет района над проектами бюджета */
+.pb-3d-slot:empty { display: none; }
+.pb-3d { width: 100%; height: clamp(300px, 34vw, 440px); margin: 2px 0 14px; --m3d-r: 22px; --m3d-bg: var(--primary-soft); }
+@media (max-width: 860px) { .pb-3d { height: auto; aspect-ratio: 1 / 1; } }

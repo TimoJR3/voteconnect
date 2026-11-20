@@ -5,7 +5,7 @@ const fs = require("fs"), path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
 const PAGES = ["index.html", "app.html", "investors.html", "privacy.html"];
-const OWN_JS = ["assets/js/app.js", "assets/js/data.js", "assets/js/icons.js", "assets/js/sanitize.js", "assets/js/landing.js", "sw.js"];
+const OWN_JS = ["assets/js/app.js", "assets/js/data.js", "assets/js/icons.js", "assets/js/sanitize.js", "assets/js/landing.js", "assets/js/docs.js", "sw.js"];
 
 function repoFiles(dir = ROOT, out = []) {
   for (const name of fs.readdirSync(dir)) {

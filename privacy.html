@@ -11,11 +11,19 @@
   <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/site.css">
 </head>
 <body class="inv">
-  <header class="inv-top lp-wrap">
-    <a class="logo" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
-    <nav><a href="app.html">Приложение</a><a href="investors.html">Инвесторам</a></nav>
+  <header class="s-top">
+    <div class="s-top-in">
+      <a class="s-logo" href="index.html" aria-label="VoteConnect, на главную"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="#178a4f"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
+      <nav class="s-nav" id="siteNav" aria-label="Разделы">
+        <a href="index.html">Главная</a><a href="investors.html">Инвесторам</a><a href="app.html">Приложение</a>
+        <a class="s-nav-tour" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур</a>
+      </nav>
+      <a class="s-btn s-top-cta" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур</a>
+      <button class="s-menu" type="button" aria-expanded="false" aria-controls="siteNav"><span class="s-menu-bars" aria-hidden="true"></span><span class="s-menu-t">Меню</span></button>
+    </div>
   </header>
 
   <main class="lp-wrap">
@@ -63,5 +71,6 @@
 
     <footer class="lp-foot" style="margin-bottom:40px"><span>© 2026 VoteConnect · <a href="index.html">главная</a> · <a href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener noreferrer">открытый код</a></span></footer>
   </main>
+  <script src="assets/js/docs.js" defer></script>
 </body>
 </html>

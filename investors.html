@@ -14,19 +14,35 @@
   <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/maquette.css">
+  <link rel="stylesheet" href="assets/css/site.css">
 </head>
 <body class="inv">
-  <header class="inv-top lp-wrap">
-    <a class="logo" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--primary)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
-    <nav><a href="#market">Рынок</a><a href="#model">Модель</a><a href="#status">Статус</a><a href="#funds">Деньги</a><a href="#risks">Риски</a></nav>
+  <a class="s-skip" href="#market">К содержимому</a>
+  <header class="s-top">
+    <div class="s-top-in">
+      <a class="s-logo" href="index.html" aria-label="VoteConnect, на главную"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="#178a4f"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span></a>
+      <nav class="s-nav" id="siteNav" aria-label="Разделы">
+        <a href="#market">Рынок</a><a href="#model">Модель</a><a href="#status">Статус</a><a href="#funds">Деньги</a><a href="#risks">Риски</a>
+        <a class="s-nav-tour" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур</a>
+      </nav>
+      <a class="s-btn s-top-cta" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур</a>
+      <button class="s-menu" type="button" aria-expanded="false" aria-controls="siteNav"><span class="s-menu-bars" aria-hidden="true"></span><span class="s-menu-t">Меню</span></button>
+    </div>
   </header>
 
   <main class="lp-wrap">
-    <section class="inv-hero">
-      <div class="small muted" style="font-weight:600">Для инвесторов и грантовых фондов</div>
-      <h1>Инициативный бюджет, в котором жители договариваются, а не только голосуют</h1>
-      <p class="lead">Жители распределяют бюджет района и видят, что поддерживают все группы. Администрация получает готовый отчёт для совета депутатов.</p>
-      <div class="row"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур за 2 минуты</a><a class="btn ghost" href="app.html?demo=1#/report">Пример отчёта для совета</a></div>
+    <section class="inv-hero inv-hero-3d">
+      <div class="inv-hero-text">
+        <h1>Инициативный бюджет, в&nbsp;котором жители договариваются, а&nbsp;не&nbsp;только голосуют</h1>
+        <p class="lead">Для инвесторов и грантовых фондов. Жители распределяют бюджет района и видят, что поддерживают все группы. Администрация получает готовый отчёт для совета депутатов.</p>
+        <div class="row"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Демо-тур за 2 минуты</a><a class="btn ghost" href="app.html?demo=1#/report">Пример отчёта для совета</a></div>
+      </div>
+      <div class="inv-model m3d" id="invModel">
+        <img class="m3d-fallback" src="assets/img/1789062665477-b58eb89a22b6-1200.jpg" alt="Набережная реки Светлой" loading="lazy">
+        <div class="m3d-ui"><button class="m3d-eve" id="eveBtn" type="button" aria-pressed="false"><span>Вечер</span></button></div>
+        <p class="m3d-hint">Так выглядит бюджет района после голосования</p>
+      </div>
     </section>
 
     <section class="lp-sec inv-sec" id="market">
@@ -133,11 +149,18 @@
         </tbody></table></div>
     </section>
 
-    <section class="lp-cta" style="margin:20px 0 60px">
+    <section class="lp-sec inv-sec inv-final">
       <h2>Посмотрите продукт сами</h2>
-      <p>Демо-тур — две минуты, без регистрации.</p>
-      <div class="row" style="justify-content:center"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener noreferrer">Исходный код</a></div>
+      <p class="lead">Демо-тур занимает две минуты и не требует регистрации.</p>
+      <div class="row"><a class="btn" href="app.html?demo=1&amp;tour=1#/feed">Запустить демо-тур</a><a class="btn ghost" href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener noreferrer">Исходный код</a></div>
     </section>
   </main>
+  <footer class="s-foot">
+    <span>© 2026 VoteConnect</span>
+    <nav aria-label="Документы"><a href="index.html">Главная</a><a href="privacy.html">Как мы храним данные</a><a href="https://github.com/TimoJR3/voteconnect" target="_blank" rel="noopener noreferrer">Открытый код</a></nav>
+  </footer>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/scene.bundle.js" defer></script>
+  <script src="assets/js/docs.js" defer></script>
 </body>
 </html>

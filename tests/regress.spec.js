@@ -102,4 +102,34 @@ test.describe("Регрессии", () => {
     await expect(page.locator("#station")).toContainText("Демо");
     await expect(page.locator('#station a[href^="https://www.cikrf.ru"]')).toHaveCount(1);
   });
+  test("REG-09 Корзина с 3D-макета главной переезжает в голосование", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto("/index.html");
+    await page.click('.s-proj[data-id="b2"]');                      // b1 и b3 выбраны по умолчанию
+    await expect(page.locator("#pbSum")).toContainText("9,4 из 15");
+    await page.click('.s-proj[data-id="b7"]');                      // 9,4 + 5,6 — ровно весь бюджет
+    await expect(page.locator("#pbSum")).toContainText("15 из 15");
+    await page.click('.s-proj[data-id="b4"]', { force: true });     // помечен «не помещается»: нажатие объясняет, корзина не меняется
+    await expect(page.locator("#pbSum")).toContainText("15 из 15");
+    await expect(page.locator("#pbNote")).toContainText("Не помещается");
+    await page.click("#pbGo");
+    await page.waitForURL(/app.html/);
+    await page.evaluate(() => (location.hash = "#/budget"));
+    await expect(page.locator("#pbMeter")).toContainText("15 млн");
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem("voteconnect-demo-v2")).pb.picks.sort())).toEqual(["b1", "b2", "b3", "b7"]);
+    expect(errors).toEqual([]);
+  });
+
+  test("REG-10 Подменённая корзина с главной не ломает бюджет и не выходит за 15 млн", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto("/index.html");
+    await page.evaluate(() => sessionStorage.setItem("vc-pb-picks", JSON.stringify(["b8", "b7", "b3", "<img src=x>", "b8", null, { id: "b1" }])));
+    await page.goto("/app.html?reset=1&demo=1#/budget");
+    await expect(page.locator("#pbMeter")).toContainText("12,4 млн");   // b8 6,8 + b7 5,6; b3 уже не помещается
+    expect(await page.evaluate(() => sessionStorage.getItem("vc-pb-picks"))).toBeNull();
+    await page.evaluate(() => sessionStorage.setItem("vc-pb-picks", "{сломано"));
+    await page.goto("/app.html?demo=1#/budget");
+    await expect(page.locator("#pbMeter")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
 });

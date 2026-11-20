@@ -898,7 +898,8 @@
     const tabs = `<div class="seg" style="margin:14px 0"><button data-pbtab="vote" class="${pbTab === "vote" ? "active" : ""}">Голосование</button><button data-pbtab="results" class="${pbTab === "results" ? "active" : ""}">Итоги сейчас</button><button data-pbtab="last" class="${pbTab === "last" ? "active" : ""}">Прошлый год</button></div>`;
     let body = "";
     if (pbTab === "vote") {
-      body = `<div class="card pb-meter" id="pbMeter">
+      body = `<div id="pb3d" class="pb-3d-slot"></div>
+      <div class="card pb-meter" id="pbMeter">
         ${S.pb.submitted ? `<div class="row"><span class="chip ok">${ic("check")} Ваш голос учтён</span><span class="small muted">Выбрано проектов: ${picks.length} на ${rub(spent)}</span></div>
           ${S.pb.receipt ? `<div class="receipt"><span class="small muted">Квитанция</span><code id="receiptCode">${esc(S.pb.receipt)}</code><button class="btn ghost small" id="receiptCopy">Скопировать</button></div>
           <div class="small muted">По квитанции можно проверить, что голос попал в журнал, — она не раскрывает, за что вы голосовали.</div>` : ""}`
@@ -932,7 +933,50 @@
     }
     return pageHead("Бюджет района", `${esc(B.title)} · ${rub(B.total)} решают жители`) + stagesHTML() + tabs + body;
   };
+  /* 3D-макет района над проектами: один на всё время работы приложения, при перерисовке экрана переезжает в новый слот.
+     Библиотека 3D (scene.bundle.js) загружается только при первом открытии бюджета. */
+  const PB3D_SHORT = { b1: "Светофор у школы", b2: "Автобус 14 до 23:30", b3: "Свет на набережной", b4: "Навесы на остановках", b5: "Площадка для собак", b7: "Двор на Садовой", b8: "Велодорожка" };
+  let pb3d = null, pb3dEl = null, pb3dLoading = false;
+  function pb3dToggle(id) {
+    if (S.pb.submitted) return toast("Голос уже учтён — корзину не изменить");
+    const b = $(`[data-pick-pb="${CSS.escape(id)}"]`);
+    if (!b) return;
+    if (b.disabled) return toast("Не помещается в остаток бюджета");
+    b.click();
+  }
+  function pb3dCreate() {
+    if (pb3d || !window.VC3D) return;
+    try {
+      if (!window.VC3D.supported()) return;
+      pb3dEl = document.createElement("div"); pb3dEl.className = "m3d pb-3d";
+      pb3dEl.innerHTML = `<div class="m3d-ui"><button class="m3d-eve" type="button" aria-pressed="false"><span>Вечер</span></button></div><p class="m3d-hint">Нажмите на цену, чтобы добавить проект в корзину</p>`;
+      pb3d = window.VC3D.maquette(pb3dEl, {
+        label: "3D-макет Северного округа. Проекты из вашей корзины показаны зелёным.",
+        projects: B.projects.filter((p) => PB3D_SHORT[p.id]).map((p) => ({ id: p.id, price: rub(p.cost).replace(" ₽", ""), short: PB3D_SHORT[p.id] })),
+        selected: S.pb.picks, onToggle: pb3dToggle, fitScale: (w, h) => (w / h > 1.6 ? 0.8 : w < 560 ? 1.3 : 1.14)
+      });
+      if (!pb3d) { pb3dEl = null; return; }
+      const eve = $(".m3d-eve", pb3dEl);
+      const paint = () => { const on = pb3d.isEvening(); eve.setAttribute("aria-pressed", String(on)); $("span", eve).textContent = on ? "День" : "Вечер"; };
+      eve.addEventListener("click", () => { pb3d.setEvening(!pb3d.isEvening()); paint(); }); paint();
+    } catch (e) { pb3d = null; pb3dEl = null; }
+  }
+  function pb3dMount() {
+    const slot = $("#pb3d"); if (!slot) return;
+    if (!window.VC3D) {
+      if (pb3dLoading) return; pb3dLoading = true;
+      const s = document.createElement("script"); s.src = "assets/js/scene.bundle.js";
+      s.addEventListener("load", () => { if ($("#pb3d")) pb3dMount(); });
+      document.head.appendChild(s); return;
+    }
+    pb3dCreate();
+    if (!pb3dEl) { slot.remove(); return; }
+    slot.appendChild(pb3dEl);
+    pb3d.setSelected(S.pb.picks);
+  }
+
   binders.budget = () => {
+    pb3dMount();
     $$("[data-pbtab]").forEach((b) => b.addEventListener("click", () => { pbTab = b.dataset.pbtab; render(); }));
     $$("[data-pick-pb]").forEach((b) => b.addEventListener("click", () => {
       const id = b.dataset.pickPb, i = S.pb.picks.indexOf(id);
@@ -1289,6 +1333,18 @@
   }
   window.addEventListener("hashchange", render);
   if (/[?&]demo=1/.test(location.search) && !S.profile) finishOnboarding(DEMO_PROFILE());
+  // Корзина, собранная на 3D-макете главной страницы, переезжает в голосование (только известные проекты и в пределах бюджета)
+  try {
+    const raw = sessionStorage.getItem("vc-pb-picks");
+    if (raw !== null) {
+      sessionStorage.removeItem("vc-pb-picks");
+      const ids = JSON.parse(raw), ok = []; let sum = 0;
+      if (Array.isArray(ids) && !S.pb.submitted) {
+        ids.forEach((id) => { const p = D.budget.projects.find((x) => x.id === id); if (p && !ok.includes(p.id) && sum + p.cost <= D.budget.total) { ok.push(p.id); sum += p.cost; } });
+        if (ok.length) { S.pb.picks = ok; save(); setTimeout(() => toast("Корзина с главной страницы перенесена"), 400); }
+      }
+    }
+  } catch (e) { /* испорченные данные — просто не переносим */ }
   render();
   if (/[?&]tour=1/.test(location.search)) setTimeout(startTour, 400);
   if (location.search) history.replaceState(null, "", location.pathname + location.hash);
