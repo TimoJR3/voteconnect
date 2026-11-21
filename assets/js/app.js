@@ -117,20 +117,15 @@
   }
   const myGroup = () => { const p = userPos(); return p ? nearestIdx(p) : 1; };
 
-  /* ---------- Полоска поддержки по группам ---------- */
+  /* ---------- Поддержка по группам ---------- */
   function support(sup) {
-    const sum = sup.reduce((a, b) => a + b, 0) || 1, min = Math.min(...sup);
-    return `<div class="support" title="Доля одобрения в каждой группе мнений">
-      <div class="spec">${sup.map((v, i) => `<span class="${"abc"[i]}" style="width:${(v / sum * 100).toFixed(1)}%"></span>`).join("")}</div>
-      <span class="val">${min >= 70 ? "Согласны все" : "Мнения расходятся"}</span>
-      <div class="cap">${sup.map((v, i) => `<span><i style="background:var(--c${i + 1})"></i>${G[i].short} ${v}%</span>`).join("")}</div>
+    const agrees = Math.min(...sup) >= 70;
+    const label = agrees ? "Согласны все" : "Мнения расходятся";
+    const details = sup.map((v, i) => `${G[i].short} ${v}%`).join(", ");
+    return `<div class="support${agrees ? " agreed" : ""}" role="img" aria-label="${esc(label + ". " + details)}" title="${esc(details)}">
+      <span class="support-bars" aria-hidden="true">${sup.map((v) => `<span style="height:${Math.max(0, Math.min(100, v))}%"></span>`).join("")}</span>
+      ${label}
     </div>`;
-  }
-
-  // Короткая плашка поверх фото: согласны ли все группы
-  function supportPill(sup) {
-    const min = Math.min(...sup);
-    return `<span class="pm-pill ${min >= 70 ? "" : "split"}"><i></i>${min >= 70 ? `Поддерживают все группы · ${min}%` : "Мнения расходятся"}</span>`;
   }
   const mediaImg = (id, w, eager) => `<img src="${photo(id, w)}" alt="" loading="${eager ? "eager" : "lazy"}">`;
 
@@ -165,63 +160,69 @@
   }
   views.feed = () => {
     const posts = allPosts();
+    const blind = blindSpot();
     const list = feedSort === "all" ? [...posts].sort((a, b) => Math.min(...(b.support || [50])) - Math.min(...(a.support || [50])))
-      : feedSort === "blind" ? blindSpot() : posts;
+      : feedSort === "blind" ? blind : posts;
     const top = compassDone() ? matches()[0] : null, g = myGroup();
     return pageHead("Лента района", `${esc(D.city)} · ${esc((S.profile && S.profile.district) || D.district)}`) + `
-    <div class="layout"><div class="stack">
+    <div class="layout feed"><div class="feed-stream">
       ${feed3dCard()}
-      <div class="card">${composerOpen ? `<div class="composer-open">
-          <div class="row">${ava(myName())}<b>${esc(myName())}</b></div>
-          <textarea id="postText" placeholder="Что происходит в районе? Идея, проблема, вопрос кандидатам" maxlength="500"></textarea>
-          <div class="row"><select id="postTopic"><option value="">Без темы</option>${D.topics.map((t) => `<option value="${t.id}">${t.name}</option>`).join("")}</select>
-            <span class="small muted" id="toneHint"></span><span class="spacer"></span>
-            <button class="btn ghost small" id="postCancel">Отмена</button><button class="btn small" id="postBtn">Опубликовать</button></div></div>`
-        : `<div class="composer">${ava(myName())}<button class="fake" id="composeBtn">Что происходит в районе?</button></div>`}</div>
+      ${composerOpen ? `<div class="composer-open">
+        <div class="composer">${ava(myName())}<label for="postText">Что происходит в районе?</label></div>
+        <textarea id="postText" maxlength="500"></textarea>
+        <div class="composer-controls">
+          <select id="postTopic" aria-label="Тема публикации"><option value="">Без темы</option>${D.topics.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("")}</select>
+          <div class="row"><button class="btn ghost small" id="postCancel">Отмена</button><button class="btn small" id="postBtn">Опубликовать</button></div>
+        </div>
+        <div class="small muted" id="toneHint" role="status"></div>
+      </div>` : `<div class="composer">${ava(myName())}<button id="composeBtn">Что происходит в районе? ${ic("pen")}</button></div>`}
       <div class="seg" role="group" aria-label="Порядок ленты">
         <button data-sort="all" class="${feedSort === "all" ? "active" : ""}" aria-pressed="${feedSort === "all"}" title="Сначала то, что поддерживают все группы">Для всех</button>
         <button data-sort="new" class="${feedSort === "new" ? "active" : ""}" aria-pressed="${feedSort === "new"}">Новое</button>
-        <button data-sort="blind" class="${feedSort === "blind" ? "active" : ""}" aria-pressed="${feedSort === "blind"}">${ic("eye")} Слепое пятно<span class="n">${blindSpot().length}</span></button>
+        <button data-sort="blind" class="${feedSort === "blind" ? "active" : ""}" aria-pressed="${feedSort === "blind"}">Слепое пятно <span class="n">${blind.length}</span></button>
       </div>
       ${feedSort === "blind" ? `<div class="info">${ic("info")}<span>Это обсуждают другие группы, но почти не видит ваша — «${esc(G[g].short)}».${userPos() ? "" : ` Группа уточнится после <a href="#/consensus">Карты согласия</a>.`}</span></div>` : ""}
-      ${list.map((p, i) => postCard(p, i)).join("") || `<div class="card empty">Здесь пока пусто</div>`}
+      ${list.map((p, i) => postCard(p, i)).join("") || `<p class="empty">Здесь пока пусто</p>`}
     </div>
-    <aside class="rail">
-      ${top ? `<a class="card" href="#/compass" style="color:inherit;text-decoration:none"><div class="small muted">Ближе всего к вам</div>
-          <div class="row" style="margin-top:8px">${ava(top.c.name, "", top.c.id)}<div><b>${esc(top.c.name)}</b><div class="small muted">${esc(D.parties[top.c.party].name)}</div></div><span class="spacer"></span><b style="font-size:22px;color:var(--primary)">${top.pct}%</b></div></a>`
-        : `<div class="card"><h3>Чьи позиции ближе?</h3><p class="small muted">12 вопросов о жизни района — и видно, с кем из кандидатов вы совпадаете.</p><a class="btn small" href="#/compass">Пройти Компас</a></div>`}
-      <div class="card"><h3>Скоро</h3>${upcoming(2)}</div>
-      <div class="card"><h3>Собирают подписи</h3>
-        ${D.initiatives.filter((i) => i.support < i.goal).slice(0, 2).map((i) => `<a href="#/initiatives" style="display:block;color:inherit;margin:10px 0">
-          <b class="small">${esc(i.title)}</b><div class="bar" style="margin:6px 0"><span style="width:${Math.min(100, i.support / i.goal * 100)}%"></span></div>
-          <span class="small muted">${fmt(i.support)} из ${fmt(i.goal)}</span></a>`).join("")}</div>
+    <aside class="rail" aria-label="В районе">
+      <section><h2>${top ? "Ближе всего к вам" : "Чьи позиции ближе?"}</h2>
+        ${top ? `<a class="feed-match" href="#/compass">${ava(top.c.name, "sm", top.c.id)}
+          <span><b>${esc(top.c.name)}</b><span class="feed-detail">${esc(D.parties[top.c.party].name)}</span></span><b>${top.pct}%</b></a>`
+          : `<p>12 вопросов о жизни района помогут узнать, чьи взгляды ближе к вашим.</p><a class="rail-link" href="#/compass">Пройти Компас</a>`}
+      </section>
+      <section><h2>Скоро</h2>${upcoming(2)}</section>
+      <section><h2>Собирают подписи</h2>
+        <ul>${D.initiatives.filter((i) => i.support < i.goal).slice(0, 2).map((i) => `<li><a href="#/initiatives">
+          <b>${esc(i.title)}</b><span class="feed-detail">${fmt(i.support)} из ${fmt(i.goal)}</span></a></li>`).join("")}</ul>
+      </section>
     </aside></div>`;
   };
   function postCard(p, idx = 9) {
     const c = p.candidate ? cand(p.candidate) : null, t = p.topic ? topic(p.topic) : null, liked = S.likes[p.id];
     const cmCount = p.comments + (S.comments[p.id] || []).length;
-    return `<article class="card post fade-in ${p.flagged ? "flagged" : ""}">
-      <div class="post-body">
-        <div class="post-head">${p.type === "official" ? `<span class="avatar" style="background:var(--brand);color:#fff">${ic("shield")}</span>` : ava(p.author, "", c ? c.id : p.author)}
-          <div><div class="name">${c ? `<a href="#/candidate/${c.id}">${esc(p.author)}</a>` : esc(p.author)}${c && c.verified ? ` <span class="vmark" title="Личность подтверждена">${ic("check")}</span>` : ""}</div>
-          <div class="meta">${c ? `Кандидат · ${esc(D.parties[c.party].name)}` : p.type === "official" ? "Официальный аккаунт" : "Житель района"} · ${esc(p.time)}</div></div>
+    const expanded = !!openThreads[p.id];
+    const meta = [c ? `Кандидат · ${D.parties[c.party].name}` : p.type === "official" ? "Официальный аккаунт" : "Житель района", p.time, t?.name];
+    const note = p.note ? `<div class="note${p.flagged ? " bad" : ""}"><b>${p.flagged ? "Ложная информация" : "Контекст от жителей"}</b>${esc(String(p.note).replace(/^(Контекст от сообщества|Ложная информация)\.?:?\s*/, ""))}</div>` : "";
+    return `<article class="post${p.flagged ? " flagged" : ""}">
+      <header class="post-head">${p.type === "official" ? `<span class="avatar post-official">${ic("shield")}</span>` : ava(p.author, "", c ? c.id : p.author)}
+        <div><div class="name">${c ? `<a href="#/candidate/${esc(c.id)}">${esc(p.author)}</a>` : esc(p.author)}${c && c.verified ? ` <span class="vmark" title="Личность подтверждена">${ic("check")}</span>` : ""}</div>
+        <div class="meta">${esc(meta.filter(Boolean).join(" · "))}</div></div>
+      </header>
+      ${p.flagged ? note : ""}
+      <p class="post-text">${esc(p.text)}</p>
+      ${p.verified ? `<p class="post-source">${ic("check")} ${esc(p.verified)}</p>` : ""}
+      ${p.photo ? `<figure class="post-media">${mediaImg(p.photo, 1200, idx < 2)}</figure>` : ""}
+      ${p.flagged ? "" : note}
+      <footer class="post-footer">
+        ${p.support && !p.flagged ? support(p.support) : ""}
+        <div class="post-actions">
+          <button data-like="${esc(p.id)}" class="${liked ? "on" : ""}" aria-pressed="${!!liked}" aria-label="Нравится: ${fmt(p.likes + (liked ? 1 : 0))}">${ic(liked ? "heartOn" : "heart")} ${fmt(p.likes + (liked ? 1 : 0))}</button>
+          <button data-cm="${esc(p.id)}" aria-expanded="${expanded}" aria-label="Комментарии: ${fmt(cmCount)}">${ic("comment")} ${fmt(cmCount)}</button>
+          <button data-share="${esc(p.id)}" aria-label="Поделиться" title="Поделиться">${ic("share")} <span>Поделиться</span></button>
+          ${!p.flagged ? `<button data-note="${esc(p.id)}" title="Добавить контекст с источником" aria-label="Добавить контекст с источником">${ic("pen")}</button>` : ""}
         </div>
-      </div>
-      ${p.photo ? `<figure class="post-media">${mediaImg(p.photo, 1200, idx < 2)}${t ? `<span class="pm-tag">${t.name}</span>` : ""}${p.support && !p.flagged ? supportPill(p.support) : ""}</figure>` : ""}
-      <div class="post-body">
-        <p class="post-text">${esc(p.text)}</p>
-        ${(t && !p.photo) || p.verified ? `<div class="row" style="margin-top:10px">${t && !p.photo ? `<span class="chip">${t.name}</span>` : ""}${p.verified ? `<span class="chip ok">${ic("check")} ${esc(p.verified)}</span>` : ""}</div>` : ""}
-        ${p.note ? `<div class="note ${p.flagged ? "bad" : ""}"><b>${p.flagged ? "Ложная информация" : "Контекст от жителей"}</b>${esc(p.note.replace(/^(Контекст от сообщества|Ложная информация)\.?:?\s*/, ""))}</div>` : ""}
-      </div>
-      ${p.support && !p.flagged ? `<div class="post-foot">${support(p.support)}</div>` : ""}
-      <div class="post-actions">
-        <button data-like="${esc(p.id)}" class="${liked ? "on" : ""}" aria-pressed="${!!liked}" aria-label="Нравится: ${fmt(p.likes + (liked ? 1 : 0))}">${ic(liked ? "heartOn" : "heart")} ${fmt(p.likes + (liked ? 1 : 0))}</button>
-        <button data-cm="${esc(p.id)}" aria-label="Комментарии: ${fmt(cmCount)}">${ic("comment")} ${fmt(cmCount)}</button>
-        <button data-share="${esc(p.id)}">${ic("share")} Поделиться</button>
-        <span class="spacer"></span>
-        ${!p.flagged ? `<button data-note="${esc(p.id)}" title="Добавить контекст с источником" aria-label="Добавить контекст с источником">${ic("pen")}</button>` : ""}
-      </div>
-      ${openThreads[p.id] ? threadHTML(p) : ""}
+      </footer>
+      ${expanded ? threadHTML(p) : ""}
     </article>`;
   }
   function threadHTML(p) {
@@ -237,28 +238,40 @@
   }
   binders.feed = () => {
     pb3dMount();
+    const renderAndRestore = (selector) => { render(); $(selector)?.focus({ preventScroll: true }); };
     const cb = $("#composeBtn"); if (cb) cb.addEventListener("click", () => { composerOpen = true; render(); $("#postText").focus(); });
     const ta = $("#postText");
     if (ta) {
       ta.addEventListener("input", () => { $("#toneHint").textContent = isRude(ta.value) ? "Похоже на оскорбление — переформулируете?" : ""; });
-      $("#postCancel").addEventListener("click", () => { composerOpen = false; render(); });
+      $("#postCancel").addEventListener("click", () => { composerOpen = false; renderAndRestore("#composeBtn"); });
       $("#postBtn").addEventListener("click", () => {
         const text = ta.value.trim();
         if (text.length < 5) return toast("Напишите чуть подробнее");
         if (isRude(text)) return toast("Давайте обсуждать идеи, а не людей");
         S.posts.unshift({ id: "u" + Date.now(), type: "citizen", author: myName(), time: "только что", text, topic: $("#postTopic").value || null, verified: null, likes: 0, comments: 0 });
-        composerOpen = false; save(); addXP(5); feedSort = "new"; render(); toast("Опубликовано");
+        composerOpen = false; save(); addXP(5); feedSort = "new"; renderAndRestore("[data-sort=new]"); toast("Опубликовано");
       });
     }
-    $$("[data-sort]").forEach((b) => b.addEventListener("click", () => { feedSort = b.dataset.sort; render(); }));
-    $$("[data-like]").forEach((b) => b.addEventListener("click", () => { S.likes[b.dataset.like] = !S.likes[b.dataset.like]; save(); render(); }));
+    $$("[data-sort]").forEach((b) => b.addEventListener("click", () => {
+      feedSort = b.dataset.sort; renderAndRestore(`[data-sort="${feedSort}"]`);
+    }));
+    $$("[data-like]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.dataset.like; S.likes[id] = !S.likes[id]; save(); renderAndRestore(`[data-like="${CSS.escape(id)}"]`);
+    }));
     $$("[data-share]").forEach((b) => b.addEventListener("click", async () => {
       const url = location.href.split("#")[0] + "#/feed";
       try { await navigator.clipboard.writeText(url); toast("Ссылка скопирована"); } catch (e) { toast(url); }
     }));
     $$("[data-note]").forEach((b) => b.addEventListener("click", () => toast("Контекст появится, когда его одобрят разные группы")));
-    $$("[data-cm]").forEach((b) => b.addEventListener("click", () => { const id = b.dataset.cm; openThreads[id] = !openThreads[id]; render(); const i = $(`[data-ci="${CSS.escape(id)}"]`); if (i) i.focus(); }));
-    $$("[data-cl]").forEach((b) => b.addEventListener("click", () => { S.commentLikes[b.dataset.cl] = !S.commentLikes[b.dataset.cl]; save(); render(); }));
+    $$("[data-cm]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.dataset.cm, escapedId = CSS.escape(id);
+      openThreads[id] = !openThreads[id];
+      if (openThreads[id]) { render(); $(`[data-ci="${escapedId}"]`)?.focus(); }
+      else renderAndRestore(`[data-cm="${escapedId}"]`);
+    }));
+    $$("[data-cl]").forEach((b) => b.addEventListener("click", () => {
+      const id = b.dataset.cl; S.commentLikes[id] = !S.commentLikes[id]; save(); renderAndRestore(`[data-cl="${CSS.escape(id)}"]`);
+    }));
     const send = (id) => {
       const inp = $(`[data-ci="${CSS.escape(id)}"]`), text = inp.value.trim(); if (text.length < 2) return;
       if (isRude(text)) return toast("Похоже на оскорбление — переформулируйте");
@@ -483,10 +496,10 @@
       <div class="row" style="gap:4px;flex-wrap:nowrap"><button class="btn small ${S.going["e" + i] ? "" : "ghost"}" data-go-ev="${i}">${S.going["e" + i] ? "Иду" : "Пойду"}</button><button class="icon-btn" data-ics="${i}" title="В календарь">${ic("download")}</button></div></div>`;
   }
   function upcoming(n) {
-    return D.events.filter((e) => e.date >= todayISO).slice(0, n).map((e) => {
-      const d = new Date(e.date + "T00:00:00");
-      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div class="small muted">${d.getDate()} ${MONTHS[d.getMonth()]}, ${e.time}</div><b class="small">${esc(e.title)}</b></div>`;
-    }).join("") + `<a class="small" style="display:inline-block;margin-top:10px;font-weight:600" href="#/calendar">Все события</a>`;
+    const events = D.events.filter((e) => e.date >= todayISO).slice(0, n);
+    return `${events.length ? `<ul>${events.map((e) => `<li><b>${esc(e.title)}</b>
+      <span class="feed-detail">${dShort(e.date)}, ${esc(e.time)}</span></li>`).join("")}</ul>` : ""}
+      <a class="rail-link" href="#/calendar">Все события</a>`;
   }
   views.calendar = () => {
     const y = Math.floor(calMonth / 12), mo = calMonth % 12, first = new Date(y, mo, 1), days = new Date(y, mo + 1, 0).getDate(), off = (first.getDay() + 6) % 7, cells = [];
@@ -982,15 +995,15 @@
     pb3d.setSelected(S.pb.picks);
     $(".m3d-hint", pb3dEl).textContent = /^#\/budget/.test(location.hash) ? "Нажмите на цену, чтобы добавить проект в корзину" : "Нажмите на цену, чтобы открыть бюджет";
   }
-  // Карточка с макетом в ленте — только на телефоне: на компьютере бюджет всегда рядом, в боковом меню
+  // Макет в ленте — только на телефоне: на компьютере бюджет есть в боковом меню.
   function feed3dCard() {
     if (!pb3dPhone()) return "";
     const spent = B.projects.filter((p) => S.pb.picks.includes(p.id)).reduce((a, p) => a + p.cost, 0);
-    const line = S.pb.submitted ? "Ваш голос учтён" : spent ? `Ваша корзина: ${rub(spent)} из ${rub(B.total)}` : `${rub(B.total)} решают жители`;
-    return `<div class="card feed-3d"><div class="row" style="justify-content:space-between;align-items:baseline"><b>Бюджет района</b><span class="small muted">голосование до ${dShort(B.stages[2].to)}</span></div>
-      <div class="small muted">${line}</div>
+    const line = S.pb.submitted ? "Ваш голос учтён" : spent ? `В корзине ${rub(spent)} из ${rub(B.total)}` : `Жители распределяют ${rub(B.total)}`;
+    return `<div class="feed-3d">
       <div id="pb3d" class="pb-3d-slot"></div>
-      <button class="btn block" data-go="#/budget">${S.pb.submitted ? "Итоги голосования" : "Собрать корзину"}</button></div>`;
+      <a class="feed-budget-link" href="#/budget" data-go="#/budget"><span><b>Бюджет района</b><span class="feed-detail">${esc(line)}</span></span>${ic("chevron")}</a>
+    </div>`;
   }
 
   binders.budget = () => {
@@ -1310,7 +1323,7 @@
       applyTheme(next); try { localStorage.setItem("vc-theme", next); } catch (err) { /* ignore */ } return;
     }
     if (e.target.closest("[data-skip]")) { $("#main").focus(); return; }
-    const go = e.target.closest("[data-go]"); if (go) { location.hash = go.dataset.go; return; }
+    const go = e.target.closest("[data-go]:not(a[href])"); if (go) { location.hash = go.dataset.go; return; }
     if (!e.target.closest(".notif-panel")) $$(".notif-panel").forEach((p) => p.remove());
     if (!e.target.closest("#sidebar") && !e.target.closest("#menuBtn")) $("#sidebar").classList.remove("open");
   });

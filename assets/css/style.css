@@ -1,6 +1,6 @@
 /* VoteConnect — дизайн-система «Макет района» (приложение).
    Спокойная основа: белый фон, графитовый текст и кнопки, бетонно-серые подложки.
-   Зелёный — только для решений жителей, поддержки и прогресса. Полоски поддержки по группам мнений сохраняются.
+   Зелёный — только для решений жителей, поддержки и прогресса.
    Сайт и страница инвесторов — assets/css/site.css, 3D-макет — assets/css/maquette.css. */
 
 :root {
@@ -147,50 +147,16 @@ button.chip:hover { color: var(--text); }
 .rail .card h3 { font-size: 15px; }
 .mobile-only { display: none; }
 
-/* ---------- Лента ---------- */
-.composer { display: flex; gap: 12px; align-items: center; }
-.composer .fake { flex: 1; text-align: left; border: none; background: var(--surface-2); border-radius: 999px; padding: 11px 16px; color: var(--muted); }
-.composer-open textarea { width: 100%; border: none; background: transparent; resize: vertical; min-height: 80px; font-size: 16px; padding: 4px 0; }
-.composer-open textarea:focus { outline: none; }
-.composer-open select { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; }
 .seg { display: flex; gap: 6px; flex-wrap: wrap; }
-.seg button { border: none; background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 13.5px; color: var(--text); }
-.seg button.active { background: var(--text); color: var(--surface); box-shadow: none; }
-.seg button .n { opacity: .6; margin-left: 4px; font-weight: 500; }
-.post { padding: 0; overflow: hidden; }
-.post-body { padding: 16px 18px 6px; }
-.post-head { display: flex; gap: 11px; align-items: center; }
-.post-head .name { font-weight: 700; font-size: 14.5px; }
-.post-head .name a { color: inherit; }
-.post-head .meta { color: var(--muted); font-size: 13px; }
-.post-text { font-size: 15.5px; line-height: 1.5; margin: 12px 0 0; }
-.post-photo { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-top: 12px; background: var(--surface-2); }
-.post-foot { padding: 12px 18px 6px; }
-.post.flagged .post-text { color: var(--muted); text-decoration: line-through; }
+.seg button { border: none; background: var(--surface-2); border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: 13.5px; color: var(--text); }
+.seg button.active { background: var(--text); color: var(--surface); }
 .tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--primary); }
 .tag.cand { color: var(--muted); }
 .vmark { display: inline-flex; color: var(--c2); vertical-align: -2px; }
-.note { margin-top: 12px; border-radius: 12px; padding: 10px 14px; font-size: 14px; background: var(--warn-soft); }
-.note b { display: block; font-size: 12.5px; color: var(--warn); margin-bottom: 2px; }
-.note.bad { background: var(--bad-soft); } .note.bad b { color: var(--bad); }
-.support { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
 .spec { display: flex; gap: 2px; height: 8px; border-radius: 99px; overflow: hidden; }
 .spec span { display: block; height: 100%; }
 .spec .a { background: var(--c1); } .spec .b { background: var(--c2); } .spec .c { background: var(--c3); }
 .spec.lg { height: 10px; }
-.support .val { font-weight: 700; font-size: 14px; }
-.support .cap { grid-column: 1 / -1; display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
-.support .cap i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
-.post-actions { display: flex; gap: 2px; padding: 4px 10px 8px; border-top: 1px solid var(--border); margin-top: 10px; }
-.post-actions button { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: var(--muted); padding: 8px 10px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
-.post-actions button:hover { background: var(--surface-2); color: var(--text); }
-.post-actions button.on { color: var(--accent); }
-.thread { border-top: 1px solid var(--border); padding: 12px 18px 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
-.comment { display: flex; gap: 10px; align-items: flex-start; }
-.bubble { flex: 1; min-width: 0; background: var(--surface); border-radius: 4px 14px 14px 14px; padding: 8px 12px; font-size: 14.5px; }
-.bubble .link-btn { margin: 2px 0 0 -4px; }
-.cm-input { flex: 1; min-width: 0; border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 9px 14px; }
-.cm-input:focus { outline: none; border-color: var(--primary); }
 
 /* ---------- Компас ---------- */
 .q-card { padding: 0; overflow: hidden; max-width: 640px; }
@@ -404,7 +370,6 @@ body.ob-mode .hdr, body.ob-mode .shell, body.ob-mode .tabbar { display: none !im
   .hdr .search, .hdr .desk { display: none; }
   .mobile-only { display: inline-grid; }
   .main { padding: 14px 12px 100px; }
-  .post-body, .post-foot { padding-left: 14px; padding-right: 14px; }
   .debate { grid-template-columns: minmax(0, 1fr); }
   .cal .day { min-height: 48px; }
   .cal .ev { font-size: 0; height: 5px; padding: 0; }
@@ -533,33 +498,14 @@ body.inv { background: var(--surface); }
 .countdown .num, .match-row .pct, .kpi-val, .report-kpis b, .stat-tiles b { color: var(--text); }
 .poll-opt .fill { background: var(--brand-soft); }
 .answers button.sel, .pick.on { border-color: var(--text); background: var(--surface-2); color: var(--text); }
-.seg button { background: var(--surface-2); box-shadow: none; }
-.seg button.active { background: var(--text); color: var(--surface); }
 .tag { color: var(--text); }
 a { color: var(--text); }
 .main a:not(.btn):not(.card):not(.match-row):not(.res):not(.lp-card) { text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; }
 .main .post-head .name a, .main a.init-card, .main .rail a { text-decoration: none; }
 .tabbar a.active { color: var(--text); }
 
-/* Фото поверх: тег сверху, плашка поддержки снизу */
+/* Тема проекта поверх фото в бюджете */
 .pm-tag { position: absolute; top: 14px; left: 14px; z-index: 2; background: rgba(0, 0, 0, .55); color: #fff; border-radius: 999px; padding: 4px 11px; font-size: 12.5px; font-weight: 600; backdrop-filter: blur(6px); }
-.pm-pill { position: absolute; left: 14px; bottom: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 7px; background: rgba(255, 255, 255, .95); color: #161616; border-radius: 999px; padding: 7px 13px; font-weight: 700; font-size: 13px; }
-.pm-pill i { width: 8px; height: 8px; border-radius: 50%; background: #1fa463; }
-.pm-pill.split i { background: #e0893a; }
-
-/* Лента: посты без рамок, фото на всю ширину колонки */
-.post { border: none; border-radius: 0; background: transparent; overflow: visible; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-.post-body { padding: 14px 2px 0; }
-.post-body + .post-body { padding-top: 0; }
-.post-text { font-size: 16px; margin: 10px 0 0; }
-.post-media { position: relative; margin: 12px 0 0; border-radius: 24px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--surface-2); }
-.post-media img { width: 100%; height: 100%; object-fit: cover; }
-.post-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.18), transparent 25%, transparent 60%, rgba(0,0,0,.35)); pointer-events: none; }
-.post-foot { padding: 12px 2px 4px; }
-.post-actions { border-top: none; padding: 2px 0 6px; margin-top: 4px; }
-.post-actions button { padding: 8px 8px; }
-.thread { border-radius: 18px; border-top: none; margin-bottom: 10px; background: var(--surface-2); }
-.thread .bubble { background: var(--surface); }
 
 /* Карточки с фото: инициативы, группы, бюджет — как объявления */
 .init-card { border: none; background: transparent; border-radius: 0; overflow: visible; }
@@ -576,10 +522,6 @@ a { color: var(--text); }
 .pb-meter { border-radius: 22px; box-shadow: var(--shadow-lg); border: none; }
 .cover { height: 220px; }
 .q-card .q-photo { aspect-ratio: 2; }
-
-@media (max-width: 860px) {
-  .post-media { border-radius: 18px; }
-}
 
 /* ---------- Контрольный аудит, октябрь 2026: доступность, телефон, новые блоки ---------- */
 .countdown-link { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none !important; width: 100%; }
@@ -618,7 +560,6 @@ html[data-size="lg"] body { zoom: 1.15; }   /* «Крупный шрифт» в 
    «МАКЕТ РАЙОНА», ноябрь 2026: тише и чище
    ========================================================== */
 .hdr { background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); }
-.post-media::after { display: none; }                 /* фото без затемняющих градиентов */
 .nav a.active { background: var(--primary-soft); }
 .countdown { border: none; background: var(--primary-soft); }
 .pb-meter { box-shadow: none; border: 1px solid var(--border); }
@@ -629,6 +570,113 @@ html[data-size="lg"] body { zoom: 1.15; }   /* «Крупный шрифт» в 
 .pb-3d { width: 100%; height: clamp(300px, 34vw, 440px); margin: 2px 0 14px; --m3d-r: 22px; --m3d-bg: var(--primary-soft); }
 @media (max-width: 860px) {
   .pb-3d { height: auto; aspect-ratio: 4 / 5; max-height: 72vh; }
-  .feed-3d .pb-3d { aspect-ratio: 1 / 1; margin: 12px 0 2px; --m3d-r: 16px; }
-  .feed-3d .m3d-ui { top: 10px; right: 10px; }
+}
+
+/* ---------- Лента района ---------- */
+.feed.layout { gap: clamp(28px, 3.5vw, 52px); }
+.feed .feed-stream { min-width: 0; }
+.feed .composer { display: flex; align-items: center; gap: 12px; }
+.feed .composer button {
+  flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 44px; padding: 4px 6px 4px 0; border: 0; background: transparent;
+  color: var(--muted); text-align: start;
+}
+.feed .composer button:hover { color: var(--text); }
+.feed .composer-open { margin-bottom: 8px; }
+.feed .composer-open label { font-weight: 600; }
+.feed .composer-open textarea {
+  display: block; width: 100%; min-height: 96px; margin: 10px 0;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  padding: 10px 12px; resize: vertical; font-size: 16px;
+}
+.feed .composer-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.feed .composer-controls select {
+  min-width: 0; max-width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface); font-size: 14px;
+}
+.feed #toneHint:not(:empty) { margin-top: 8px; }
+
+.feed .seg { display: flex; flex-wrap: wrap; gap: 0 clamp(14px, 4vw, 26px); margin-top: 8px; border-bottom: 1px solid var(--border); }
+.feed .seg button {
+  min-height: 44px; margin-bottom: -1px; padding: 6px 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  background: transparent; color: var(--muted); font-size: 14px; font-weight: 600;
+}
+.feed .seg button:hover, .feed .seg button.active { color: var(--text); }
+.feed .seg button.active { border-bottom-color: var(--text); }
+.feed .seg .n { margin-inline-start: 3px; color: var(--muted); font-weight: 500; }
+.feed .info { margin: 14px 0 0; }
+.feed .info .ic { color: var(--muted); }
+.feed .empty { padding: 20px 0; }
+
+.feed .post { padding: 22px 0 14px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.feed .post-head { display: flex; gap: 10px; align-items: center; }
+.feed .post-head .name { font-weight: 700; }
+.feed .post-head .meta, .feed .post-source { font-size: 13.5px; color: var(--muted); }
+.feed .post-head .vmark { color: var(--muted); }
+.feed .post-text { margin: 10px 0 0; font-size: 17px; line-height: 1.55; white-space: pre-wrap; }
+.feed .post.flagged .post-text { color: var(--muted); text-decoration: line-through; }
+.feed .post-source { margin: 6px 0 0; }
+.feed .post-media { margin: 14px 0 0; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 10; background: var(--surface-2); }
+.feed .post-media img { width: 100%; height: 100%; object-fit: cover; }
+.feed .note { margin-top: 14px; padding-inline-start: 11px; border-inline-start: 2px solid var(--warn); font-size: 14px; }
+.feed .note b { display: block; margin-bottom: 2px; }
+.feed .note.bad { border-inline-start-color: var(--bad); }
+
+.feed .post-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin-top: 10px; }
+.feed .support { display: flex; align-items: center; gap: 7px; min-height: 30px; color: var(--muted); font-size: 13.5px; font-weight: 600; }
+.feed .support.agreed { color: var(--brand-ink); }
+.feed .support-bars { display: flex; flex: none; align-items: end; gap: 2px; width: 13px; height: 12px; }
+.feed .support-bars span { width: 3px; border-radius: 1px; background: var(--c1); }
+.feed .support-bars span:nth-child(2) { background: var(--c2); }
+.feed .support-bars span:nth-child(3) { background: var(--c3); }
+.feed .post-actions { display: flex; flex-wrap: wrap; }
+.feed .post-actions button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 40px; min-height: 40px;
+  padding: 4px 6px; border: 0; border-radius: 8px; background: transparent; color: var(--muted);
+  font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.feed .post-actions button:hover, .feed .post-actions button[aria-expanded="true"] { background: var(--surface-2); color: var(--text); }
+.feed .post-actions button.on .ic, .feed .thread .link-btn.on .ic { color: var(--accent); }
+
+.feed .thread { display: grid; gap: 10px; margin-top: 8px; padding: 4px 0 4px 12px; border-inline-start: 1px solid var(--border); }
+.feed .comment { display: flex; align-items: start; gap: 8px; }
+.feed .bubble { flex: 1; min-width: 0; font-size: 14.5px; }
+.feed .thread .link-btn.on { color: var(--text); }
+.feed .cm-input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.feed .cm-input::placeholder { color: var(--muted); opacity: 1; }
+.feed :is(#postText, .cm-input):focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.feed .rail { gap: 22px; padding-top: 8px; }
+.feed .rail section + section { border-top: 1px solid var(--border); padding-top: 18px; }
+.feed .rail h2 { margin: 0 0 8px; color: var(--muted); font-size: 13.5px; font-weight: 600; letter-spacing: normal; }
+.feed .rail p { margin: 0 0 6px; font-size: 14px; }
+.feed .rail ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.feed .rail li { font-size: 14px; }
+.feed .rail b { font-weight: 600; }
+.feed .rail-link { display: inline-flex; align-items: center; min-height: 40px; color: var(--text); font-size: 14px; font-weight: 600; }
+.feed .feed-match { display: grid; align-items: center; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; }
+.feed .feed-detail { display: block; color: var(--muted); font-size: 13.5px; }
+
+@media (max-width: 860px) {
+  .feed .feed-3d { margin-bottom: 12px; }
+  .feed .feed-3d .pb-3d { aspect-ratio: 6 / 5; margin: 0; --m3d-r: 12px; }
+  .feed .feed-3d .m3d-ui { top: 10px; right: 10px; }
+  .feed .feed-3d .m3d-hint { display: none; }
+  .feed .feed-budget-link {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    min-height: 56px; padding: 8px 2px; border-bottom: 1px solid var(--border);
+  }
+  .feed .feed-budget-link > .ic { color: var(--muted); }
+  .feed .feed-3d .m3d-pin-in::before {
+    content: ""; position: absolute; inset: 50% auto auto 50%;
+    width: max(100%, 40px); height: max(100%, 40px); transform: translate(-50%, -50%);
+  }
+  .feed .feed-3d .m3d-pin:focus-visible .m3d-pin-in { outline: 2px solid var(--text); outline-offset: 2px; }
+  .feed :is(button, select, .cm-input, .rail a) { min-width: 40px; min-height: 40px; }
+  .feed .post { padding-top: 18px; padding-bottom: 10px; }
+  .feed .post-media { aspect-ratio: 4 / 3; }
+  .feed .post-actions [data-share] span { display: none; }
+  .feed .rail li a { display: block; }
+  .feed .post-head .name a { display: inline-block; padding-block: 9px; margin-block: -9px; }
+  .feed .info a { display: inline-flex; align-items: center; min-height: 40px; }
 }
