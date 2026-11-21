@@ -1,147 +1,161 @@
-// Регрессионные тесты: ошибки, найденные контрольным аудитом 13 октября 2026. Описание — docs/SECURITY_TESTS.md.
 const { test, expect } = require("@playwright/test");
 
-const demo = (page, hash = "#/feed") => page.goto(`/app.html?reset=1&demo=1${hash}`);
-const go = async (page, hash) => { await page.evaluate((h) => (location.hash = h), hash); await page.waitForTimeout(150); };
-const watchErrors = (page) => { const list = []; page.on("pageerror", (e) => list.push(e.message)); return list; };
+const KEY = "voteconnect-demo-v2";
+const route = (screen = "vote") => "/app.html?demo=1#/" + screen;
+const project = (page, id) => page.locator('[data-pick="' + id + '"]');
+const submit = (page) => page.getByRole("button", { name: "Проголосовать", exact: true });
 
-test.describe("Регрессии", () => {
-  test("REG-01 Календарь переходит через Новый год и показывает день голосования", async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-11-20T12:00:00"));   // события демо сдвигаются на январь
-    await demo(page, "#/calendar");
-    await expect(page.locator("#calPrev")).toBeDisabled();
-    const months = [], titles = [];
-    for (let i = 0; i < 4; i++) {
-      months.push((await page.locator(".cal").locator("xpath=..").locator("h3").textContent()).trim());
-      titles.push(...await page.$$eval(".cal .ev", (els) => els.map((e) => e.title)));
-      if (await page.locator("#calNext").isDisabled()) break;
-      await page.click("#calNext");
-    }
-    expect(months).toEqual(["Ноябрь", "Декабрь", "Январь 2027"]);
-    expect(titles).toContain("ДЕНЬ ГОЛОСОВАНИЯ");
-  });
-
-  test("REG-02 Колонки календаря одинаковые и не вылезают за карточку", async ({ page }) => {
-    await page.setViewportSize({ width: 1366, height: 900 });
-    await demo(page, "#/calendar");
-    const m = await page.evaluate(() => {
-      const cal = document.querySelector(".cal"), w = [...cal.querySelectorAll(".dow")].map((d) => d.getBoundingClientRect().width);
-      return { spread: Math.max(...w) - Math.min(...w), overflow: cal.scrollWidth - cal.clientWidth, outside: cal.getBoundingClientRect().right - cal.parentElement.getBoundingClientRect().right };
-    });
-    expect(m.spread).toBeLessThan(2);
-    expect(m.overflow).toBeLessThanOrEqual(0);
-    expect(m.outside).toBeLessThanOrEqual(0);
-  });
-
-  test("REG-03 Служебные и неизвестные адреса не ломают приложение", async ({ page }) => {
-    const errors = watchErrors(page);
-    await demo(page);
-    for (const h of ["#/toString", "#/valueOf", "#/__proto__", "#/constructor/x", "#/hasOwnProperty"]) {
-      await go(page, h); await expect(page.locator("#main h1")).toHaveText("Лента района");
-    }
-    await go(page, "#/candidate/nobody"); await page.click('[data-ct="eco"]');
-    await expect(page.locator('[data-ct="eco"]')).toHaveClass(/active/);   // фильтр списка работает
-    await go(page, "#/group/nobody");
-    expect(errors).toEqual([]);
-  });
-
-  test("REG-04 Испорченный адрес ?addr=% открывает регистрацию, а не пустой экран", async ({ page }) => {
-    const errors = watchErrors(page);
-    await page.goto("/app.html?reset=1&addr=%");
-    await expect(page.locator("#obStreet")).toBeVisible();
-    expect(errors).toEqual([]);
-  });
-
-  test("REG-05 Адрес с главной после демо-тура начинает настоящую регистрацию", async ({ page }) => {
-    await demo(page);
-    await page.goto("/index.html");
-    await page.fill('input[name="addr"]', "Лесная, 3"); await page.click('.lp-find button[type="submit"]');
-    await expect(page.locator("#obStreet")).toHaveValue("Лесная, 3");
-  });
-
-  test("REG-06 Компас: если пропустить все вопросы, совпадений и значка нет", async ({ page }) => {
-    await demo(page, "#/compass");
-    await page.click("#cmpAgree");
-    for (let i = 0; i < 12; i++) await page.click("#skipQ");
-    await expect(page.locator("#main")).toContainText("Вы пропустили все вопросы");
-    await expect(page.locator(".match-row")).toHaveCount(0);
-    expect(await page.evaluate(() => JSON.parse(localStorage.getItem("voteconnect-demo-v2")).badges.compass)).toBeUndefined();
-  });
-
-  test("REG-07 Склонения в отчёте для совета и кабинете", async ({ page }) => {
-    await demo(page, "#/report");
-    await expect(page.locator(".report-kpis")).toContainText("решения, которые поддерживают все группы");
-    await expect(page.locator(".report")).not.toContainText("решений, которые");
-    await go(page, "#/admin");
-    await expect(page.locator("#adminKpis")).toContainText("утверждения на Карте согласия");
-  });
-
-  test("REG-08 Файл календаря соответствует стандарту: DTSTAMP и экранирование", async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-10-13T12:00:00"));   // первое событие месяца — субботник «Набережная, у моста»
-    await demo(page, "#/calendar");
-    const [dl] = await Promise.all([page.waitForEvent("download"), page.locator("[data-ics]").first().click()]);
-    const ics = require("fs").readFileSync(await dl.path(), "utf8");
-    expect(ics).toMatch(/\r\nDTSTAMP:\d{8}T\d{6}Z\r\n/);
-    expect(ics).toMatch(/LOCATION:Набережная\\, у моста/);
-  });
-
-  test("REG-09 Число участников и голоса в опросах не растут сами по себе", async ({ page }) => {
-    await demo(page, "#/consensus");
-    const before = await page.locator(".page-head").textContent();
-    await page.waitForTimeout(3000);
-    expect(await page.locator(".page-head").textContent()).toBe(before);
-    await go(page, "#/polls"); await page.locator("[data-pv]").first().click();
-    const total = await page.locator("[data-total]").first().textContent();
-    await page.waitForTimeout(2500);
-    expect(await page.locator("[data-total]").first().textContent()).toBe(total);
-  });
-
-  test("REG-10 Поиск участка помечен как демо и ведёт на сайт ЦИК", async ({ page }) => {
-    await demo(page, "#/calendar");
-    await page.click("#findBtn");
-    await expect(page.locator("#station")).toContainText("Демо");
-    await expect(page.locator('#station a[href^="https://www.cikrf.ru"]')).toHaveCount(1);
-  });
-  test("REG-09 Корзина с 3D-макета главной переезжает в голосование", async ({ page }) => {
-    const errors = watchErrors(page);
-    await page.goto("/index.html");
-    await page.click('.s-proj[data-id="b2"]');                      // b1 и b3 выбраны по умолчанию
-    await expect(page.locator("#pbSum")).toContainText("9,4 из 15");
-    await page.click('.s-proj[data-id="b7"]');                      // 9,4 + 5,6 — ровно весь бюджет
-    await expect(page.locator("#pbSum")).toContainText("15 из 15");
-    await page.click('.s-proj[data-id="b4"]', { force: true });     // помечен «не помещается»: нажатие объясняет, корзина не меняется
-    await expect(page.locator("#pbSum")).toContainText("15 из 15");
-    await expect(page.locator("#pbNote")).toContainText("Не помещается");
-    await page.click("#pbGo");
-    await page.waitForURL(/app.html/);
-    await page.evaluate(() => (location.hash = "#/budget"));
-    await expect(page.locator("#pbMeter")).toContainText("15 млн");
-    expect(await page.evaluate(() => JSON.parse(localStorage.getItem("voteconnect-demo-v2")).pb.picks.sort())).toEqual(["b1", "b2", "b3", "b7"]);
-    expect(errors).toEqual([]);
-  });
-
-  test("REG-10 Подменённая корзина с главной не ломает бюджет и не выходит за 15 млн", async ({ page }) => {
-    const errors = watchErrors(page);
-    await page.goto("/index.html");
-    await page.evaluate(() => sessionStorage.setItem("vc-pb-picks", JSON.stringify(["b8", "b7", "b3", "<img src=x>", "b8", null, { id: "b1" }])));
-    await page.goto("/app.html?reset=1&demo=1#/budget");
-    await expect(page.locator("#pbMeter")).toContainText("12,4 млн");   // b8 6,8 + b7 5,6; b3 уже не помещается
-    expect(await page.evaluate(() => sessionStorage.getItem("vc-pb-picks"))).toBeNull();
-    await page.evaluate(() => sessionStorage.setItem("vc-pb-picks", "{сломано"));
-    await page.goto("/app.html?demo=1#/budget");
-    await expect(page.locator("#pbMeter")).toBeVisible();
-    expect(errors).toEqual([]);
-  });
-  test("REG-11 На телефоне макет есть в ленте и в бюджете, метки работают", async ({ page }) => {
-    const errors = watchErrors(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await demo(page, "#/feed");
-    await expect(page.locator(".feed-3d .m3d-pin")).toHaveCount(7, { timeout: 10000 });
-    await page.locator('.feed-3d .m3d-pin[data-id="b1"] .m3d-pin-in').click();   // в ленте метка открывает бюджет
-    await expect(page).toHaveURL(/budget/);
-    await page.locator('.pb-3d .m3d-pin[data-id="b1"] .m3d-pin-in').click();     // в бюджете — кладёт проект в корзину
-    await expect(page.locator("#pbMeter")).toContainText("1,8 млн");
-    await expect(page.locator('.pb-3d .m3d-pin[data-id="b1"]')).toHaveClass(/on/);
-    expect(errors).toEqual([]);
-  });
+test("VOTE-01 Приложение открывает проекты без регистрации", async ({ page }) => {
+  await page.goto("/app.html");
+  await expect(page.getByRole("heading", { name: "Проекты", exact: true })).toBeVisible();
+  await expect(page.locator("[data-pick]")).toHaveCount(8);
+  await expect(submit(page)).toBeDisabled();
+  await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(2);
 });
+
+test("VOTE-02 Можно выбрать три проекта, даже если их сумма выше бюджета", async ({ page }) => {
+  await page.goto(route());
+  for (const id of ["b8", "b7", "b3"]) await project(page, id).click();
+  await expect(page.getByText("Выбрано 3 из 3")).toBeVisible();
+  await expect(page.getByText("Можно выбрать не больше трёх. Снимите отметку, чтобы выбрать другой")).toBeVisible();
+  await expect(project(page, "b1")).toBeDisabled();
+  await expect(submit(page)).toBeEnabled();
+  await project(page, "b7").click();
+  await expect(project(page, "b7")).toHaveAttribute("aria-pressed", "false");
+  await expect(project(page, "b1")).toBeEnabled();
+  await project(page, "b1").click();
+  await expect(page.locator('[data-pick][aria-pressed="true"]')).toHaveCount(3);
+});
+
+test("VOTE-03 Выбор и отправленный голос переживают перезагрузку", async ({ page }) => {
+  await page.goto(route());
+  await project(page, "b1").click();
+  await project(page, "b8").click();
+  await page.reload();
+  await expect(project(page, "b1")).toHaveAttribute("aria-pressed", "true");
+  await submit(page).click();
+  await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
+  await expect(page.getByText("Велодорожка вдоль Ленинградской")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
+  await expect(submit(page)).toHaveCount(0);
+  await page.getByRole("link", { name: "Посмотреть итоги" }).click();
+  await expect(page.getByText(/Проголосовали 2\s319 жителей/)).toBeVisible();
+  await expect(page.getByRole("listitem").filter({ hasText: "Светофор с кнопкой у школы № 12" })).toContainText(/1\s291/);
+});
+
+test("VOTE-04 Подменённые и повторные id отбрасываются, остаётся до трёх", async ({ page }) => {
+  await page.addInitScript(({ key, state }) => localStorage.setItem(key, JSON.stringify(state)), {
+    key: KEY, state: { pb: { picks: ["unknown", "b2", "b2", {}, "b6", "b8", "b1"], submitted: "true" } }
+  });
+  await page.goto(route());
+  await expect(page.locator('[data-pick][aria-pressed="true"]')).toHaveCount(3);
+  for (const id of ["b2", "b6", "b8"]) await expect(project(page, id)).toHaveAttribute("aria-pressed", "true");
+  await expect(project(page, "b1")).toHaveAttribute("aria-pressed", "false");
+});
+
+test("VOTE-05 Сброс демо очищает голос и сохраняет тему", async ({ page }) => {
+  await page.goto(route());
+  await page.getByRole("button", { name: /Светлая тема|Тёмная тема/ }).click();
+  const theme = await page.evaluate(() => localStorage.getItem("vc-theme"));
+  await project(page, "b1").click();
+  await submit(page).click();
+  await page.getByRole("link", { name: "Начать демо заново" }).click();
+  await expect(submit(page)).toBeDisabled();
+  expect(await page.evaluate((key) => localStorage.getItem(key), KEY)).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("vc-theme"))).toBe(theme);
+  await page.reload();
+  await expect(page.getByText("Выбрано 0 из 3")).toBeVisible();
+});
+
+test("VOTE-06 Итоги пропускают дорогой проект и включают следующий в остаток", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-11-20T12:00:00"));
+  await page.goto(route("results"));
+  await expect(page.getByText("Проголосовали 2 318 жителей. Голосование до 7 декабря")).toBeVisible();
+  const rows = page.getByRole("listitem");
+  await expect(rows).toHaveCount(8);
+  await expect(rows.nth(0)).toContainText("Светофор с кнопкой у школы № 12");
+  await expect(rows.nth(5)).toContainText("Ремонт двора на Садовой");
+  await expect(rows.nth(5)).not.toContainText("Проходит");
+  await expect(rows.nth(6)).toContainText("Проходит");
+  await expect(page.getByText("Проходит", { exact: true })).toHaveCount(6);
+  await page.getByRole("link", { name: "Отчёт для администрации" }).click();
+  await expect(page.getByRole("main")).toBeFocused();
+  const report = page.getByRole("table");
+  await expect(report.getByRole("row")).toHaveCount(7);
+  await expect(report).toContainText("Площадка для выгула собак");
+  await expect(report).not.toContainText("Ремонт двора на Садовой");
+  await page.evaluate(() => { window.print = () => { window.printRequested = true; }; });
+  await page.getByRole("button", { name: "Скачать PDF" }).click();
+  expect(await page.evaluate(() => window.printRequested)).toBe(true);
+  await page.emulateMedia({ media: "print" });
+  await expect(page.getByRole("navigation")).toBeHidden();
+  await expect(page.getByRole("button", { name: "Скачать PDF" })).toBeHidden();
+  await expect(report).toBeVisible();
+});
+
+test("VOTE-07 Клавиатура управляет выбором и переходами", async ({ page }) => {
+  await page.goto(route());
+  const first = project(page, "b1");
+  await first.focus();
+  await page.keyboard.press("Space");
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  await expect(first).toBeFocused();
+  expect(await first.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
+  await page.getByRole("link", { name: "Итоги", exact: true }).click();
+  await expect(page.getByRole("main")).toBeFocused();
+  await expect(page.getByRole("link", { name: "Итоги", exact: true })).toHaveAttribute("aria-current", "page");
+});
+
+test("VOTE-08 Главная ведёт к проектам и отчёту", async ({ page }) => {
+  await page.goto("/index.html");
+  await expect(page.locator("main ol > li")).toHaveCount(3);
+  await expect(page.locator("img, canvas")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Пример отчёта" })).toHaveAttribute("href", "app.html?demo=1#/report");
+  await page.getByRole("link", { name: "Попробовать демо" }).click();
+  await expect(page.getByRole("heading", { name: "Проекты", exact: true })).toBeVisible();
+});
+
+for (const colorScheme of ["light", "dark"]) {
+  test("LAYOUT Адаптивность и контраст в теме " + colorScheme, async ({ page }) => {
+    await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
+    for (const width of [360, 390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const url of ["/index.html", "/privacy.html", "/investors.html", route(), route("results"), route("report")]) {
+        await page.goto(url);
+        const layout = await page.evaluate(async () => {
+          await document.fonts.ready;
+          const main = document.querySelector("main");
+          return {
+            overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            width: main.getBoundingClientRect().width,
+            theme: getComputedStyle(document.documentElement).colorScheme
+          };
+        });
+        expect(layout.overflow, url + " " + width).toBeLessThanOrEqual(0);
+        expect(layout.width, url + " " + width).toBeLessThanOrEqual(640);
+        expect(layout.theme).toBe(colorScheme);
+      }
+      await page.goto(route());
+      expect(await page.locator(".app-nav").evaluate((el) => getComputedStyle(el).position)).toBe(width < 768 ? "fixed" : "static");
+      expect(await page.locator(".project-mark").first().evaluate((el) => getComputedStyle(el).transitionDuration)).toBe("0s");
+      const controls = await page.locator("button, .app-nav a").evaluateAll((elements) => {
+        function luminance(color) {
+          const [r, g, b] = color.match(/[\d.]+/g).slice(0, 3).map((n) => {
+            const channel = Number(n) / 255;
+            return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+          });
+          return r * .2126 + g * .7152 + b * .0722;
+        }
+        return elements.map((element) => {
+          const { width, height } = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          const fg = luminance(style.color);
+          const bg = luminance(style.backgroundColor === "rgba(0, 0, 0, 0)" ? getComputedStyle(document.body).backgroundColor : style.backgroundColor);
+          return { width, height, ratio: (Math.max(fg, bg) + .05) / (Math.min(fg, bg) + .05) };
+        });
+      });
+      expect(controls.every(({ width, height, ratio }) => width >= 44 && height >= 48 && ratio >= 4.5)).toBe(true);
+    }
+  });
+}

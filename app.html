@@ -2,82 +2,35 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>VoteConnect</title>
-  <meta name="description" content="VoteConnect — платформа соучастия района: бюджет, который распределяют жители, инициативы и отчёт для совета.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z' fill='%23178a4f'/%3E%3Cpath d='M10.8 13.6l3.6 3.6 7-7.2' stroke='white' stroke-width='2.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>VoteConnect — голосование за проекты района</title>
+  <meta name="description" content="Ваш район решает, на что потратить 15 млн ₽. Выберите до трёх проектов.">
+  <link rel="icon" href="assets/icons/icon-192.png">
   <link rel="preload" href="assets/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/maquette.css">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="VoteConnect">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111614" media="(prefers-color-scheme: dark)">
+  <script src="assets/js/theme.js" defer></script>
+  <script src="assets/js/sanitize.js" defer></script>
+  <script src="assets/js/data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
 </head>
-<body>
-  <button class="skip" data-skip>К содержимому</button>
-  <header class="hdr">
-    <button class="icon-btn mobile-only" id="menuBtn" aria-label="Меню"><i data-i="menu"></i></button>
-    <a class="logo" href="index.html" data-logo></a>
-    <button class="district desk" data-go="#/profile"><i data-i="pin"></i><span id="districtName">Северный</span></button>
-    <button class="search" data-search><i data-i="search"></i>Поиск по району</button>
-    <span class="spacer"></span>
-    <button class="icon-btn mobile-only" data-search aria-label="Поиск"><i data-i="search"></i></button>
-    <button class="icon-btn" data-bell aria-label="Уведомления"><i data-i="bell"></i><span class="dot" id="bellDot" hidden></span></button>
-    <button class="icon-btn desk" data-theme-toggle aria-label="Тема"><i data-i="theme"></i></button>
-    <a href="#/profile" class="desk" aria-label="Профиль" id="meAva"></a>
+<body class="app-page">
+  <header class="site-header wrap">
+    <a class="wordmark" href="index.html">VoteConnect</a>
+    <button class="theme-toggle" type="button" id="themeToggle">Тёмная тема</button>
   </header>
-
-  <div class="shell">
-    <aside class="sidebar" id="sidebar">
-      <nav class="nav" id="nav">
-        <a href="#/feed"><i class="ico" data-i="home"></i>Лента района</a>
-        <a href="#/budget"><i class="ico" data-i="polls"></i>Бюджет района</a>
-        <a href="#/consensus"><i class="ico" data-i="consensus"></i>Карта согласия</a>
-        <a href="#/initiatives"><i class="ico" data-i="megaphone"></i>Инициативы</a>
-        <a href="#/calendar"><i class="ico" data-i="calendar"></i>События</a>
-        <a href="#/assistant"><i class="ico" data-i="spark"></i>Помощник</a>
-        <div class="nav-sec">Выборы · сезонный режим</div>
-        <a href="#/compass"><i class="ico" data-i="compass"></i>Компас взглядов</a>
-        <a href="#/candidates"><i class="ico" data-i="people"></i>Кандидаты</a>
-        <a href="#/promises"><i class="ico" data-i="promise"></i>Обещания</a>
-        <a href="#/polls"><i class="ico" data-i="comment"></i>Опросы</a>
-        <div class="nav-sec">Ещё</div>
-        <a href="#/groups"><i class="ico" data-i="groups"></i>Группы и дебаты</a>
-        <a href="#/academy"><i class="ico" data-i="book"></i>Академия</a>
-        <a href="#/profile"><i class="ico" data-i="profile"></i>Профиль</a>
-        <div class="nav-sec">Для власти</div>
-        <a href="#/admin"><i class="ico" data-i="chart"></i>Кабинет администрации</a>
-        <a href="#/cabinet"><i class="ico" data-i="people"></i>Кабинет кандидата</a>
-      </nav>
-      <div class="side-foot">
-        <div class="countdown" id="countdown"></div>
-        <div class="side-actions"><button class="btn" data-tour-start><i data-i="play"></i>Демо-тур</button>
-          <button class="btn ghost" data-qr title="Открыть на телефоне" aria-label="Открыть на телефоне"><i data-i="phone"></i></button></div>
-      </div>
-    </aside>
-    <main class="main" id="main" tabindex="-1"></main>
-  </div>
-
-  <nav class="tabbar" id="tabbar" aria-label="Основное меню">
-    <a href="#/feed"><i data-i="home"></i>Лента</a>
-    <a href="#/budget"><i data-i="polls"></i>Бюджет</a>
-    <a href="#/consensus"><i data-i="consensus"></i>Согласие</a>
-    <a href="#/initiatives"><i data-i="megaphone"></i>Инициативы</a>
-    <a href="#/profile"><i data-i="profile"></i>Профиль</a>
+  <nav class="app-nav" aria-label="Разделы приложения">
+    <div class="wrap">
+      <a href="#/vote">Проекты</a>
+      <a href="#/results">Итоги</a>
+    </div>
   </nav>
-
-  <div id="onboard" class="onboard" hidden></div>
-  <div class="toast-wrap" id="toasts" aria-live="polite"></div>
-
-  <script src="assets/js/sanitize.js"></script>
-  <script src="assets/js/icons.js"></script>
-  <script src="assets/js/data.js"></script>
-  <script src="assets/avatars/list.js"></script>
-  <script src="assets/js/app.js"></script>
+  <main class="wrap app-main" id="main" tabindex="-1"></main>
 </body>
 </html>

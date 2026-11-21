@@ -1,13 +1,13 @@
 {
-  "name": "VoteConnect — платформа соучастия района",
+  "name": "VoteConnect — голосование за проекты района",
   "short_name": "VoteConnect",
-  "description": "Платформа соучастия района: бюджет, который распределяют жители, Карта согласия и инициативы.",
+  "description": "Жители выбирают, на что потратить бюджет района.",
   "lang": "ru",
-  "start_url": "app.html#/feed",
+  "start_url": "app.html?demo=1#/vote",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f3f4f1",
+  "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
     { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

@@ -5,7 +5,7 @@ const fs = require("fs"), path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const read = (f) => fs.readFileSync(path.join(ROOT, f), "utf8");
 const PAGES = ["index.html", "app.html", "investors.html", "privacy.html"];
-const OWN_JS = ["assets/js/app.js", "assets/js/data.js", "assets/js/icons.js", "assets/js/sanitize.js", "assets/js/landing.js", "assets/js/docs.js", "sw.js"];
+const OWN_JS = ["assets/js/app.js", "assets/js/data.js", "assets/js/sanitize.js", "assets/js/theme.js", "sw.js"];
 
 function repoFiles(dir = ROOT, out = []) {
   for (const name of fs.readdirSync(dir)) {
@@ -29,7 +29,7 @@ test("SEC-21 Нет встроенных скриптов и обработчи�
 });
 
 test("SEC-22 Страницы не подключают ресурсы со сторонних серверов", () => {
-  for (const f of [...PAGES, "assets/css/style.css", "assets/css/fonts.css", ...OWN_JS]) {
+  for (const f of [...PAGES, "assets/css/style.css", "assets/css/site.css", "assets/css/fonts.css", ...OWN_JS]) {
     const src = read(f);
     const refs = [
       ...src.matchAll(/<(?:script|img|iframe|source|video|audio)[^>]+src=["'](https?:)?\/\/[^"']+/gi),
@@ -50,8 +50,10 @@ test("SEC-23 Код приложения не отправляет данные 
 test("SEC-24 Service worker кэширует только свои GET-запросы", () => {
   const sw = read("sw.js");
   expect(sw).toMatch(/request\.method\s*!==\s*"GET"\)\s*return/);
-  expect(sw).toMatch(/startsWith\(self\.location\.origin\)/);
-  expect(sw, "ключ кэша — адрес без параметров (?addr=…)").toMatch(/\.search\s*=\s*""/);
+  expect(sw).toMatch(/key\.origin\s*!==\s*self\.location\.origin\)\s*return/);
+  expect(sw, "ключ кэша — адрес без параметров").toMatch(/\.search\s*=\s*""/);
+  const core = JSON.parse(sw.match(/const CORE\s*=\s*(\[[\s\S]*?\]);/)[1]);
+  for (const file of [...PAGES, ...core]) expect(fs.existsSync(path.join(ROOT, file)), file).toBe(true);
 });
 
 test("SEC-25 В репозитории нет ключей, токенов и паролей", () => {
