@@ -135,6 +135,12 @@ for (const colorScheme of ["light", "dark"]) {
         expect(layout.overflow, url + " " + width).toBeLessThanOrEqual(0);
         expect(layout.width, url + " " + width).toBeLessThanOrEqual(640);
         expect(layout.theme).toBe(colorScheme);
+        if (width < 560 && ["/privacy.html", "/investors.html"].includes(url)) {
+          const rows = await page.locator("main table tbody tr").evaluateAll((elements) =>
+            elements.map((row) => getComputedStyle(row).display));
+          expect(rows.length).toBeGreaterThan(0);
+          expect(rows.every((display) => display === "block"), url).toBe(true);
+        }
       }
       await page.goto(route());
       expect(await page.locator(".app-nav").evaluate((el) => getComputedStyle(el).position)).toBe(width < 768 ? "fixed" : "static");

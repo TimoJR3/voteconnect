@@ -29,8 +29,8 @@
 .document .stat-list dd { margin: 0; }
 
 @media (max-width: 35rem) {
-  .comparison thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .comparison tr { display: block; border-bottom: 1px solid var(--line); padding-block: .5rem; }
-  .comparison :is(th, td) { display: block; border: 0; padding: .2rem 0; }
-  .comparison td::before { content: attr(data-label) " "; color: var(--muted); }
+  .document thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .document tbody tr { display: block; border-bottom: 1px solid var(--line); padding-block: .5rem; }
+  .document tbody :is(th, td) { display: block; border: 0; padding: .2rem 0; }
+  .document td[data-label]:not(:empty)::before { content: attr(data-label); display: block; color: var(--muted); font-weight: 600; }
 }
