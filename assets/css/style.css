@@ -680,3 +680,7 @@ html[data-size="lg"] body { zoom: 1.15; }   /* «Крупный шрифт» в 
   .feed .post-head .name a { display: inline-block; padding-block: 9px; margin-block: -9px; }
   .feed .info a { display: inline-flex; align-items: center; min-height: 40px; }
 }
+
+/* Лента: ссылки-строки без подчёркивания (подчёркнута только явная ссылка-действие в правой колонке) */
+.main .feed .feed-budget-link, .main .feed .rail li a, .main .feed .feed-match { text-decoration: none !important; }
+.main .feed .rail li a:hover b, .main .feed .feed-budget-link:hover b { text-decoration: underline; text-underline-offset: 3px; }
