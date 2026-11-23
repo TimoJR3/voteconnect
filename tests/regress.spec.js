@@ -6,6 +6,16 @@ const go = async (page, hash) => { await page.evaluate((h) => (location.hash = h
 const watchErrors = (page) => { const list = []; page.on("pageerror", (e) => list.push(e.message)); return list; };
 
 test.describe("Регрессии", () => {
+  test("Голос из демо Махачкалы не переносится в бюджет Новограда", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("voteconnect-demo-v2", JSON.stringify({
+      scenario: "makhachkala",
+      pb: { picks: ["b1"], submitted: true, receipt: "A111-B222-C333" }
+    })));
+    await page.goto("/app.html?demo=1#/budget");
+    await expect(page.locator("#pbSubmit")).toBeDisabled();
+    await expect(page.getByText("Ваш голос учтён", { exact: true })).toHaveCount(0);
+  });
+
   test("REG-01 Календарь переходит через Новый год и показывает день голосования", async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-11-20T12:00:00"));   // события демо сдвигаются на январь
     await demo(page, "#/calendar");

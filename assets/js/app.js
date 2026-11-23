@@ -37,7 +37,9 @@
   // а не роняет экран. Берутся только известные ключи — лишние (в том числе __proto__) отбрасываются.
   const isObj = (v) => !!v && typeof v === "object" && !Array.isArray(v);
   function normalize(o) {
-    const d = defaults(); if (!isObj(o)) return d;
+    const d = defaults();
+    // В демо Махачкалы те же ID обозначают другие проекты.
+    if (!isObj(o) || o.scenario === "makhachkala") return d;
     Object.keys(d).forEach((k) => {
       const v = o[k], dv = d[k];
       if (k === "profile") d.profile = isObj(v) ? v : null;
