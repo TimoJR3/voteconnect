@@ -49,7 +49,7 @@
   /* ---------- Корзина бюджета ---------- */
   const TOTAL = D.budget.total;
   const byId = Object.fromEntries(D.budget.projects.map((p) => [p.id, p]));
-  const SHORT = { b1: "Светофор у школы", b2: "Автобус 14 до 23:30", b3: "Свет на набережной", b4: "Навесы на остановках", b7: "Двор на Садовой" };
+  const SHORT = { b1: "Светофор у школы", b2: "Автобус до Тарки", b3: "Свет у Ак-Гёль", b4: "Навесы на остановках", b7: "Двор на Петра Первого" };
   const ids = $$(".s-proj").map((b) => b.dataset.id).filter((id) => byId[id]);
   const mln = (n) => (n / 1e6).toLocaleString("ru-RU", { maximumFractionDigits: 1 });
   let picks = ["b1", "b3"];
@@ -108,7 +108,7 @@
   const host = $("#maquette");
   if (has3D) {
     mq = safe3D(() => window.VC3D.maquette(host, {
-      label: "3D-макет Северного округа: река Светлая, набережная, Ленинградская улица, школа № 12 и двор на Садовой. Выбранные проекты показаны зелёным.",
+      label: "Условный 3D-макет района Махачкалы с набережной, школой и жилыми дворами. Выбранные проекты показаны зелёным.",
       projects: ids.map((id) => ({ id, price: mln(byId[id].cost) + " млн", short: SHORT[id] || byId[id].title })),
       selected: picks,
       onToggle: toggle,

@@ -1,4 +1,4 @@
-/* VoteConnect — приложение (vanilla JS, без сборки). */
+/* «Махачкала решает» — приложение (vanilla JS, без сборки). */
 (function () {
   "use strict";
   const D = window.VC_DATA;
@@ -11,7 +11,7 @@
   const topic = (id) => D.topics.find((t) => t.id === id);
   const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
   const MONTHS_NOM = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-  const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--brand)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VoteConnect</span>`;
+  const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5c-6.1 0-11 4.8-11 10.8C5 21.2 16 29.5 16 29.5s11-8.3 11-16.2C27 7.3 22.1 2.5 16 2.5z" fill="var(--brand)"/><path d="M10.8 13.6l3.6 3.6 7-7.2" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(D.name)}</span>`;
   const photo = (id, w = 900) => `assets/img/${String(id).replace(/[^\w-]/g, "")}-${w >= 1000 ? 1200 : 700}.jpg`;   // фото хранятся локально (Unsplash License)
   const topicName = (id) => (topic(id) || { name: "" }).name;
   const AVA_BG = ["e2efe6", "f3e3c7", "dbe4f3", "f1d6d3", "ece3f5", "e8e2d6"];
@@ -27,6 +27,7 @@
 
   /* ---------- Состояние (только в браузере пользователя) ---------- */
   const KEY = "voteconnect-demo-v2";
+  const DEMO_STREET = "проспект Петра Первого";
   const defaults = () => ({
     compass: {}, weights: {}, consensus: {}, polls: {}, likes: {}, supported: {}, academy: {}, badges: {}, xp: 0,
     going: {}, posts: [], args: [], myInitiatives: [], comments: {}, commentLikes: {}, answered: {}, readNotifs: {},
@@ -38,7 +39,7 @@
   const isObj = (v) => !!v && typeof v === "object" && !Array.isArray(v);
   function normalize(o) {
     const d = defaults();
-    // В демо Махачкалы те же ID обозначают другие проекты.
+    // В сокращённом демо те же ID могут обозначать другие проекты.
     if (!isObj(o) || o.scenario === "makhachkala") return d;
     Object.keys(d).forEach((k) => {
       const v = o[k], dv = d[k];
@@ -57,7 +58,8 @@
     const P = d.profile;
     if (P) {
       P.name = String(P.name || "Гость"); P.street = P.street ? String(P.street) : "";
-      P.district = !P.district || /избирательный/.test(P.district) ? D.district : String(P.district);
+      P.district = !P.district || P.district === "Северный округ" || /избирательный/.test(P.district) ? D.district : String(P.district);
+      if (P.demo === true && P.street === "Садовая") P.street = DEMO_STREET;
       P.interests = Array.isArray(P.interests) ? P.interests.filter((t) => topic(t)) : [];
     }
     return d;
@@ -166,7 +168,7 @@
     const list = feedSort === "all" ? [...posts].sort((a, b) => Math.min(...(b.support || [50])) - Math.min(...(a.support || [50])))
       : feedSort === "blind" ? blind : posts;
     const top = compassDone() ? matches()[0] : null, g = myGroup();
-    return pageHead("Лента района", `${esc(D.city)} · ${esc((S.profile && S.profile.district) || D.district)}`) + `
+    return pageHead("Лента района", `${esc(D.city)}, ${esc(D.region)} · демо`) + `
     <div class="layout feed"><div class="feed-stream">
       ${feed3dCard()}
       ${composerOpen ? `<div class="composer-open">
@@ -404,7 +406,7 @@
       return `<div class="card" data-poll="${pi}"><h3>${esc(p.text)}</h3>
         ${p.options.map((o, i) => `<button class="poll-opt ${mine === i ? "mine" : ""}" data-pv="${pi}:${i}">
           <span class="fill" style="width:${mine !== undefined ? (votes[i] / total * 100).toFixed(1) : 0}%"></span><span>${esc(o)}</span><span data-pct>${mine !== undefined ? Math.round(votes[i] / total * 100) + "%" : ""}</span></button>`).join("")}
-        <div class="small muted" data-total>${mine !== undefined ? `${fmt(total)} голосов` : "Один человек — один голос"}</div>${p.election ? `<p class="small muted" style="margin:8px 0 0">Опрос VoteConnect, онлайн, участники платформы округа № 7, ${MONTHS_NOM[TODAY.getMonth()].toLowerCase()} ${TODAY.getFullYear()}, опрошено ${fmt(total)} чел. Вопрос — как в заголовке. Выборка не случайная и не репрезентативна: результаты нельзя переносить на всех избирателей округа, статистическая погрешность для такой выборки не рассчитывается. Заказчик и организатор — VoteConnect.</p>` : ""}</div>`;
+        <div class="small muted" data-total>${mine !== undefined ? `${fmt(total)} голосов` : "Один человек — один голос"}</div>${p.election ? `<p class="small muted" style="margin:8px 0 0">Демо-опрос «${esc(D.name)}», онлайн, участники платформы округа № 7, ${MONTHS_NOM[TODAY.getMonth()].toLowerCase()} ${TODAY.getFullYear()}, опрошено ${fmt(total)} чел. Вопрос — как в заголовке. Выборка не случайная и не репрезентативна: результаты нельзя переносить на всех избирателей округа, статистическая погрешность для такой выборки не рассчитывается. Заказчик и организатор в демо — «${esc(D.name)}».</p>` : ""}</div>`;
     }).join("")}</div>`;
   binders.polls = () => {
     $$("[data-pv]").forEach((b) => b.addEventListener("click", () => {
@@ -429,7 +431,7 @@
   binders.candidates = () => $$("[data-ct]").forEach((b) => b.addEventListener("click", () => { candTopic = b.dataset.ct; render(); }));
 
   const QA = {
-    lebedeva: [["Что вы сделаете с автобусом 14?", "Выделенная полоса на Садовой и открытый GPS-мониторинг маршрута."]],
+    lebedeva: [["Что вы сделаете для маршрута до Тарки?", "Выделенная полоса на проспекте Акушинского и открытый GPS-мониторинг маршрута."]],
     vorontsov: [["Почему развязку исключили из бюджета?", "Бюджет 2026 года сокращён на 12%. Проект готов, добиваемся включения в 2027 год."]],
     sokolova: [["Кто будет содержать новый парк?", "Попечительский совет жителей и отдельная строка в бюджете района."]],
     orlov: [["Не будет ли дыры в бюджете?", "Выпадающие доходы компенсирует рост числа предприятий за два года."]],
@@ -523,7 +525,7 @@
       <div class="ask" style="margin:0"><input id="street" placeholder="Улица" value="${esc((S.profile && S.profile.street) || "")}"><button class="btn" id="findBtn">Найти</button></div>
       <div id="station" class="small" style="margin-top:10px"></div></div></aside></div>`;
   };
-  // Участки в демо вымышлены (Новоград не существует). Ответ всегда помечен как демо и ведёт к официальному сервису ЦИК,
+  // Участки в демо вымышлены. Ответ всегда помечен как демо и ведёт к официальному сервису ЦИК,
   // чтобы реальный человек, введя свою улицу, не принял выдуманный адрес за настоящий.
   const CIK_URL = "https://www.cikrf.ru/";
   function stationFor(s) { return { num: 700 + (s.length * 7) % 40, school: (s.length % 20) + 1, house: (s.length * 3) % 50 + 1 }; }
@@ -706,7 +708,7 @@
       return { text: short ? `${ev.title}: ${d.getDate()} ${MONTHS[d.getMonth()]}, ${ev.time}, ${ev.place}.` : `Вам подойдёт «${ev.title}» — ${d.getDate()} ${MONTHS[d.getMonth()]} в ${ev.time}, ${ev.place}. Отметить «Пойду» можно в разделе «События».`, used };
     }
     if (/участ|где голос|куда идти/.test(t)) {
-      if (!street) return { text: "Подскажите вашу улицу — например, «я живу на Садовой».", used: [] };
+      if (!street) return { text: "Подскажите вашу улицу — например, «я живу на проспекте Акушинского».", used: [] };
       const st = stationFor(street);
       return { text: `В демо ваш участок — № ${st.num}, школа № ${st.school} (город и участки вымышлены). Настоящий участок можно найти на сайте ЦИК России: cikrf.ru, сервис «Найди свой избирательный участок». Голосование ${D.election.label} с 8:00 до 20:00.`, used: ["location.street", "location.district"] };
     }
@@ -728,7 +730,7 @@
     return pageHead("Помощник", "Отвечает с учётом того, что знает о вас") + `
     <div class="asst"><div class="card">
       <div class="chat" id="chat">${chat.map((m) => `<div class="msg ${m.me ? "me" : ""}">${esc(m.text)}${m.used && m.used.length ? `<div class="used">Учёл: ${m.used.map((k) => `<code>${esc(k)}</code>`).join(" ")}</div>` : ""}</div>`).join("")}</div>
-      <div class="sugg" style="margin-top:10px">${["Где мой участок?", "Когда ближайшая встреча?", "Чьи позиции мне ближе?", "Я живу на Мира", "Отвечай короче"].map((s) => `<button class="chip" data-sugg="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+      <div class="sugg" style="margin-top:10px">${["Где мой участок?", "Когда ближайшая встреча?", "Чьи позиции мне ближе?", "Я живу на Расула Гамзатова", "Отвечай короче"].map((s) => `<button class="chip" data-sugg="${esc(s)}">${esc(s)}</button>`).join("")}</div>
       <div class="ask"><input id="askInput" placeholder="Спросите помощника"><button class="btn" id="askSend" aria-label="Отправить">${ic("send")}</button></div></div>
     <aside class="card" id="memList"><h3>Что помнит помощник</h3>
       ${mem.map((m) => `<div class="mem"><button class="mem-x" data-forget="${esc(m.key)}" title="Забыть" aria-label="Забыть: ${esc(m.value)}">${ic("close")}</button><span class="t">${TYPE_RU[m.type]}</span><code>${esc(m.key)}</code><span class="conf">${m.conf.toFixed(2)}</span><div>${esc(m.value)}</div>${m.old ? `<div class="old">было: ${esc(m.old)}</div>` : ""}</div>`).join("") || `<p class="small muted">Помощник ничего о вас не помнит.</p>`}
@@ -765,7 +767,7 @@
     const sel = (k) => `<select data-priv="${k}">${opt(k, "me", "Только я")}${opt(k, "friends", "Соседи")}${opt(k, "all", "Все")}</select>`;
     return `<div class="layout"><div class="stack">
       <div class="card"><div class="row">${ava(myName(), "xl")}<div style="flex:1"><h1 style="margin:0">${esc(myName())}</h1>
-        <div class="muted">${esc(D.city)} · ${esc(P.district || D.district)}${P.street ? ` · ул. ${esc(P.street)}` : ""}</div>
+        <div class="muted">${esc(D.city)} · ${esc(P.district || D.district)}${P.street ? ` · ${esc(P.street)}` : ""}</div>
         <div class="row" style="margin-top:8px">${(P.interests || []).map((t) => `<span class="chip">${topicName(t)}</span>`).join("")}</div></div></div>
         <div class="row" style="margin-top:16px"><b>Уровень ${level()}</b><span class="small muted">${S.xp} очков</span></div>
         <div class="bar" style="margin-top:6px"><span style="width:${S.xp % 100}%"></span></div></div>
@@ -805,9 +807,9 @@
 
   /* ================= КАБИНЕТ КАНДИДАТА ================= */
   const DRAFTS = {
-    cq1: "Проект выделенной полосы на Садовой готов. Если меня изберут, внесу его на первое заседание — цель запустить до весны 2027 года.",
+    cq1: "Проект выделенной полосы на проспекте Акушинского готов. Если меня изберут, внесу его на первое заседание — цель запустить до весны 2027 года.",
     cq2: "Да. Предлагаю начать с 1% городского бюджета и расширять долю, если жители активно участвуют.",
-    cq3: "За пешеходную улицу по выходным — но с пропусками для жителей улицы Мира и объездом для автобуса. Сначала пилот на 2 месяца.",
+    cq3: "За пешеходную улицу по выходным — но с пропусками для жителей проспекта Расула Гамзатова и объездом для автобуса. Сначала пилот на 2 месяца.",
     cq4: "Раз в месяц — отчёт здесь, раз в квартал — открытая встреча. Все мои голосования будут в трекере обещаний."
   };
   const CW = 640, CH = 220, PL = 44, PR = 16, PT = 16, PB = 30;
@@ -952,7 +954,7 @@
   };
   /* 3D-макет района над проектами: один на всё время работы приложения, при перерисовке экрана переезжает в новый слот.
      Библиотека 3D (scene.bundle.js) загружается только при первом открытии бюджета. */
-  const PB3D_SHORT = { b1: "Светофор у школы", b2: "Автобус 14 до 23:30", b3: "Свет на набережной", b4: "Навесы на остановках", b5: "Площадка для собак", b7: "Двор на Садовой", b8: "Велодорожка" };
+  const PB3D_SHORT = { b1: "Светофор у школы", b2: "Автобус до Тарки", b3: "Свет у Ак-Гёль", b4: "Навесы на остановках", b5: "Площадка для собак", b7: "Двор на Петра Первого", b8: "Велодорожка" };
   let pb3d = null, pb3dEl = null, pb3dLoading = false;
   const pb3dPhone = () => matchMedia("(max-width: 860px)").matches;
   function pb3dToggle(id) {
@@ -970,7 +972,7 @@
       pb3dEl = document.createElement("div"); pb3dEl.className = "m3d pb-3d";
       pb3dEl.innerHTML = `<div class="m3d-ui"><button class="m3d-eve" type="button" aria-pressed="false"><span>Вечер</span></button></div><p class="m3d-hint">Нажмите на цену, чтобы добавить проект в корзину</p>`;
       pb3d = window.VC3D.maquette(pb3dEl, {
-        label: "3D-макет Северного округа. Проекты из вашей корзины показаны зелёным.",
+        label: "Условный 3D-макет района Махачкалы. Проекты из вашей корзины показаны зелёным.",
         projects: B.projects.filter((p) => PB3D_SHORT[p.id]).map((p) => ({ id: p.id, price: rub(p.cost).replace(" ₽", ""), short: PB3D_SHORT[p.id] })),
         selected: S.pb.picks, onToggle: pb3dToggle,
         // На телефоне макет повёрнут так, что река идёт сверху вниз, — так он крупнее на вертикальном экране
@@ -1108,7 +1110,7 @@
     return `<div class="page-head no-print"><a class="btn ghost small" href="#/admin">Кабинет администрации</a><span class="spacer"></span><button class="btn" id="printBtn">${ic("download")} Скачать PDF</button></div>
     <article class="card report">
       <div class="row" style="align-items:flex-start"><div class="logo">${LOGO}</div><span class="spacer"></span><div class="small muted" style="text-align:right">Подготовлено ${today}<br>${esc(A.org)}</div></div>
-      <h1 style="margin:22px 0 4px">Что решили жители Северного округа</h1>
+      <h1 style="margin:22px 0 4px">Что решили жители Махачкалы</h1>
       <p class="muted">Отчёт для совета депутатов · ${esc(B.title[0].toLowerCase() + B.title.slice(1))}</p>
       <div class="report-kpis">
         <div><b>${fmt(A.active30)}</b><span>активных жителей за 30 дней</span></div>
@@ -1137,14 +1139,14 @@
         <li>Провести публичное обсуждение: «${esc(divisive[0].text.replace(/\.$/, ""))}».</li>
         ${reached.length ? `<li>Дать публичный ответ на инициативу «${esc(reached[0].title)}» в течение 14 дней.</li>` : ""}
       </ol>
-      <p class="small muted report-foot">Методика: голоса анонимны и не связаны с личностью; каждый голос записан в журнал под квитанцией, которую житель может проверить. Группы мнений определены алгоритмом по ответам жителей на Карте согласия. Демо-данные: город и участники вымышлены.</p>
+      <p class="small muted report-foot">Методика: голоса анонимны и не связаны с личностью; каждый голос записан в журнал под квитанцией, которую житель может проверить. Группы мнений определены алгоритмом по ответам жителей на Карте согласия. Демо-данные: участники, проекты и результаты вымышлены.</p>
     </article>`;
   };
   binders.report = () => $("#printBtn").addEventListener("click", () => window.print());
 
   /* ================= РЕГИСТРАЦИЯ ================= */
   let ob = { step: 0, interests: [] };
-  const DEMO_PROFILE = () => ({ name: "Алина Демо", district: D.district, street: "Садовая", interests: ["transport", "eco"], demo: true });
+  const DEMO_PROFILE = () => ({ name: "Алина Демо", district: D.district, street: DEMO_STREET, interests: ["transport", "eco"], demo: true });
   const isDemoProfile = (P) => !!P && (P.demo || P.name === "Алина Демо");
   // Адрес с главной страницы приходит через sessionStorage (так он не попадает в адрес запроса и логи сервера),
   // а без JavaScript — через ?addr=. Испорченный ?addr= не должен ронять приложение.
@@ -1163,7 +1165,7 @@
     let body = "";
     if (s === 0) body = `<div class="logo">${LOGO}</div><h1 class="ob-title">Что решают в вашем районе</h1>
       <p class="muted">Бюджет района, идеи соседей и то, что поддерживают все.</p>
-      <label class="field">Ваш адрес<input id="obStreet" placeholder="Например, Садовая, 14" value="${esc(ob.street || "")}" autocomplete="street-address"></label>
+      <label class="field">Ваш адрес<input id="obStreet" placeholder="Например, проспект Петра Первого" value="${esc(ob.street || "")}" autocomplete="street-address"></label>
       <button class="btn block" data-ob="addr">Продолжить</button><button class="btn ghost block" data-ob="demo">Демо без регистрации</button>`;
     else if (s === 1) body = `<h2>Подтвердите номер</h2><p class="muted small">Один человек — один голос. Номер нигде не показывается.</p>
       <label class="field">Телефон<input id="obPhone" inputmode="tel" autocomplete="off" placeholder="+7 900 000-00-00" value="${esc(ob.phone || "")}"></label>
@@ -1171,7 +1173,7 @@
       <button class="btn block" data-ob="${ob.codeSent ? "verify" : "sendcode"}">${ob.codeSent ? "Подтвердить" : "Получить код"}</button>`;
     else if (s === 2) body = `<h2>Как вас зовут?</h2>
       <label class="field">Имя и фамилия<input id="obName" maxlength="40" value="${esc(ob.name || "")}"></label>
-      <div class="info" style="margin-top:12px">${ic("pin")}<span>Ваш округ — <b>${esc(D.district)}</b>. Определили по адресу${ob.street ? ` «${esc(ob.street)}»` : ""}.</span></div>
+      <div class="info" style="margin-top:12px">${ic("pin")}<span>Ваш район в демо — <b>${esc(D.district)}</b>${ob.street ? `. Указанный адрес — «${esc(ob.street)}»` : ""}.</span></div>
       <button class="btn block" data-ob="profile">Дальше</button>`;
     else if (s === 3) body = `<h2>Что вам важно?</h2><p class="muted small">Выберите хотя бы две темы.</p>
       <div class="picks">${D.topics.map((t) => `<button class="pick ${ob.interests.includes(t.id) ? "on" : ""}" data-pick="${t.id}">${t.name}</button>`).join("")}</div>

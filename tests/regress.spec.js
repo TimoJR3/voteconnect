@@ -6,7 +6,7 @@ const go = async (page, hash) => { await page.evaluate((h) => (location.hash = h
 const watchErrors = (page) => { const list = []; page.on("pageerror", (e) => list.push(e.message)); return list; };
 
 test.describe("Регрессии", () => {
-  test("Голос из демо Махачкалы не переносится в бюджет Новограда", async ({ page }) => {
+  test("Голос из сокращённого демо не переносится в полное приложение", async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem("voteconnect-demo-v2", JSON.stringify({
       scenario: "makhachkala",
       pb: { picks: ["b1"], submitted: true, receipt: "A111-B222-C333" }
@@ -87,12 +87,12 @@ test.describe("Регрессии", () => {
   });
 
   test("REG-08 Файл календаря соответствует стандарту: DTSTAMP и экранирование", async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-10-13T12:00:00"));   // первое событие месяца — субботник «Набережная, у моста»
+    await page.clock.setFixedTime(new Date("2026-10-13T12:00:00"));   // первое событие месяца — субботник у Ак-Гёль
     await demo(page, "#/calendar");
     const [dl] = await Promise.all([page.waitForEvent("download"), page.locator("[data-ics]").first().click()]);
     const ics = require("fs").readFileSync(await dl.path(), "utf8");
     expect(ics).toMatch(/\r\nDTSTAMP:\d{8}T\d{6}Z\r\n/);
-    expect(ics).toMatch(/LOCATION:Набережная\\, у моста/);
+    expect(ics).toMatch(/LOCATION:Озеро Ак-Гёль\\, набережная/);
   });
 
   test("REG-09 Число участников и голоса в опросах не растут сами по себе", async ({ page }) => {
@@ -115,6 +115,8 @@ test.describe("Регрессии", () => {
   test("REG-09 Корзина с 3D-макета главной переезжает в голосование", async ({ page }) => {
     const errors = watchErrors(page);
     await page.goto("/index.html");
+    await expect(page).toHaveTitle(/Махачкала решает/);
+    await expect(page.locator('#pbList [data-id="b3"]')).toContainText("Ак-Гёль");
     await page.click('.s-proj[data-id="b2"]');                      // b1 и b3 выбраны по умолчанию
     await expect(page.locator("#pbSum")).toContainText("9,4 из 15");
     await page.click('.s-proj[data-id="b7"]');                      // 9,4 + 5,6 — ровно весь бюджет
@@ -125,6 +127,8 @@ test.describe("Регрессии", () => {
     await page.click("#pbGo");
     await page.waitForURL(/app.html/);
     await page.evaluate(() => (location.hash = "#/budget"));
+    await expect(page.locator("#main .page-head .sub")).toContainText("Демо-бюджет Махачкалы на 2027 год");
+    await expect(page.locator("#main")).toContainText("Вечерний автобус до Тарки");
     await expect(page.locator("#pbMeter")).toContainText("15 млн");
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem("voteconnect-demo-v2")).pb.picks.sort())).toEqual(["b1", "b2", "b3", "b7"]);
     expect(errors).toEqual([]);
@@ -146,6 +150,7 @@ test.describe("Регрессии", () => {
     const errors = watchErrors(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await demo(page, "#/feed");
+    await expect(page.locator("#main .page-head .sub")).toHaveText("Махачкала, Республика Дагестан · демо");
     await expect(page.locator(".feed-3d .m3d-pin")).toHaveCount(7, { timeout: 10000 });
     await page.locator('.feed-3d .m3d-pin[data-id="b1"] .m3d-pin-in').click();   // в ленте метка открывает бюджет
     await expect(page).toHaveURL(/budget/);
