@@ -35,18 +35,18 @@ test("VOTE-03 Выбор и отправленный голос пережива
   await expect(project(page, "b1")).toHaveAttribute("aria-pressed", "true");
   await submit(page).click();
   await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
-  await expect(page.getByText("Велодорожка вдоль Ленинградской")).toBeVisible();
+  await expect(page.getByText("Велодорожка вдоль берега Каспия")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
   await expect(submit(page)).toHaveCount(0);
   await page.getByRole("link", { name: "Посмотреть итоги" }).click();
   await expect(page.getByText(/Проголосовали 2\s319 жителей/)).toBeVisible();
-  await expect(page.getByRole("listitem").filter({ hasText: "Светофор с кнопкой у школы № 12" })).toContainText(/1\s291/);
+  await expect(page.getByRole("listitem").filter({ hasText: "Светофор для пешеходов на проспекте Акушинского" })).toContainText(/1\s291/);
 });
 
 test("VOTE-04 Подменённые и повторные id отбрасываются, остаётся до трёх", async ({ page }) => {
   await page.addInitScript(({ key, state }) => localStorage.setItem(key, JSON.stringify(state)), {
-    key: KEY, state: { pb: { picks: ["unknown", "b2", "b2", {}, "b6", "b8", "b1"], submitted: "true" } }
+    key: KEY, state: { scenario: "makhachkala", pb: { picks: ["unknown", "b2", "b2", {}, "b6", "b8", "b1"], submitted: "true" } }
   });
   await page.goto(route());
   await expect(page.locator('[data-pick][aria-pressed="true"]')).toHaveCount(3);
@@ -74,8 +74,8 @@ test("VOTE-06 Итоги пропускают дорогой проект и в�
   await expect(page.getByText("Проголосовали 2 318 жителей. Голосование до 7 декабря")).toBeVisible();
   const rows = page.getByRole("listitem");
   await expect(rows).toHaveCount(8);
-  await expect(rows.nth(0)).toContainText("Светофор с кнопкой у школы № 12");
-  await expect(rows.nth(5)).toContainText("Ремонт двора на Садовой");
+  await expect(rows.nth(0)).toContainText("Светофор для пешеходов на проспекте Акушинского");
+  await expect(rows.nth(5)).toContainText("Ремонт дворов на проспекте Петра Первого");
   await expect(rows.nth(5)).not.toContainText("Проходит");
   await expect(rows.nth(6)).toContainText("Проходит");
   await expect(page.getByText("Проходит", { exact: true })).toHaveCount(6);
@@ -84,7 +84,7 @@ test("VOTE-06 Итоги пропускают дорогой проект и в�
   const report = page.getByRole("table");
   await expect(report.getByRole("row")).toHaveCount(7);
   await expect(report).toContainText("Площадка для выгула собак");
-  await expect(report).not.toContainText("Ремонт двора на Садовой");
+  await expect(report).not.toContainText("Ремонт дворов на проспекте Петра Первого");
   await page.evaluate(() => { window.print = () => { window.printRequested = true; }; });
   await page.getByRole("button", { name: "Скачать PDF" }).click();
   expect(await page.evaluate(() => window.printRequested)).toBe(true);
@@ -114,6 +114,34 @@ test("VOTE-08 Главная ведёт к проектам и отчёту", as
   await expect(page.getByRole("link", { name: "Пример отчёта" })).toHaveAttribute("href", "app.html?demo=1#/report");
   await page.getByRole("link", { name: "Попробовать демо" }).click();
   await expect(page.getByRole("heading", { name: "Проекты", exact: true })).toBeVisible();
+});
+
+test("VOTE-09 Главная, проекты, итоги и печатный отчёт используют пример Махачкалы", async ({ page }) => {
+  await page.goto("/index.html");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Махачкалы");
+  await expect(page.getByText(/Проекты, суммы и голоса в демо вымышлены/)).toBeVisible();
+  await page.getByRole("link", { name: "Попробовать демо" }).click();
+
+  const place = page.getByText("Махачкала, Республика Дагестан. Проекты, суммы и голоса вымышлены.", { exact: true });
+  await expect(place).toBeVisible();
+  await expect(project(page, "b2")).toContainText("Вечерний автобус до посёлка Тарки");
+  await page.getByRole("link", { name: "Итоги", exact: true }).click();
+  await expect(place).toBeVisible();
+  await expect(page.getByRole("list")).toContainText("Освещение дорожек у озера Ак-Гёль");
+  await page.getByRole("link", { name: "Отчёт для администрации" }).click();
+  await page.emulateMedia({ media: "print" });
+  await expect(place).toBeVisible();
+  await expect(page.getByRole("table")).toContainText("Освещение дорожек у озера Ак-Гёль");
+});
+
+test("VOTE-10 Голос из прежнего демо не засчитывается за проекты Махачкалы", async ({ page }) => {
+  await page.addInitScript((key) => localStorage.setItem(key, JSON.stringify({
+    pb: { picks: ["b1"], submitted: true, receipt: "A111-B222-C333" }
+  })), KEY);
+  await page.goto(route());
+  await expect(page.getByText("Выбрано 0 из 3")).toBeVisible();
+  await expect(project(page, "b1")).toHaveAttribute("aria-pressed", "false");
+  await expect(submit(page)).toBeDisabled();
 });
 
 for (const colorScheme of ["light", "dark"]) {

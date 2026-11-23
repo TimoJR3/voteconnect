@@ -1,7 +1,7 @@
 {
-  "name": "VoteConnect — голосование за проекты района",
+  "name": "VoteConnect — голосование за проекты Махачкалы",
   "short_name": "VoteConnect",
-  "description": "Жители выбирают, на что потратить бюджет района.",
+  "description": "Демо инициативного бюджета Махачкалы, Республика Дагестан.",
   "lang": "ru",
   "start_url": "app.html?demo=1#/vote",
   "scope": "./",

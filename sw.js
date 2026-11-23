@@ -1,5 +1,5 @@
 /* Сначала сеть, при отсутствии сети — кэш VoteConnect. */
-const CACHE = "voteconnect-v12";
+const CACHE = "voteconnect-v13";
 const CORE = [
   "./", "index.html", "app.html", "investors.html", "privacy.html",
   "assets/css/style.css", "assets/css/site.css", "assets/css/fonts.css",

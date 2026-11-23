@@ -4,7 +4,7 @@
 
   const KEY = "voteconnect-demo-v2";
   const LIMIT = 3;
-  const budget = window.VC_DATA.budget;
+  const { budget, city, region, scenario } = window.VC_DATA;
   const projects = budget.projects;
   const projectIds = new Set(projects.map((project) => project.id));
   const { esc } = window.VCSanitize;
@@ -18,7 +18,10 @@
 
   function readVote() {
     try {
-      const saved = JSON.parse(localStorage.getItem(KEY))?.pb;
+      const state = JSON.parse(localStorage.getItem(KEY));
+      // Одинаковые ID в другом сценарии могут означать другие проекты.
+      if (state?.scenario !== scenario) return emptyVote();
+      const saved = state.pb;
       if (!Array.isArray(saved?.picks)) return emptyVote();
 
       const picks = [...new Set(saved.picks.filter((id) => projectIds.has(id)))].slice(0, LIMIT);
@@ -35,7 +38,7 @@
   let submitting = false;
 
   function storeVote(value) {
-    localStorage.setItem(KEY, JSON.stringify({ pb: value }));
+    localStorage.setItem(KEY, JSON.stringify({ scenario, pb: value }));
   }
 
   // Случайная соль не сохраняется. Номер нельзя связать с набором проектов.
@@ -63,9 +66,14 @@
     });
   }
 
+  function pageHeading(title) {
+    return `<h1>${esc(title)}</h1>
+      <p class="small muted">${esc(city)}, ${esc(region)}. Проекты, суммы и голоса вымышлены.</p>`;
+  }
+
   function projectsView() {
     if (vote.submitted) {
-      return `<h1>Спасибо, ваш голос учтён</h1>
+      return `${pageHeading("Спасибо, ваш голос учтён")}
         <ul class="plain-list chosen-list" role="list">
           ${vote.picks.map((id) => `<li>${esc(projects.find((project) => project.id === id).title)}</li>`).join("")}
         </ul>
@@ -77,7 +85,7 @@
         <p class="form-error small" id="voteError" role="alert"></p>`;
     }
 
-    return `<h1>Проекты</h1>
+    return `${pageHeading("Проекты")}
       <ul class="plain-list project-list" role="list">
         ${projects.map((project) => `<li><button class="project" type="button" data-pick="${esc(project.id)}" aria-pressed="false">
           <span class="project-mark" aria-hidden="true"></span>
@@ -99,7 +107,7 @@
     const winners = new Set(pbWinners(ranked));
     const leader = Math.max(1, pbVotes(ranked[0]));
     const closes = dateLabel.format(new Date(budget.stages[2].to + "T00:00:00"));
-    return `<h1>Итоги голосования</h1>
+    return `${pageHeading("Итоги голосования")}
       <p class="small muted">Проголосовали ${esc(fmt(pbVoters()))} жителей. Голосование до ${esc(closes)}</p>
       <ol class="plain-list results-list" role="list">
         ${ranked.map((project, index) => `<li class="result-row">
@@ -117,7 +125,7 @@
 
   function reportView() {
     const winners = pbWinners(rankedProjects());
-    return `<h1>Отчёт для администрации</h1>
+    return `${pageHeading("Отчёт для администрации")}
       <dl class="report-numbers">
         <div><dt class="small muted">Проголосовали</dt><dd>${esc(fmt(pbVoters()))}</dd></div>
         <div><dt class="small muted">Проходят</dt><dd>${esc(fmt(winners.length))}</dd></div>

@@ -39,6 +39,7 @@ test("SEC-02 Отметки проектов и отправка голоса о
 test("SEC-14 Разметка из хранилища не попадает в страницу", async ({ page }) => {
   const marker = "<b data-storage-marker>разметка</b>";
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify({
+    scenario: "makhachkala",
     pb: { picks: [value, "b1"], submitted: true, receipt: value },
     profile: { name: value }
   })), { key: KEY, value: marker });
@@ -47,7 +48,7 @@ test("SEC-14 Разметка из хранилища не попадает в �
   await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
   await expect(page.locator("[data-storage-marker], #receiptCode")).toHaveCount(0);
   await expect(page.getByRole("listitem")).toHaveCount(1);
-  await expect(page.getByRole("listitem")).toContainText("Светофор с кнопкой у школы № 12");
+  await expect(page.getByRole("listitem")).toContainText("Светофор для пешеходов на проспекте Акушинского");
 });
 
 for (const url of PAGES) {
@@ -116,8 +117,9 @@ test("SEC-24 Офлайн-кэш открывает проекты с парам
 });
 
 test("SEC-33 Повреждённый JSON и значения неверного типа не мешают голосовать", async ({ page }) => {
-  const broken = ["{сломано", "null", '{"pb":null}', '{"pb":{"picks":{},"submitted":true}}',
-    '{"pb":{"picks":[],"submitted":true},"__proto__":{"polluted":true}}'];
+  const broken = ["{сломано", "null", '{"scenario":"makhachkala","pb":null}',
+    '{"scenario":"makhachkala","pb":{"picks":{},"submitted":true}}',
+    '{"scenario":"makhachkala","pb":{"picks":[],"submitted":true},"__proto__":{"polluted":true}}'];
   await page.goto(PAGES[3]);
   for (const value of broken) {
     await page.evaluate(([key, raw]) => localStorage.setItem(key, raw), [KEY, value]);
