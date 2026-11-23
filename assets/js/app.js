@@ -66,14 +66,9 @@
     });
   }
 
-  function pageHeading(title) {
-    return `<h1>${esc(title)}</h1>
-      <p class="small muted">${esc(city)}, ${esc(region)}. Проекты, суммы и голоса вымышлены.</p>`;
-  }
-
   function projectsView() {
     if (vote.submitted) {
-      return `${pageHeading("Спасибо, ваш голос учтён")}
+      return `<h1>Спасибо, ваш голос учтён</h1>
         <ul class="plain-list chosen-list" role="list">
           ${vote.picks.map((id) => `<li>${esc(projects.find((project) => project.id === id).title)}</li>`).join("")}
         </ul>
@@ -85,7 +80,8 @@
         <p class="form-error small" id="voteError" role="alert"></p>`;
     }
 
-    return `${pageHeading("Проекты")}
+    return `<h1>Проекты</h1>
+      <p class="small muted">${esc(city)}, ${esc(region)} · демо</p>
       <ul class="plain-list project-list" role="list">
         ${projects.map((project) => `<li><button class="project" type="button" data-pick="${esc(project.id)}" aria-pressed="false">
           <span class="project-mark" aria-hidden="true"></span>
@@ -107,7 +103,7 @@
     const winners = new Set(pbWinners(ranked));
     const leader = Math.max(1, pbVotes(ranked[0]));
     const closes = dateLabel.format(new Date(budget.stages[2].to + "T00:00:00"));
-    return `${pageHeading("Итоги голосования")}
+    return `<h1>Итоги голосования</h1>
       <p class="small muted">Проголосовали ${esc(fmt(pbVoters()))} жителей. Голосование до ${esc(closes)}</p>
       <ol class="plain-list results-list" role="list">
         ${ranked.map((project, index) => `<li class="result-row">
@@ -119,13 +115,14 @@
           <meter min="0" max="${esc(leader)}" value="${esc(pbVotes(project))}" aria-hidden="true"></meter>
         </li>`).join("")}
       </ol>
-      <p class="small muted">Проходят проекты с наибольшим числом голосов, пока хватает ${esc(rub(budget.total))}</p>
+      <p class="small muted">${esc(city)}, демо. Проекты проходят по числу голосов, пока хватает ${esc(rub(budget.total))}.</p>
       <a class="action-link" href="#/report">Отчёт для администрации</a>`;
   }
 
   function reportView() {
     const winners = pbWinners(rankedProjects());
-    return `${pageHeading("Отчёт для администрации")}
+    return `<h1>Отчёт для администрации</h1>
+      <p class="small muted">${esc(city)}, ${esc(region)}. Данные демо.</p>
       <dl class="report-numbers">
         <div><dt class="small muted">Проголосовали</dt><dd>${esc(fmt(pbVoters()))}</dd></div>
         <div><dt class="small muted">Проходят</dt><dd>${esc(fmt(winners.length))}</dd></div>

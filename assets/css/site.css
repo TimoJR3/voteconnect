@@ -3,9 +3,10 @@
 .site-main > h1 + p { margin-top: 1rem; }
 .landing-title { font-size: clamp(2rem, 1.5rem + 2.6vw, 3rem); }
 .steps { margin: 1.55rem 0; padding-inline-start: 1.5rem; }
-.steps li { padding: .55rem 0 .55rem .3rem; }
-.steps li::marker { color: var(--muted); font-weight: 600; }
-.steps p { margin-top: .18rem; color: var(--muted); }
+.steps li { padding: .4rem 0 .4rem .25rem; }
+.steps li::marker { color: var(--muted); }
+.steps strong { font-weight: 600; }
+.steps p { color: var(--muted); font-size: .875rem; }
 .demo-caption { margin-top: .55rem; }
 .site-section, .document section { margin-top: 1.75rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
 .site-section h2, .document h2 { margin-bottom: .65rem; }

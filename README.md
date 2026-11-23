@@ -4,7 +4,7 @@
 
 ## Как открыть
 
-[Главная на GitHub Pages](https://timojr3.github.io/voteconnect/) ведёт в демо. Для локального запуска из корня репозитория выполни `node tests/serve.js` и открой [главную](http://127.0.0.1:4173/) или [проекты](http://127.0.0.1:4173/app.html?demo=1#/vote).
+[GitHub Pages](https://timojr3.github.io/voteconnect/) публикует ветку `main`. Чтобы посмотреть версию из `codex/simple-vote`, открой её локально. Из корня этой ветки выполни `node tests/serve.js` и открой [главную](http://127.0.0.1:4173/) или [проекты](http://127.0.0.1:4173/app.html?demo=1#/vote).
 
 ## Файлы
 

@@ -48,7 +48,7 @@ test("SEC-14 Разметка из хранилища не попадает в �
   await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
   await expect(page.locator("[data-storage-marker], #receiptCode")).toHaveCount(0);
   await expect(page.getByRole("listitem")).toHaveCount(1);
-  await expect(page.getByRole("listitem")).toContainText("Светофор для пешеходов на проспекте Акушинского");
+  await expect(page.getByRole("listitem")).toContainText("Пешеходный светофор на проспекте Акушинского");
 });
 
 for (const url of PAGES) {
