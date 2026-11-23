@@ -1,152 +1,370 @@
-// Проверки браузера. Описание кейсов — docs/SECURITY_TESTS.md.
+// Автотесты безопасности и утечек данных VoteConnect. Описание кейсов — docs/SECURITY_TESTS.md.
 const { test, expect } = require("@playwright/test");
 
 const KEY = "voteconnect-demo-v2";
-const PAGES = ["/index.html", "/investors.html", "/privacy.html", "/app.html?demo=1#/vote"];
-const APP_ROUTES = [
-  ["vote", "Проекты"],
-  ["results", "Итоги голосования"],
-  ["report", "Отчёт для администрации"]
-];
+// Полезная нагрузка XSS: если экранирование сломается, в DOM появятся img/svg с обработчиками.
+const XSS = `<img src=x onerror=window.__xss=1><svg onload=window.__xss=2>`;
+const XSS_SHORT = `<img src=x onerror=window.__xss=1>`;   // для полей с ограничением длины
+const APP_ROUTES = ["feed", "budget", "consensus", "compass", "polls", "candidates", "candidate/lebedeva", "promises", "calendar",
+  "groups", "group/g-transport", "initiatives", "academy", "lesson/m1", "assistant", "profile", "cabinet", "admin", "report"];
 
-test("SEC-01 Страницы загружают ресурсы только со своего сайта", async ({ page, baseURL }) => {
-  const requests = [];
-  page.on("request", (request) => requests.push(request.url()));
-  page.on("websocket", (socket) => requests.push(socket.url()));
+const demo = (page, hash = "#/feed") => page.goto(`/app.html?reset=1&demo=1${hash}`);
+const go = async (page, hash) => { await page.evaluate((h) => (location.hash = h), hash); await page.waitForTimeout(150); };
 
-  for (const url of PAGES) await page.goto(url);
-  for (const [route] of APP_ROUTES) await page.goto("/app.html#/" + route);
-  await page.evaluate(() => document.fonts.ready);
-  expect(requests.filter((url) => new URL(url).origin !== new URL(baseURL).origin)).toEqual([]);
-});
-
-test("SEC-02 Отметки проектов и отправка голоса остаются в браузере", async ({ page, baseURL }) => {
-  await page.goto(PAGES[3], { waitUntil: "networkidle" });
-  const requests = [];
-  const favicon = new URL("/assets/icons/icon-192.png", baseURL).href;
-  page.on("request", (request) => {
-    if (request.method() !== "GET" || request.url() !== favicon) requests.push(request.url());
-  });
-
-  await page.locator('[data-pick="b1"]').click();
-  await page.getByRole("button", { name: "Проголосовать" }).click();
-  await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
-  await page.getByRole("link", { name: "Посмотреть итоги" }).click();
-  await expect(page.getByRole("heading", { name: "Итоги голосования" })).toBeVisible();
-  expect(requests).toEqual([]);
-});
-
-test("SEC-14 Разметка из хранилища не попадает в страницу", async ({ page }) => {
-  const marker = "<b data-storage-marker>разметка</b>";
-  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify({
-    scenario: "makhachkala",
-    pb: { picks: [value, "b1"], submitted: true, receipt: value },
-    profile: { name: value }
-  })), { key: KEY, value: marker });
-
-  await page.goto(PAGES[3]);
-  await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
-  await expect(page.locator("[data-storage-marker], #receiptCode")).toHaveCount(0);
-  await expect(page.getByRole("listitem")).toHaveCount(1);
-  await expect(page.getByRole("listitem")).toContainText("Пешеходный светофор на проспекте Акушинского");
-});
-
-for (const url of PAGES) {
-  test("SEC-16 CSP блокирует inline-скрипт на " + url, async ({ page }) => {
-    await page.goto(url);
-    const violated = await page.evaluate(() => new Promise((resolve) => {
-      document.addEventListener("securitypolicyviolation", (event) => resolve(event.blockedURI), { once: true });
-      const script = document.createElement("script");
-      script.textContent = "window.inlineTestRan = true";
-      document.head.appendChild(script);
-    }));
-    expect(violated).toBe("inline");
-    expect(await page.evaluate(() => window.inlineTestRan)).toBeUndefined();
-  });
+// Внедрённая разметка не должна попасть в DOM — проверяем структуру, а не только выполнение,
+// чтобы политика CSP не маскировала ошибки экранирования.
+async function expectNoInjection(page) {
+  const found = await page.evaluate(() => ({
+    xss: window.__xss || 0,
+    img: document.querySelectorAll('img[src="x"]').length,
+    handlers: [...document.querySelectorAll("*")].filter((el) => [...el.attributes].some((a) => /^on/i.test(a.name))).length
+  }));
+  expect(found).toEqual({ xss: 0, img: 0, handlers: 0 });
 }
 
-test("SEC-18 Внешние ссылки используют noopener и noreferrer", async ({ page }) => {
-  for (const url of PAGES) {
-    await page.goto(url);
-    const unsafe = await page.locator('a[href^="https://"]').evaluateAll((links) =>
-      links.filter((link) => link.target !== "_blank" || !link.relList.contains("noopener") || !link.relList.contains("noreferrer"))
-        .map((link) => link.href));
-    expect(unsafe, url).toEqual([]);
-  }
-});
+// Сбор всех сетевых запросов страницы.
+function recordRequests(page) {
+  const list = [];
+  page.on("request", (r) => list.push({ url: r.url(), method: r.method() }));
+  page.on("websocket", (ws) => list.push({ url: ws.url(), method: "WEBSOCKET" }));
+  return list;
+}
 
-test("SEC-19 У каждой страницы есть политика безопасности и реферера", async ({ page }) => {
-  for (const url of PAGES) {
-    await page.goto(url);
-    const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute("content");
-    expect(csp).toContain("script-src 'self';");
-    expect(csp).toContain("connect-src 'none';");
-    expect(csp).toContain("object-src 'none';");
-    expect(csp).toContain("base-uri 'self';");
-    expect(await page.locator('meta[name="referrer"]').getAttribute("content")).toBe("strict-origin-when-cross-origin");
-  }
-});
+async function onboard(page, { street, phone, name }) {
+  await page.goto("/app.html?reset=1#/feed");
+  await page.fill("#obStreet", street); await page.click("[data-ob=addr]");
+  await page.fill("#obPhone", phone); await page.click("[data-ob=sendcode]");
+  for (let i = 0; i < 4; i++) await page.fill(`[data-code="${i}"]`, String(i + 1));
+  await page.fill("#obName", name); await page.click("[data-ob=profile]");
+  await page.click("[data-pick=transport]"); await page.click("[data-pick=eco]"); await page.click("[data-ob=interests]");
+  await page.check("#obAgree"); await page.click("[data-ob=finish]");
+  await page.click('a[data-ob=enter][href="#/feed"]');
+  await expect(page.locator("#main h1")).toHaveText("Лента района");
+}
 
-test("SEC-20 Все оставшиеся страницы открываются без ошибок", async ({ page }) => {
-  const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  page.on("response", (response) => {
-    if (response.status() >= 400) errors.push(response.url() + " " + response.status());
+test.describe("Утечка данных", () => {
+  test("SEC-01 Ни одного запроса к сторонним серверам на всех страницах и экранах", async ({ page }) => {
+    const reqs = recordRequests(page);
+    await page.goto("/index.html"); await page.goto("/investors.html"); await page.goto("/privacy.html");
+    await demo(page);
+    for (const r of APP_ROUTES) await go(page, `#/${r}`);
+    await page.keyboard.press("Control+K"); await page.fill("#q", "автобус"); await page.keyboard.press("Escape");
+    await page.click("[data-qr]"); await expect(page.locator("#qr svg")).toBeVisible(); await page.keyboard.press("Escape");
+    await go(page, "#/initiatives"); await page.click("#newInit"); await expect(page.locator("#editorBox [data-slate-editor]").first()).toBeVisible();
+    const foreign = reqs.filter((r) => /^(https?|wss?):/.test(r.url) && new URL(r.url).host !== "127.0.0.1:4173");
+    expect(foreign, "запросы к сторонним серверам").toEqual([]);
   });
-  for (const url of PAGES) {
-    await page.goto(url);
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  }
-  for (const [route, heading] of APP_ROUTES) {
-    await page.goto("/app.html#/" + route);
-    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
-  }
-  await page.goto("/app.html#/constructor");
-  await expect(page.getByRole("heading", { name: "Проекты", exact: true })).toBeVisible();
-  expect(errors).toEqual([]);
+
+  test("SEC-02 Ответы Компаса, голоса и посты не уходят по сети", async ({ page }) => {
+    await demo(page, "#/compass");
+    const reqs = recordRequests(page);
+    await page.click("#cmpAgree");
+    for (let i = 0; i < 12; i++) await page.click('[data-ans="2"]');
+    await go(page, "#/consensus"); await page.click('[data-cv="s1:1"]'); await page.click('[data-cv="s2:-1"]');
+    await go(page, "#/budget"); await page.click("[data-pick-pb=b1]"); await page.click("#pbSubmit");
+    await go(page, "#/feed"); await page.click("#composeBtn"); await page.fill("#postText", "Тестовый пост о дворе"); await page.click("#postBtn");
+    await go(page, "#/assistant"); await page.fill("#askInput", "Я живу на Мира"); await page.keyboard.press("Enter");
+    const notGet = reqs.filter((r) => r.method !== "GET");
+    const withQuery = reqs.filter((r) => /^https?:/.test(r.url) && new URL(r.url).search);
+    expect(notGet, "запросы, кроме загрузки файлов").toEqual([]);
+    expect(withQuery, "запросы с параметрами").toEqual([]);
+  });
+
+  test("SEC-03 Имя, адрес и телефон не попадают в адреса запросов", async ({ page }) => {
+    const reqs = recordRequests(page);
+    await onboard(page, { street: "Садовая 14", phone: "+7 900 111-22-33", name: "Иван Тестов" });
+    for (const r of ["feed", "profile", "assistant", "calendar"]) await go(page, `#/${r}`);
+    const urls = reqs.map((r) => decodeURIComponent(r.url)).concat(decodeURIComponent(page.url()));
+    for (const secret of ["Иван", "Тестов", "Садовая", "9001112233", "111-22-33"]) {
+      expect(urls.filter((u) => u.includes(secret)), `«${secret}» в адресе запроса`).toEqual([]);
+    }
+  });
+
+  test("SEC-04 Номер телефона не сохраняется на устройстве", async ({ page }) => {
+    await onboard(page, { street: "Садовая 14", phone: "+7 900 111-22-33", name: "Иван Тестов" });
+    const stored = await page.evaluate((k) => localStorage.getItem(k), KEY);
+    expect(stored).toContain("Иван Тестов");
+    expect(stored.replace(/\D/g, "")).not.toContain("9001112233");
+  });
+
+  test("SEC-05 Адрес из формы на сайте убирается из адресной строки", async ({ page }) => {
+    await page.goto("/index.html");
+    await page.fill('input[name="addr"]', "Садовая 14");
+    await page.click('.lp-find button[type="submit"]');
+    await expect(page.locator("#obStreet")).toHaveValue("Садовая 14");
+    expect(new URL(page.url()).search).toBe("");
+  });
+
+  test("SEC-06 Аватар не раскрывает имя пользователя", async ({ page }) => {
+    await onboard(page, { street: "Садовая 14", phone: "+7 900 111-22-33", name: "Иван Тестов" });
+    const srcs = await page.$$eval("img", (els) => els.map((e) => decodeURIComponent(e.getAttribute("src") || "")));
+    expect(srcs.filter((s) => s.includes("Иван"))).toEqual([]);
+  });
+
+  test("SEC-07 «Удалить всё» стирает личные данные", async ({ page }) => {
+    await onboard(page, { street: "Садовая 14", phone: "+7 900 111-22-33", name: "Иван Тестов" });
+    await go(page, "#/compass"); await page.click("#cmpAgree"); for (let i = 0; i < 12; i++) await page.click('[data-ans="-2"]');
+    await go(page, "#/profile");
+    page.once("dialog", (d) => d.accept());
+    await page.click("#wipeBtn");
+    await expect(page.locator("#obStreet")).toBeVisible();
+    const stored = await page.evaluate((k) => localStorage.getItem(k), KEY);
+    expect(stored).not.toContain("Иван");
+    expect(JSON.parse(stored).compass).toEqual({});
+  });
+
+  test("SEC-08 Выгрузка «Мои данные» содержит только данные владельца", async ({ page }) => {
+    await onboard(page, { street: "Садовая 14", phone: "+7 900 111-22-33", name: "Иван Тестов" });
+    await go(page, "#/profile");
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#exportBtn")]);
+    const data = JSON.parse(require("fs").readFileSync(await dl.path(), "utf8"));
+    expect(data.profile.name).toBe("Иван Тестов");
+    expect(JSON.stringify(data)).not.toMatch(/password|token|9001112233/i);
+  });
 });
 
-test("SEC-24 Офлайн-кэш открывает проекты с параметром демо", async ({ page, context }) => {
-  await page.goto("/index.html");
-  await page.evaluate(() => navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready));
-  await page.waitForFunction(() => !!navigator.serviceWorker.controller);
-  await context.setOffline(true);
-  await page.goto(PAGES[3]);
-  await expect(page.getByRole("heading", { name: "Проекты", exact: true })).toBeVisible();
-  await expect(page.locator("[data-pick]")).toHaveCount(8);
-});
+test.describe("Внедрение кода (XSS)", () => {
+  test("SEC-09 Имя пользователя с HTML отображается как текст", async ({ page }) => {
+    await onboard(page, { street: "Садовая 14", phone: "+7 900 111-22-33", name: XSS_SHORT });
+    for (const r of ["feed", "profile", "assistant", "compass"]) { await go(page, `#/${r}`); await expectNoInjection(page); }
+    // Положительная проверка: имя показано ровно как введено — значит, оно экранировано, а не «съедено» разметкой.
+    await go(page, "#/profile");
+    await expect(page.locator("#main h1").first()).toHaveText(XSS_SHORT);
+  });
 
-test("SEC-33 Повреждённый JSON и значения неверного типа не мешают голосовать", async ({ page }) => {
-  const broken = ["{сломано", "null", '{"scenario":"makhachkala","pb":null}',
-    '{"scenario":"makhachkala","pb":{"picks":{},"submitted":true}}',
-    '{"scenario":"makhachkala","pb":{"picks":[],"submitted":true},"__proto__":{"polluted":true}}'];
-  await page.goto(PAGES[3]);
-  for (const value of broken) {
-    await page.evaluate(([key, raw]) => localStorage.setItem(key, raw), [KEY, value]);
+  test("SEC-10 Пост и комментарий с HTML", async ({ page }) => {
+    await demo(page);
+    await page.click("#composeBtn"); await page.fill("#postText", XSS); await page.click("#postBtn");
+    await expect(page.locator(".post").first()).toContainText("<img src=x");
+    await page.click('[data-cm="p3"]'); await page.fill('[data-ci="p3"]', XSS); await page.keyboard.press("Enter");
+    await expectNoInjection(page);
+  });
+
+  test("SEC-11 Помощник, поиск и дебаты с HTML", async ({ page }) => {
+    await demo(page, "#/assistant");
+    await page.fill("#askInput", XSS); await page.keyboard.press("Enter"); await expectNoInjection(page);
+    await page.keyboard.press("Control+K"); await page.fill("#q", XSS); await expectNoInjection(page); await page.keyboard.press("Escape");
+    await go(page, "#/group/g-transport");
+    await page.fill("#und", `${XSS} они считают иначе`); await page.fill("#argt", `${XSS} аргумент`); await page.click("#argBtn");
+    await expectNoInjection(page);
+  });
+
+  test("SEC-12 Инициатива: заголовок и текст редактора с HTML", async ({ page }) => {
+    await demo(page, "#/initiatives");
+    await page.click("#newInit");
+    const blocks = page.locator("#editorBox [data-slate-editor]"); await expect(blocks.first()).toBeVisible();
+    const editor = blocks.last();   // пустой абзац после «Кто должен сделать»
+    await page.fill("#inTitle", XSS_SHORT + " светофор");
+    await editor.click();
+    await page.keyboard.type(`${XSS} нужен светофор у школы`);
+    await page.click("#inBtn");
+    await expect(page.locator(".init-card").first()).toContainText("светофор");
+    await expectNoInjection(page);
+  });
+
+  test("SEC-13 HTML в адресе страницы не внедряется", async ({ page }) => {
+    await page.goto(`/app.html?reset=1&addr=${encodeURIComponent(`"><img src=x onerror=window.__xss=1>`)}`);
+    await expectNoInjection(page);
+    await demo(page);
+    for (const h of [`#/candidate/${XSS}`, `#/group/${XSS}`, `#/lesson/${XSS}`, `#/${XSS}`]) { await go(page, h); await expectNoInjection(page); }
+  });
+
+  test("SEC-14 Подменённые данные в хранилище браузера не внедряются", async ({ page }) => {
+    await demo(page);
+    await page.evaluate(([k, x]) => {
+      const s = JSON.parse(localStorage.getItem(k));
+      s.profile.name = x; s.profile.street = x; s.profile.district = x;
+      s.posts = [{ id: "evil", type: "citizen", author: x, time: x, text: x, likes: 0, comments: 0 }];
+      s.chat = [{ me: true, text: x }, { me: false, text: x, used: [x] }];
+      s.memory = [{ type: "fact", key: x, value: x, conf: 1 }];
+      s.myInitiatives = [{ id: "e1", title: x, html: x + "<p>текст</p>", text: x, topic: "edu", author: x, support: 0, goal: 10, responses: 0 }];
+      s.comments = { p3: [{ author: x, text: x, likes: 0 }] };
+      localStorage.setItem(k, JSON.stringify(s));
+    }, [KEY, XSS]);
     await page.reload();
-    await expect(page.getByText("Выбрано 0 из 3")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Проголосовать" })).toBeDisabled();
+    for (const r of ["feed", "profile", "assistant", "initiatives"]) { await go(page, `#/${r}`); await expectNoInjection(page); }
+    await go(page, "#/feed"); await page.click('[data-cm="p3"]'); await expectNoInjection(page);
+  });
+
+  test("SEC-15 Очистка текста инициатив оставляет только безопасные теги", async ({ page }) => {
+    await demo(page);
+    const cases = await page.evaluate(() => {
+      const c = window.VCSanitize.cleanHTML;
+      return [
+        c(`<h3 onclick="x()">Проблема</h3><p style="color:red">текст</p>`),
+        c(`<p>а<img src=x onerror="window.__xss=1">б</p>`),
+        c(`<p>а<script>window.__xss=2</script>б</p>`),
+        c(`<p><a href="javascript:alert(1)">ссылка</a></p>`),
+        c(`<p><b onmouseover="x()">жирный</b> <iframe src="//evil"></iframe></p>`),
+        c(`<svg><script>window.__xss=3</script></svg><p>после</p>`)
+      ];
+    });
+    expect(cases).toEqual([
+      "<h4>Проблема</h4><p>текст</p>",
+      "<p>аб</p>",
+      "<p>аб</p>",
+      "<p>ссылка</p>",
+      "<p><b>жирный</b></p>",
+      "<p>после</p>"
+    ]);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.__xss || 0)).toBe(0);
+  });
+
+  for (const pageUrl of ["/index.html", "/investors.html", "/privacy.html", "/app.html?demo=1"]) {
+    test(`SEC-16 Политика безопасности блокирует внедрённый скрипт: ${pageUrl}`, async ({ page }) => {
+      const violations = [];
+      page.on("console", (m) => { if (/Content Security Policy/.test(m.text())) violations.push(m.text()); });
+      await page.goto(pageUrl);
+      await page.evaluate(() => {
+        document.body.insertAdjacentHTML("beforeend", `<img src="data:," onerror="window.__csp=1"><div onclick="window.__csp=2"></div>`);
+        document.querySelector("[onclick]").click();
+        const s = document.createElement("script"); s.textContent = "window.__csp=3"; document.body.appendChild(s);
+      });
+      await page.waitForTimeout(300);
+      expect(await page.evaluate(() => window.__csp || 0)).toBe(0);
+      expect(violations.length).toBeGreaterThan(0);
+    });
   }
-  expect(await page.evaluate(() => ({}).polluted)).toBeUndefined();
-  await page.locator('[data-pick="b1"]').click();
-  await page.getByRole("button", { name: "Проголосовать" }).click();
-  await expect(page.getByRole("heading", { name: "Спасибо, ваш голос учтён" })).toBeVisible();
 });
 
-test("SEC-34 Квитанция сохраняется, а повторное демо выдаёт другой номер", async ({ page }) => {
-  await page.goto(PAGES[3]);
-  const receipt = page.locator("#receiptCode");
-  const cast = async () => {
-    await page.locator('[data-pick="b1"]').click();
-    await page.getByRole("button", { name: "Проголосовать" }).click();
-    await expect(receipt).toHaveText(/^[0-9A-F]{4}(?:-[0-9A-F]{4}){2}$/);
-    return receipt.textContent();
-  };
-  const first = await cast();
-  const saved = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).pb, KEY);
-  expect(Object.keys(saved).sort()).toEqual(["picks", "receipt", "submitted"]);
-  await page.reload();
-  await expect(receipt).toHaveText(first);
-  await page.getByRole("link", { name: "Начать демо заново" }).click();
-  expect(await cast()).not.toBe(first);
+test.describe("Выгрузки, ссылки и заголовки", () => {
+  test("SEC-17 CSV-выгрузка защищена от формул Excel", async ({ page }) => {
+    await demo(page, "#/admin");
+    const unit = await page.evaluate(() => ["=1+1", "+7 900", "-2", "@SUM(A1)", "обычный текст", 'кавычка "x"'].map(window.VCSanitize.csvCell));
+    expect(unit).toEqual([`"'=1+1"`, `"'+7 900"`, `"'-2"`, `"'@SUM(A1)"`, `"обычный текст"`, `"кавычка ""x"""`]);
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.click("#csvBtn")]);
+    const cells = require("fs").readFileSync(await dl.path(), "utf8").replace(/^﻿/, "").split(/\r\n/).flatMap((l) => l.split(";"));
+    expect(cells.filter((c) => /^"?[=+\-@]/.test(c))).toEqual([]);
+  });
+
+  test("SEC-18 Внешние ссылки открываются без доступа к нашей вкладке", async ({ page }) => {
+    const bad = [];
+    for (const url of ["/index.html", "/investors.html", "/privacy.html", "/app.html?demo=1#/assistant", "/app.html?demo=1#/calendar"]) {
+      await page.goto(url);
+      if (url.includes("calendar")) await page.click("#findBtn");   // ссылка на сервис ЦИК появляется после поиска участка
+      bad.push(...await page.$$eval('a[href^="http"]', (as) => as.filter((a) => !a.href.startsWith(location.origin))
+        .filter((a) => !(a.rel.includes("noopener") && a.rel.includes("noreferrer"))).map((a) => a.href)));
+    }
+    expect(bad).toEqual([]);
+  });
+
+  test("SEC-19 На каждой странице есть политика безопасности и политика реферера", async ({ page }) => {
+    for (const url of ["/index.html", "/investors.html", "/privacy.html", "/app.html"]) {
+      await page.goto(url);
+      const meta = await page.evaluate(() => ({
+        csp: document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || "",
+        ref: document.querySelector('meta[name="referrer"]')?.content || ""
+      }));
+      expect(meta.csp, url).toContain("script-src 'self'");
+      expect(meta.csp, url).toContain("object-src 'none'");
+      expect(meta.csp, url).toContain("base-uri 'self'");
+      expect(meta.ref, url).toBe("strict-origin-when-cross-origin");
+    }
+  });
+
+  test("SEC-20 Все экраны открываются без ошибок JavaScript", async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await demo(page);
+    for (const r of APP_ROUTES) await go(page, `#/${r}`);
+    await page.click("[data-tour-start]");
+    for (let i = 0; i < 11; i++) { const next = page.locator("[data-tour=next]"); if (!(await next.count())) break; await next.click(); await page.waitForTimeout(200); }
+    expect(errors).toEqual([]);
+  });
+});
+
+// Кейсы, добавленные по итогам контрольного аудита 13 октября 2026 (docs/SECURITY_TESTS.md, SEC-28…SEC-34).
+test.describe("Найдено контрольным аудитом", () => {
+  test("SEC-28 Текст с HTML в редакторе остаётся текстом и ничего не загружает", async ({ page }) => {
+    await demo(page, "#/initiatives");
+    const reqs = recordRequests(page);
+    await page.click("#newInit");
+    const blocks = page.locator("#editorBox [data-slate-editor]"); await expect(blocks.first()).toBeVisible();
+    await page.fill("#inTitle", "Светофор у школы");
+    await blocks.last().click();
+    await page.keyboard.type(`<img src=/sec28-probe onerror=window.__xss=1> и a < b нужен светофор у школы`);
+    await page.click("#inBtn");
+    await expect(page.locator(".init-card").first()).toContainText("<img src=/sec28-probe");   // текст сохранён как есть
+    await expect(page.locator(".init-card").first()).toContainText("a < b");
+    expect(reqs.filter((r) => r.url.includes("sec28-probe")), "разбор текста загрузил картинку").toEqual([]);
+    await expectNoInjection(page);
+  });
+
+  test("SEC-29 «Забыть всё» у помощника стирает и взгляды, и адрес", async ({ page }) => {
+    await demo(page, "#/compass");
+    await page.click("#cmpAgree"); for (let i = 0; i < 12; i++) await page.click('[data-ans="2"]');
+    await go(page, "#/assistant");
+    await page.fill("#askInput", "Я живу на Мира"); await page.keyboard.press("Enter");
+    await expect(page.locator("#memList .mem")).not.toHaveCount(0);
+    await page.click("#memWipe");
+    await expect(page.locator("#memList .mem")).toHaveCount(0);
+    await page.fill("#askInput", "Чьи позиции мне ближе?"); await page.keyboard.press("Enter");
+    await expect(page.locator(".msg").last()).toContainText("не учитывать ваши взгляды");
+    await page.fill("#askInput", "Где мой участок?"); await page.keyboard.press("Enter");
+    await expect(page.locator(".msg").last()).toContainText("Подскажите вашу улицу");
+  });
+
+  test("SEC-30 Компас спрашивает отдельное согласие, отзыв удаляет ответы", async ({ page }) => {
+    await demo(page, "#/compass");
+    await expect(page.locator("[data-ans]")).toHaveCount(0);   // без согласия вопросы не показываются
+    await page.click("#cmpAgree"); for (let i = 0; i < 12; i++) await page.click('[data-ans="-2"]');
+    await go(page, "#/profile");
+    page.once("dialog", (d) => d.accept());
+    await page.click("#revokeViews");
+    const s = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), KEY);
+    expect(s.compass).toEqual({}); expect(s.consents.views).toBeUndefined();
+  });
+
+  test("SEC-31 Адрес с главной не попадает ни в один запрос и не остаётся в кэше", async ({ page }) => {
+    const reqs = recordRequests(page);
+    await page.goto("/index.html");
+    await page.fill('input[name="addr"]', "Садовая 14");
+    await page.click('.lp-find button[type="submit"]');
+    await expect(page.locator("#obStreet")).toHaveValue("Садовая 14");
+    expect(reqs.map((r) => decodeURIComponent(r.url)).filter((u) => u.includes("Садовая") || u.includes("addr="))).toEqual([]);
+    const sw = require("fs").readFileSync(require("path").join(__dirname, "..", "sw.js"), "utf8");
+    expect(sw, "ключ кэша без параметров адреса").toMatch(/\.search\s*=\s*""/);
+  });
+
+  test("SEC-32 Подменённые id и фото в хранилище не внедряют атрибуты", async ({ page }) => {
+    await demo(page);
+    await page.evaluate((k) => {
+      const s = JSON.parse(localStorage.getItem(k)), q = '" data-inj="1';
+      s.posts = [{ id: "p" + q, type: "citizen", author: "А", time: "сейчас", text: "т", topic: "eco", likes: 0, comments: 0, photo: "x" + q, support: [80, 80, 80] }];
+      s.myInitiatives = [{ id: "m" + q, title: "Т", html: "<p>т</p>", text: "т", topic: "edu", author: "А", support: 0, goal: 10, responses: 0, photo: "y" + q }];
+      localStorage.setItem(k, JSON.stringify(s));
+    }, KEY);
+    await page.reload();
+    for (const r of ["feed", "initiatives"]) { await go(page, `#/${r}`); expect(await page.locator("[data-inj]").count(), r).toBe(0); }
+  });
+
+  test("SEC-33 Повреждённые данные в хранилище не ломают экраны", async ({ page }) => {
+    const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+    const broken = ['{"profile":{"name":5}}', '{"profile":{"name":"А"},"pb":null,"privacy":null,"posts":null}', '{"profile":{"name":"А","interests":["нет"]},"compass":{"0":7}}',
+      '{"profile":{"name":"А"},"memory":[{"type":"x"}]}', '{"profile":{"name":"А"},"__proto__":{"polluted":1}}'];
+    for (const raw of broken) {
+      await page.goto("/index.html"); await page.evaluate(([k, v]) => localStorage.setItem(k, v), [KEY, raw]);
+      await page.goto("/app.html#/feed");
+      for (const r of ["budget", "profile", "assistant", "compass", "admin"]) await go(page, `#/${r}`);
+    }
+    expect(errors).toEqual([]);
+    expect(await page.evaluate(() => ({}).polluted)).toBeUndefined();
+  });
+
+  test("SEC-34 Квитанция голоса не раскрывает выбор и находится в журнале", async ({ page }) => {
+    await demo(page, "#/budget");
+    await page.click("[data-pick-pb=b1]"); await page.click("#pbSubmit");
+    const code = (await page.locator("#receiptCode").textContent()).trim();
+    expect(code).toMatch(/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/);
+    expect(JSON.stringify(await page.evaluate((k) => JSON.parse(localStorage.getItem(k)).pb, KEY))).not.toMatch(/salt/i);   // соль не хранится
+    await page.click("[data-pbtab=results]"); await page.click("#receiptCheck");
+    await expect(page.locator("#receiptOut")).toContainText("Найдена");
+    await page.fill("#receiptIn", "0000-0000-0000"); await page.click("#receiptCheck");
+    await expect(page.locator("#receiptOut")).toContainText("Не найдена");
+    // Тот же выбор даёт другую квитанцию: в ней случайная соль, поэтому выбор нельзя подобрать перебором.
+    await demo(page, "#/budget");
+    await page.click("[data-pick-pb=b1]"); await page.click("#pbSubmit");
+    expect((await page.locator("#receiptCode").textContent()).trim()).not.toBe(code);
+  });
 });

@@ -1,7 +1,5 @@
 // Локально тесты идут в установленном Microsoft Edge, в GitHub Actions — в Chromium.
 const { defineConfig } = require("@playwright/test");
-const port = 4174;
-const baseURL = `http://127.0.0.1:${port}`;
 
 module.exports = defineConfig({
   testDir: ".",
@@ -11,7 +9,7 @@ module.exports = defineConfig({
   workers: process.env.CI ? 2 : 4,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
-    baseURL,
+    baseURL: "http://127.0.0.1:4173",
     channel: process.env.CI ? undefined : "msedge",
     locale: "ru-RU",
     viewport: { width: 1300, height: 860 },
@@ -19,7 +17,7 @@ module.exports = defineConfig({
   },
   webServer: {
     command: "node serve.js",
-    url: `${baseURL}/index.html`,
-    env: { PORT: String(port) }
+    url: "http://127.0.0.1:4173/index.html",
+    reuseExistingServer: !process.env.CI
   }
 });

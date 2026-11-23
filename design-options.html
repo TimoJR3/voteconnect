@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoteConnect — три варианта дизайна</title>
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/fonts-options.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 "Onest", system-ui, sans-serif; background: #e9e7e2; color: #161616; }
+  img { display: block; max-width: 100%; }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 26px 20px 60px; }
+  .wrap > h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -.02em; }
+  .wrap > p { margin: 0 0 16px; color: #555; max-width: 820px; }
+  input.t { position: absolute; opacity: 0; pointer-events: none; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tabs label { font-weight: 600; font-size: 14px; border: 1px solid #c9c6bf; background: #fff; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  #t1:checked ~ .tabs [for=t1], #t2:checked ~ .tabs [for=t2], #t3:checked ~ .tabs [for=t3] { background: #161616; color: #fff; border-color: #161616; }
+  #t1:focus-visible ~ .tabs [for=t1], #t2:focus-visible ~ .tabs [for=t2], #t3:focus-visible ~ .tabs [for=t3] { outline: 2px solid #1d6b45; outline-offset: 2px; }
+  .opt { display: none; }
+  #t1:checked ~ #o1, #t2:checked ~ #o2, #t3:checked ~ #o3 { display: block; }
+  .note { margin: 0 0 14px; color: #3d3d3d; max-width: 900px; }
+  .note b { color: #161616; }
+  .board { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+  .site { flex: 1 1 100%; border-radius: 10px; overflow: hidden; box-shadow: 0 18px 44px -22px rgba(0,0,0,.35); }
+  .phone { flex: 0 0 340px; height: 700px; border-radius: 40px; border: 9px solid #121212; overflow: hidden; position: relative; box-shadow: 0 18px 44px -22px rgba(0,0,0,.45); }
+  .phone .sb { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 13px system-ui; }
+  .phone .body { height: calc(100% - 30px); overflow: hidden; position: relative; }
+  @media (max-width: 760px) { .phone { flex: 1 1 100%; max-width: 340px; } }
+
+  /* ============ 1. ТЁПЛЫЙ ЖУРНАЛ ============ */
+  .o1 { --paper: #f5efe4; --ink: #23201b; --mut: #6e665a; --terra: #c2552d; --olive: #5e6b33; --line: #e0d5c2; background: var(--paper); color: var(--ink); }
+  .o1 .serif { font-family: "PT Serif", Georgia, serif; }
+  .o1 .hand { font-family: "Caveat", cursive; color: var(--terra); font-size: 22px; line-height: 1.1; }
+  .o1.site { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 470px; }
+  .o1 .left { padding: 30px 40px 36px; display: flex; flex-direction: column; }
+  .o1 .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 18px; margin-bottom: auto; }
+  .o1 .brand i { width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--terra); display: inline-block; }
+  .o1 h2 { font-family: "PT Serif", Georgia, serif; font-size: 50px; line-height: 1.04; letter-spacing: -.01em; margin: 44px 0 14px; font-weight: 700; }
+  .o1 h2 em { font-style: italic; font-weight: 400; color: var(--terra); }
+  .o1 .lead { font-size: 18px; color: var(--mut); max-width: 440px; margin: 0 0 26px; }
+  .o1 .addr { display: flex; gap: 10px; align-items: center; max-width: 470px; }
+  .o1 .addr span { flex: 1; border-bottom: 2px solid var(--ink); padding: 10px 2px; color: var(--mut); }
+  .o1 .addr b { background: var(--ink); color: var(--paper); padding: 12px 20px; border-radius: 10px; font-weight: 600; }
+  .o1 .right { position: relative; padding: 26px 26px 26px 0; }
+  .o1 .right img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+  .o1 .tag-note { position: absolute; left: -18px; bottom: 54px; background: var(--paper); padding: 8px 14px 10px; border-radius: 4px; transform: rotate(-3deg); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+  .o1.phone .body { background: var(--paper); }
+  .o1 .top { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 18px 6px; }
+  .o1 .top b { font-family: "PT Serif", serif; font-size: 26px; }
+  .o1 .top span { font-size: 12.5px; color: var(--mut); }
+  .o1 .tabsm { display: flex; gap: 16px; padding: 0 18px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--mut); }
+  .o1 .tabsm span { padding: 8px 0; } .o1 .tabsm .on { color: var(--ink); border-bottom: 2px solid var(--terra); font-weight: 600; }
+  .o1 .post { padding: 14px 18px 12px; border-bottom: 1px solid var(--line); }
+  .o1 .who { font-size: 13px; color: var(--mut); } .o1 .who b { color: var(--ink); }
+  .o1 .post p { margin: 6px 0 10px; font-size: 15.5px; line-height: 1.45; }
+  .o1 .post img { border-radius: 6px; height: 150px; width: 100%; object-fit: cover; }
+  .o1 .agree { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12.5px; color: var(--mut); }
+  .o1 .agree .bar { flex: 1; height: 4px; display: flex; gap: 2px; } .o1 .agree .bar i { display: block; height: 100%; }
+  .o1 .ann { display: flex; align-items: center; justify-content: flex-end; gap: 4px; margin: 4px 0 -6px; white-space: nowrap; }
+  .o1 .basket { padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .o1 .basket .sum { font-family: "PT Serif", serif; font-size: 30px; font-weight: 700; }
+  .o1 .uline { height: 8px; margin-top: -4px; }
+  .o1 .proj { display: grid; grid-template-columns: 58px 1fr auto; gap: 12px; align-items: center; padding: 11px 18px; border-bottom: 1px solid var(--line); }
+  .o1 .proj img { width: 58px; height: 58px; border-radius: 6px; object-fit: cover; }
+  .o1 .proj b { font-size: 14px; display: block; line-height: 1.25; }
+  .o1 .proj small { color: var(--mut); font-size: 12.5px; }
+  .o1 .add { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-size: 20px; }
+  .o1 .add.on { background: var(--terra); border-color: var(--terra); color: #fff; font-size: 15px; }
+
+  /* ============ 2. НАРИСОВАННЫЙ РАЙОН ============ */
+  .o2 { --bg: #fff6e3; --ink: #121212; --sun: #ffcf4a; --sky: #a7dcf5; --leaf: #86cf86; --rose: #ff9a8a; background: var(--bg); color: var(--ink); }
+  .o2 .card { background: #fff; border: 2px solid var(--ink); border-radius: 16px; box-shadow: 4px 4px 0 var(--ink); }
+  .o2 .btn { display: inline-block; background: var(--ink); color: #fff; font-weight: 700; padding: 12px 20px; border-radius: 12px; border: 2px solid var(--ink); }
+  .o2 .btn.y { background: var(--sun); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+  .o2 .sticker { display: inline-block; font-weight: 800; font-size: 12.5px; border: 2px solid var(--ink); border-radius: 999px; padding: 3px 10px; background: var(--sky); }
+  .o2.site { display: grid; grid-template-columns: 1fr 1fr; min-height: 470px; }
+  .o2 .left { padding: 30px 40px 36px; }
+  .o2 .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 19px; margin-bottom: 40px; }
+  .o2 .brand i { width: 30px; height: 30px; border: 2px solid var(--ink); border-radius: 9px; background: var(--sun); display: grid; place-items: center; font-style: normal; font-size: 16px; box-shadow: 2px 2px 0 var(--ink); }
+  .o2 h2 { font-size: 48px; line-height: 1.02; letter-spacing: -.03em; margin: 0 0 16px; font-weight: 800; }
+  .o2 h2 mark { background: var(--sun); padding: 0 6px; border-radius: 8px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .o2 .lead { font-size: 18px; max-width: 440px; margin: 0 0 24px; }
+  .o2 .addr { display: flex; gap: 10px; max-width: 470px; }
+  .o2 .addr span { flex: 1; background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 11px 14px; color: #6a6a6a; }
+  .o2 .peeps { display: flex; align-items: center; margin-top: 20px; font-weight: 700; font-size: 14px; }
+  .o2 .peeps img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--ink); background: #fff; margin-right: -10px; }
+  .o2 .peeps span { margin-left: 20px; }
+  .o2 .right { background: var(--sky); border-left: 2px solid var(--ink); display: grid; place-items: end center; overflow: hidden; }
+  .o2.phone .body { background: var(--bg); }
+  .o2 .top { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px 10px; }
+  .o2 .top b { font-size: 25px; font-weight: 800; letter-spacing: -.02em; }
+  .o2 .chips { display: flex; gap: 6px; padding: 0 16px 12px; }
+  .o2 .chips span { border: 2px solid var(--ink); border-radius: 999px; padding: 4px 11px; font-weight: 700; font-size: 13px; background: #fff; }
+  .o2 .chips .on { background: var(--ink); color: #fff; }
+  .o2 .post { margin: 0 14px 14px; padding: 12px; }
+  .o2 .who { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .o2 .who img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--ink); }
+  .o2 .who b { display: block; font-size: 14px; }
+  .o2 .post p { margin: 10px 0; font-size: 15px; line-height: 1.4; }
+  .o2 .post .ph { border: 2px solid var(--ink); border-radius: 12px; height: 140px; width: 100%; object-fit: cover; }
+  .o2 .agree { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-weight: 700; font-size: 12.5px; }
+  .o2 .agree .bar { flex: 1; height: 12px; border: 2px solid var(--ink); border-radius: 99px; display: flex; overflow: hidden; } .o2 .agree .bar i { display: block; height: 100%; }
+  .o2 .agree .bar i + i { border-left: 2px solid var(--ink); }
+  .o2 .basket { margin: 0 14px 14px; padding: 14px; background: var(--sun); }
+  .o2 .basket b { font-size: 26px; font-weight: 800; display: block; }
+  .o2 .basket .bar { height: 16px; border: 2px solid var(--ink); border-radius: 99px; background: #fff; overflow: hidden; margin-top: 8px; } .o2 .basket .bar i { display: block; width: 63%; height: 100%; background: var(--leaf); border-right: 2px solid var(--ink); }
+  .o2 .proj { margin: 0 14px 12px; display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 10px; position: relative; }
+  .o2 .proj img { width: 64px; height: 64px; border-radius: 10px; border: 2px solid var(--ink); object-fit: cover; }
+  .o2 .proj b { font-size: 14px; line-height: 1.25; display: block; padding-right: 54px; }
+  .o2 .price { position: absolute; right: -6px; top: -10px; background: var(--rose); border: 2px solid var(--ink); border-radius: 8px; padding: 2px 8px; font-weight: 800; font-size: 13px; transform: rotate(6deg); }
+  .o2 .proj .in { font-weight: 700; font-size: 12.5px; margin-top: 6px; }
+
+  /* ============ 3. СПОКОЙНЫЙ ОБЩЕСТВЕННЫЙ СЕРВИС ============ */
+  .o3 { --ink: #0b0c0c; --mut: #505a5f; --line: #b1b4b6; --green: #1d6b45; --dgreen: #0f3d27; --focus: #ffdd00; background: #fff; color: var(--ink); font-family: "Golos Text", system-ui, sans-serif; }
+  .o3 .strip { background: var(--ink); color: #fff; padding: 12px 40px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .o3 .strip span { font-weight: 400; font-size: 14px; opacity: .8; margin-left: auto; }
+  .o3 .strip i { width: 20px; height: 20px; background: #fff; display: inline-block; clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); }
+  .o3 .phase { border-bottom: 1px solid var(--line); padding: 10px 40px; font-size: 14px; }
+  .o3 .phase b { background: var(--green); color: #fff; padding: 2px 8px; margin-right: 8px; font-size: 12.5px; letter-spacing: .02em; }
+  .o3.site .in { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; padding: 36px 40px 44px; }
+  .o3 h2 { font-size: 46px; line-height: 1.07; letter-spacing: -.015em; margin: 0 0 18px; font-weight: 700; }
+  .o3 .lead { font-size: 20px; color: var(--ink); margin: 0 0 24px; max-width: 520px; }
+  .o3 label.f { display: block; font-weight: 700; font-size: 17px; margin-bottom: 4px; }
+  .o3 .hint { color: var(--mut); font-size: 15px; margin-bottom: 8px; }
+  .o3 .field { border: 2px solid var(--ink); padding: 10px 12px; max-width: 400px; color: var(--mut); margin-bottom: 16px; }
+  .o3 .btn { display: inline-block; background: var(--green); color: #fff; font-weight: 600; font-size: 18px; padding: 10px 18px; box-shadow: 0 3px 0 var(--dgreen); }
+  .o3 figure { margin: 0; }
+  .o3 figure img { width: 100%; height: 300px; object-fit: cover; }
+  .o3 figcaption { font-size: 14px; color: var(--mut); padding-top: 8px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .o3 .facts { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 14px; }
+  .o3 .facts div { padding-right: 10px; } .o3 .facts b { display: block; font-size: 28px; } .o3 .facts span { color: var(--mut); font-size: 14px; }
+  .o3.phone .body { background: #fff; }
+  .o3 .ptop { background: var(--ink); color: #fff; padding: 10px 16px; font-weight: 700; }
+  .o3 .ph1 { padding: 14px 16px 6px; } .o3 .ph1 h3 { font-size: 26px; margin: 0; line-height: 1.15; } .o3 .ph1 p { margin: 4px 0 0; color: var(--mut); font-size: 14px; }
+  .o3 .post { padding: 12px 16px; border-top: 1px solid var(--line); }
+  .o3 .post .who { font-size: 14px; color: var(--mut); } .o3 .post .who b { color: var(--ink); }
+  .o3 .post p { margin: 4px 0 8px; font-size: 16px; line-height: 1.45; }
+  .o3 .post img { height: 130px; width: 100%; object-fit: cover; }
+  .o3 .post .cap { font-size: 12.5px; color: var(--mut); margin-top: 4px; }
+  .o3 .sup { font-size: 14px; margin-top: 8px; } .o3 .sup b { color: var(--green); }
+  .o3 .sup table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; } .o3 .sup td { border-top: 1px solid #e5e6e7; padding: 4px 0; } .o3 .sup td:last-child { text-align: right; font-weight: 700; }
+  .o3 .money { margin: 10px 16px; border-left: 6px solid var(--green); background: #f3f2f1; padding: 10px 12px; }
+  .o3 .money b { font-size: 24px; display: block; }
+  .o3 .check { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; padding: 11px 16px; border-top: 1px solid var(--line); align-items: start; }
+  .o3 .box { width: 30px; height: 30px; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 800; }
+  .o3 .box.on::after { content: ""; width: 14px; height: 8px; border-left: 4px solid var(--ink); border-bottom: 4px solid var(--ink); transform: rotate(-45deg) translate(1px, -2px); }
+  .o3 .check b { font-size: 15px; line-height: 1.3; display: block; } .o3 .check small { color: var(--mut); font-size: 13px; }
+  .o3 .check .cost { font-weight: 700; font-size: 14px; white-space: nowrap; }
+  .o3 .sbtn { margin: 12px 16px; display: block; text-align: center; background: var(--green); color: #fff; font-weight: 600; padding: 10px; box-shadow: 0 3px 0 var(--dgreen); }
+
+  .compare { margin-top: 26px; background: #fff; border-radius: 10px; overflow: hidden; }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare th, .compare td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #ecebe8; vertical-align: top; }
+  .compare th { background: #f6f5f2; }
+  @media (max-width: 900px) { .o1.site, .o2.site, .o3.site .in { grid-template-columns: 1fr; } .o1 h2, .o2 h2, .o3 h2 { font-size: 34px; } .o2 .right { min-height: 240px; border-left: none; border-top: 2px solid var(--ink); } .o1 .right { padding: 0 20px 20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Три варианта дизайна на экранах VoteConnect</h1>
+  <p>Одинаковое содержание — разный характер. В каждом варианте: первый экран сайта, лента района и бюджет района. Фото, шрифты и рисунки хранятся на сайте.</p>
+
+  <input class="t" type="radio" name="v" id="t1" checked>
+  <input class="t" type="radio" name="v" id="t2">
+  <input class="t" type="radio" name="v" id="t3">
+  <div class="tabs"><label for="t1">1. Тёплый журнал</label><label for="t2">2. Нарисованный район</label><label for="t3">3. Спокойный общественный сервис</label></div>
+
+  <!-- ===== 1 ===== -->
+  <section class="opt" id="o1">
+    <p class="note"><b>Тёплый журнал.</b> Кремовая бумага, русская антиква PT Serif в заголовках, рукописные заметки на полях, большие фото без рамок. Никаких карточек — текст и фото лежат прямо на странице, как в хорошем журнале. Ориентиры: журнал Kinfolk, сайт Mailchimp.</p>
+    <div class="board">
+      <div class="site o1">
+        <div class="left">
+          <div class="brand"><i></i>VoteConnect</div>
+          <h2>Что решают<br>в вашем <em>районе</em></h2>
+          <p class="lead">Бюджет района, идеи соседей и то, с чем согласны все — в одном месте.</p>
+          <div class="addr"><span>Ваш адрес, например Садовая, 14</span><b>Показать район</b></div>
+        </div>
+        <div class="right">
+          <img src="assets/img/1777529178036-18e4a92ec0b6-1200.jpg" alt="Набережная осенью">
+          <div class="tag-note hand">набережная Светлой,<br>освещение — в бюджете 2027</div>
+        </div>
+      </div>
+      <div class="phone o1"><div class="sb"><span>9:41</span><span>●●▮</span></div><div class="body">
+        <div class="top"><b>Северный</b><span>1 847 соседей</span></div>
+        <div class="tabsm"><span class="on">Для всех</span><span>Новое</span><span>Слепое пятно</span></div>
+        <div class="post"><div class="who"><b>Павел Р.</b> · Садовая · 5 ч</div>
+          <p>Автобус 14 опаздывает на 15–20 минут каждое утро. Собрал данные GPS за месяц.</p>
+          <img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="Автобус">
+          <div class="ann"><span class="hand" style="font-size:19px">согласны все три группы</span>
+            <svg width="26" height="24" viewBox="0 0 26 24" fill="none" stroke="#c2552d" stroke-width="2" stroke-linecap="round"><path d="M3 3c8 2 14 8 16 17"/><path d="M14 15l5 6 4-7"/></svg></div>
+          <div class="agree"><div class="bar"><i style="width:33%;background:#c07a12"></i><i style="width:34%;background:#2f6db5"></i><i style="width:33%;background:#a0428c"></i></div>92%</div></div>
+        <div class="post"><div class="who"><b>Марина Соколова</b> · кандидат</div><p>Парк вместо промзоны у реки — смета 48 млн ₽.</p></div>
+      </div></div>
+      <div class="phone o1"><div class="sb"><span>9:41</span><span>●●▮</span></div><div class="body">
+        <div class="top"><b>Бюджет 2027</b><span>до 22 октября</span></div>
+        <div class="basket"><div style="font-size:13px;color:#6e665a">Ваша корзина</div><div class="sum">9,4 млн ₽ <span style="font-size:15px;color:#6e665a;font-weight:400">из 15</span></div>
+          <svg class="uline" width="160" viewBox="0 0 160 8" fill="none" stroke="#c2552d" stroke-width="2.5" stroke-linecap="round"><path d="M2 5c30-4 70-4 156 0"/></svg></div>
+        <div class="proj"><img src="assets/img/1608487583634-0f31766e4cb1-700.jpg" alt=""><div><b>Светофор у школы № 12</b><small>1,8 млн ₽ · 1 290 голосов</small></div><span class="add on">✓</span></div>
+        <div class="proj"><img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt=""><div><b>Вечерний автобус 14</b><small>3,4 млн ₽ · 1 180 голосов</small></div><span class="add on">✓</span></div>
+        <div class="proj"><img src="assets/img/1789062665477-b58eb89a22b6-700.jpg" alt=""><div><b>Освещение набережной</b><small>4,2 млн ₽ · 1 040 голосов</small></div><span class="add on">✓</span></div>
+        <div class="proj"><img src="assets/img/1780866701554-254dcf3fac8e-700.jpg" alt=""><div><b>Навесы на остановках</b><small>2,6 млн ₽ · 960 голосов</small></div><span class="add">+</span></div>
+        <div class="proj"><img src="assets/img/1683144651287-f00e40a97199-700.jpg" alt=""><div><b>Кружки робототехники</b><small>2,1 млн ₽ · 880 голосов</small></div><span class="add">+</span></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ===== 2 ===== -->
+  <section class="opt" id="o2">
+    <p class="note"><b>Нарисованный район.</b> Нарисованные от руки жители (Open Peeps, свободная лицензия CC0), жирные контуры, «наклейки» и тёплые цвета солнца и неба. Живо и по-молодёжному: сразу видно, что это сделали люди. Ориентиры: Partiful, Gumroad.</p>
+    <div class="board">
+      <div class="site o2">
+        <div class="left">
+          <div class="brand"><i>✓</i>VoteConnect</div>
+          <h2>Ваш район<br>решает <mark>сам</mark></h2>
+          <p class="lead">Соседи предлагают идеи, делят бюджет и договариваются — без ссор в чатах.</p>
+          <div class="addr"><span>Ваш адрес</span><span class="btn y">Поехали</span></div>
+          <div style="margin-top:22px;display:flex;gap:8px;flex-wrap:wrap"><span class="sticker">15 млн ₽ на район</span><span class="sticker" style="background:#ff9a8a;transform:rotate(-3deg)">голосуем до 22.10</span></div>
+          <div class="peeps"><img src="assets/avatars/peeps-pavel.svg" alt=""><img src="assets/avatars/peeps-marina.svg" alt="" style="background:#ffcf4a"><img src="assets/avatars/peeps-olga.svg" alt="" style="background:#a7dcf5"><img src="assets/avatars/peeps-igor.svg" alt="" style="background:#86cf86"><span>и ещё 1 843 соседа уже здесь</span></div>
+        </div>
+        <div class="right">
+          <svg viewBox="0 0 520 330" width="100%" role="img" aria-label="Нарисованный район: дома, деревья, автобус и солнце" fill="none" stroke="#121212" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+            <circle cx="430" cy="70" r="34" fill="#ffcf4a"/><path d="M430 18v-10M478 70h10M466 34l7-7M466 106l7 7"/>
+            <path d="M40 120c20-10 40-10 60 0" /><path d="M150 80c14-7 30-7 44 0"/>
+            <rect x="40" y="170" width="110" height="140" fill="#ff9a8a"/><path d="M30 172l65-52 65 52z" fill="#fff6e3"/>
+            <rect x="62" y="200" width="24" height="26" fill="#fff"/><rect x="104" y="200" width="24" height="26" fill="#fff"/><rect x="82" y="256" width="28" height="54" fill="#ffcf4a"/>
+            <rect x="180" y="130" width="120" height="180" fill="#fff"/><path d="M180 130h120v-14H180z" fill="#86cf86"/>
+            <rect x="198" y="152" width="22" height="22" fill="#a7dcf5"/><rect x="230" y="152" width="22" height="22" fill="#a7dcf5"/><rect x="262" y="152" width="22" height="22" fill="#ffcf4a"/>
+            <rect x="198" y="190" width="22" height="22" fill="#ffcf4a"/><rect x="230" y="190" width="22" height="22" fill="#a7dcf5"/><rect x="262" y="190" width="22" height="22" fill="#a7dcf5"/>
+            <rect x="198" y="228" width="22" height="22" fill="#a7dcf5"/><rect x="230" y="228" width="22" height="22" fill="#a7dcf5"/><rect x="262" y="228" width="22" height="22" fill="#ffcf4a"/>
+            <circle cx="345" cy="232" r="34" fill="#86cf86"/><path d="M345 266v44"/><circle cx="400" cy="250" r="24" fill="#86cf86"/><path d="M400 274v36"/>
+            <rect x="300" y="268" width="140" height="44" rx="10" fill="#ffcf4a"/><rect x="314" y="276" width="26" height="16" fill="#fff"/><rect x="348" y="276" width="26" height="16" fill="#fff"/><rect x="382" y="276" width="26" height="16" fill="#fff"/>
+            <circle cx="330" cy="314" r="9" fill="#fff"/><circle cx="410" cy="314" r="9" fill="#fff"/><text x="415" y="292" font-family="Onest" font-weight="800" font-size="14" fill="#121212" stroke="none">14</text>
+            <path d="M0 312h520"/>
+          </svg>
+        </div>
+      </div>
+      <div class="phone o2"><div class="sb"><span>9:41</span><span>●●▮</span></div><div class="body">
+        <div class="top"><b>Северный</b><span class="sticker" style="background:#ffcf4a">1 847</span></div>
+        <div class="chips"><span class="on">Для всех</span><span>Новое</span><span>Слепое пятно</span></div>
+        <div class="card post"><div class="who"><img src="assets/avatars/peeps-pavel.svg" alt=""><div><b>Павел Р.</b>Садовая · 5 ч</div></div>
+          <p>Автобус 14 опаздывает на 15–20 минут каждое утро. Собрал данные GPS за месяц.</p>
+          <img class="ph" src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="Автобус">
+          <div class="agree"><div class="bar"><i style="width:33%;background:#ffcf4a"></i><i style="width:34%;background:#a7dcf5"></i><i style="width:33%;background:#ff9a8a"></i></div>Согласны все</div></div>
+        <div class="card post"><div class="who"><img src="assets/avatars/peeps-marina.svg" alt=""><div><b>Марина Соколова</b>кандидат</div></div><p>Парк вместо промзоны у реки — смета 48 млн ₽.</p></div>
+      </div></div>
+      <div class="phone o2"><div class="sb"><span>9:41</span><span>●●▮</span></div><div class="body">
+        <div class="top"><b>Бюджет 2027</b><span class="sticker" style="background:#ff9a8a">до 22.10</span></div>
+        <div class="card basket"><span style="font-weight:700">Твоя корзина</span><b>9,4 из 15 млн ₽</b><div class="bar"><i></i></div></div>
+        <div class="card proj"><img src="assets/img/1608487583634-0f31766e4cb1-700.jpg" alt=""><div><b>Светофор у школы № 12</b><div class="in">✓ В корзине</div></div><span class="price">1,8 млн</span></div>
+        <div class="card proj"><img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt=""><div><b>Вечерний автобус 14</b><div class="in">✓ В корзине</div></div><span class="price" style="background:#a7dcf5">3,4 млн</span></div>
+        <div class="card proj"><img src="assets/img/1789062665477-b58eb89a22b6-700.jpg" alt=""><div><b>Освещение набережной</b><div class="in">✓ В корзине</div></div><span class="price" style="background:#86cf86">4,2 млн</span></div>
+        <div class="card proj"><img src="assets/img/1780866701554-254dcf3fac8e-700.jpg" alt=""><div><b>Навесы на остановках</b><div class="in">+ Добавить</div></div><span class="price" style="background:#ffcf4a">2,6 млн</span></div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ===== 3 ===== -->
+  <section class="opt" id="o3">
+    <p class="note"><b>Спокойный общественный сервис.</b> Шрифт Golos Text — Paratype делала его для российских госсервисов. Белый лист, крупный текст, документальные фото с подписями, большие понятные кнопки и галочки. Выглядит как надёжный общественный сервис, которому доверяют и жители, и администрация. Ориентиры: GOV.UK, Code for America.</p>
+    <div class="board">
+      <div class="site o3">
+        <div class="strip"><i></i>VoteConnect<span>Северный избирательный округ № 7</span></div>
+        <div class="phase"><b>ИДЁТ ГОЛОСОВАНИЕ</b>Бюджет района на 2027 год — до 22 октября</div>
+        <div class="in">
+          <div>
+            <h2>Решите, на что потратить 15 млн ₽ в вашем районе</h2>
+            <p class="lead">Выберите проекты, которые помещаются в бюджет. Результаты получат депутаты и администрация.</p>
+            <label class="f">Ваш адрес</label><div class="hint">Например, Садовая, 14</div><div class="field">&nbsp;</div>
+            <span class="btn">Начать</span>
+          </div>
+          <figure><img src="assets/img/1789062665477-b58eb89a22b6-1200.jpg" alt="Набережная реки Светлой"><figcaption>Набережная реки Светлой. Освещение — один из проектов бюджета 2027 года.</figcaption>
+            <div class="facts"><div><b>2 318</b><span>проголосовали</span></div><div><b>8</b><span>проектов</span></div><div><b>3</b><span>решения поддерживают все</span></div></div></figure>
+        </div>
+      </div>
+      <div class="phone o3"><div class="sb"><span>9:41</span><span>●●▮</span></div><div class="body">
+        <div class="ptop">VoteConnect · Северный</div>
+        <div class="ph1"><h3>Лента района</h3><p>Сначала то, с чем согласны все группы</p></div>
+        <div class="post"><div class="who"><b>Павел Р.</b> · житель · 5 часов назад</div>
+          <p>Автобус 14 опаздывает на 15–20 минут каждое утро. Собрал данные GPS за месяц.</p>
+          <img src="assets/img/1632276536839-84cad7fd03b0-700.jpg" alt="Автобус"><div class="cap">Фото: Павел Р.</div>
+          <div class="sup">Поддерживают <b>90–95%</b> в каждой группе<table><tr><td>Автомобилисты</td><td>90%</td></tr><tr><td>Пешеходы</td><td>95%</td></tr><tr><td>Семьи</td><td>91%</td></tr></table></div></div>
+      </div></div>
+      <div class="phone o3"><div class="sb"><span>9:41</span><span>●●▮</span></div><div class="body">
+        <div class="ptop">VoteConnect · Бюджет</div>
+        <div class="ph1"><h3>Выберите проекты</h3><p>Можно выбрать несколько, пока хватает бюджета</p></div>
+        <div class="money">Выбрано на сумму<b>9,4 млн ₽ из 15 млн ₽</b></div>
+        <div class="check"><span class="box on"></span><div><b>Светофор с кнопкой у школы № 12</b><small>1 290 голосов</small></div><span class="cost">1,8 млн ₽</span></div>
+        <div class="check"><span class="box on"></span><div><b>Вечерний автобус 14 до 23:30</b><small>1 180 голосов</small></div><span class="cost">3,4 млн ₽</span></div>
+        <div class="check"><span class="box on"></span><div><b>Освещение набережной</b><small>1 040 голосов</small></div><span class="cost">4,2 млн ₽</span></div>
+        <div class="check"><span class="box"></span><div><b>Навесы и табло на остановках</b><small>960 голосов</small></div><span class="cost">2,6 млн ₽</span></div>
+        <span class="sbtn">Отдать голос</span>
+      </div></div>
+    </div>
+  </section>
+
+  <div class="compare"><table>
+    <tr><th></th><th>1. Тёплый журнал</th><th>2. Нарисованный район</th><th>3. Общественный сервис</th></tr>
+    <tr><td>Характер</td><td>Уютный, «человеческий», как местная газета нового поколения</td><td>Яркий, дружелюбный, молодёжный</td><td>Строгий, надёжный, понятный всем возрастам</td></tr>
+    <tr><td>Лучше всего для</td><td>Жителей и широкой аудитории</td><td>Студентов и молодёжного бюджета</td><td>Администраций, депутатов, грантовых комиссий</td></tr>
+    <tr><td>Риск</td><td>Меньше «технологичности»</td><td>Может показаться несерьёзным для чиновников</td><td>Меньше эмоций</td></tr>
+  </table></div>
+</div>
+</body>
+</html>
